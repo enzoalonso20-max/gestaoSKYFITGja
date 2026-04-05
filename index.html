@@ -663,6 +663,7 @@
     <div class="nav-group" id="fin-group">
       <div class="nav-sub" onclick="switchTab('fin-visao',this)"><span class="nav-sub-dot">◉</span>Visão Geral</div>
       <div class="nav-sub" onclick="switchTab('fin-receita',this)"><span class="nav-sub-dot">◉</span>Receita</div>
+      <div class="nav-sub" onclick="switchTab('fin-vendas',this)"><span class="nav-sub-dot">◉</span>Vendas por Colaborador</div>
       <div class="nav-sub" onclick="switchTab('fin-despesas',this)"><span class="nav-sub-dot">◉</span>Despesas</div>
       <div class="nav-sub" onclick="switchTab('fin-lucro',this)"><span class="nav-sub-dot">◉</span>Lucro & Margem</div>
       <div class="nav-sub" onclick="switchTab('fin-caixa',this)"><span class="nav-sub-dot">◉</span>Fluxo de Caixa</div>
@@ -908,6 +909,155 @@
         </div>
       </div>
     </div>
+    <!-- ════ ABA: FIN-VENDAS ════ -->
+    <div class="tab-pane" id="tab-fin-vendas">
+      <div class="section-header">
+        <div>
+          <div class="section-title">🏆 Vendas por Colaborador</div>
+          <div class="section-sub" id="vnd-sub">Carregue os arquivos exportados do EVO para analisar</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <label for="upload-contratos" class="btn btn-primary">⬆️ Contratos</label>
+          <input type="file" id="upload-contratos" accept=".xlsx,.xls" style="display:none" onchange="handleVendasUpload(event,'contratos')">
+          <label for="upload-produtos" class="btn btn-secondary">⬆️ Produtos / Serviços</label>
+          <input type="file" id="upload-produtos" accept=".xlsx,.xls" style="display:none" onchange="handleVendasUpload(event,'produtos')">
+          <span class="badge badge-green" id="vnd-badge-c" style="display:none">● Contratos</span>
+          <span class="badge badge-blue"  id="vnd-badge-p" style="display:none">● Produtos</span>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="panel" id="vnd-filtros" style="display:none">
+        <div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+
+          <!-- Período -->
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px">Período</label>
+            <div style="display:flex;gap:4px">
+              <button class="pf-btn active" id="vnd-pf-mes"    onclick="setVndPeriodo('mes')">Mês</button>
+              <button class="pf-btn"        id="vnd-pf-semana" onclick="setVndPeriodo('semana')">Semana</button>
+              <button class="pf-btn"        id="vnd-pf-dia"    onclick="setVndPeriodo('dia')">Dia da Semana</button>
+              <button class="pf-btn"        id="vnd-pf-todos"  onclick="setVndPeriodo('todos')">Tudo</button>
+            </div>
+          </div>
+
+          <!-- Seletor de mês -->
+          <div id="vnd-sel-mes-wrap" style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px">Mês</label>
+            <select id="vnd-sel-mes" onchange="renderVendas()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none"></select>
+          </div>
+
+          <!-- Seletor de dia da semana -->
+          <div id="vnd-sel-dia-wrap" style="display:none;flex-direction:column;gap:4px">
+            <label style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px">Dia da Semana</label>
+            <select id="vnd-sel-dia" onchange="renderVendas()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none">
+              <option value="">Todos</option>
+              <option value="0">Domingo</option><option value="1">Segunda</option>
+              <option value="2">Terça</option><option value="3">Quarta</option>
+              <option value="4">Quinta</option><option value="5">Sexta</option>
+              <option value="6">Sábado</option>
+            </select>
+          </div>
+
+          <!-- Filtro por produto -->
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px">Produto / Plano</label>
+            <select id="vnd-sel-produto" onchange="renderVendas()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none;min-width:200px">
+              <option value="">Todos os produtos</option>
+            </select>
+          </div>
+
+          <!-- Filtro forma de pagamento -->
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <label style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px">Pagamento</label>
+            <select id="vnd-sel-pgto" onchange="renderVendas()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none">
+              <option value="">Todas</option>
+              <option value="credito">Crédito</option>
+              <option value="debito">Débito</option>
+              <option value="pix">PIX / Transferência</option>
+              <option value="dinheiro">Dinheiro</option>
+            </select>
+          </div>
+
+          <button class="btn btn-secondary" onclick="resetVndFiltros()" style="margin-top:18px">🔄 Limpar filtros</button>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="cards-grid" id="vnd-kpis" style="display:none">
+        <div class="kpi-card green">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-label">Total Vendido</div>
+          <div class="kpi-value" id="vnd-total">—</div>
+          <div class="kpi-delta" id="vnd-total-sub"></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)" id="vnd-prog-total"></div></div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-icon">🏆</div>
+          <div class="kpi-label">Top Vendedor</div>
+          <div class="kpi-value" id="vnd-top-nome" style="font-size:14px;margin-top:4px">—</div>
+          <div class="kpi-delta" id="vnd-top-val" style="font-weight:700;color:var(--green)"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">🛒</div>
+          <div class="kpi-label">Total Transações</div>
+          <div class="kpi-value" id="vnd-count">—</div>
+          <div class="kpi-delta" id="vnd-count-sub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">🎫</div>
+          <div class="kpi-label">Ticket Médio</div>
+          <div class="kpi-value" id="vnd-ticket">—</div>
+          <div class="kpi-delta" id="vnd-ticket-sub"></div>
+        </div>
+      </div>
+
+      <!-- Gráficos: Ranking colaboradores + Pagamento por colaborador -->
+      <div class="chart-grid" id="vnd-charts-1" style="display:none">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">🏆 Ranking por Volume Financeiro</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:300px"><canvas id="chart-vnd-ranking"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">💳 Pagamento por Colaborador</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:300px"><canvas id="chart-vnd-pgto-colab"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- Gráfico: Curva de produto no tempo -->
+      <div class="panel" id="vnd-curva-panel" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">📈 Curva de Vendas no Tempo</span>
+          <span class="badge badge-blue" id="vnd-curva-label"></span>
+        </div>
+        <div class="panel-body"><div class="chart-wrap" style="height:240px"><canvas id="chart-vnd-curva"></canvas></div></div>
+      </div>
+
+      <!-- Tabela detalhada por colaborador -->
+      <div class="panel" id="vnd-table-panel" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">📋 Detalhe por Colaborador</span>
+          <span class="badge badge-blue" id="vnd-table-badge"></span>
+        </div>
+        <div class="panel-body" id="vnd-table-wrap"></div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="vnd-empty" class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">🏆</div>
+        <div class="fin-ph-title">Vendas por Colaborador</div>
+        <div class="fin-ph-desc">Carregue os arquivos exportados do EVO para ver o ranking completo de vendas</div>
+        <div class="feature-chips" style="justify-content:center;margin-top:16px">
+          <span class="chip">🏆 Quem mais vendeu</span>
+          <span class="chip">🛒 Volume por produto</span>
+          <span class="chip">💳 Pagamento por vendedor</span>
+          <span class="chip">📈 Curva no tempo</span>
+          <span class="chip">📅 Filtro mês / semana / dia</span>
+          <span class="chip">⚠️ Inadimplência excluída</span>
+        </div>
+      </div>
+    </div>
+
     <!-- ════ ABA: FIN-RECEITA ════ -->
     <div class="tab-pane" id="tab-fin-receita">
       <div class="section-header">
@@ -1333,6 +1483,7 @@ const tabMeta = {
   'fin-lucro':    { title:'Lucro & Margem',       sub:'Rentabilidade real — não apenas faturamento', fin:true },
   'fin-caixa':    { title:'Fluxo de Caixa',       sub:'Projeção de entradas e saídas', fin:true },
   'fin-pagamentos':{ title:'Formas de Pagamento', sub:'Como os alunos pagam e onde está o risco', fin:true },
+  'fin-vendas':    { title:'Vendas por Colaborador', sub:'Ranking de vendas, produtos e formas de pagamento por recepcionista', fin:true },
   retencao:       { title:'Retenção & Churn',     sub:'Quantos alunos ficam e por que saem' },
   inadimplencia:  { title:'Inadimplência',        sub:'Receita esperada que não entrou' },
   indicadores:    { title:'Indicadores',          sub:'Métricas estratégicas de longo prazo' },
@@ -1340,7 +1491,7 @@ const tabMeta = {
 };
 
 // Grupo financeiro aberto por padrão ao clicar em qualquer sub-aba financeira
-const FIN_TABS = ['fin-visao','fin-receita','fin-despesas','fin-lucro','fin-caixa','fin-pagamentos'];
+const FIN_TABS = ['fin-visao','fin-receita','fin-vendas','fin-despesas','fin-lucro','fin-caixa','fin-pagamentos'];
 
 function switchTab(tab, el) {
   // Limpa seleção
@@ -2158,6 +2309,348 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closePdf(); closeModal(null); }
 });
 
+
+// ╔══════════════════════════════════════════════════════════╗
+//  VENDAS POR COLABORADOR — parse EVO xlsx
+// ╚══════════════════════════════════════════════════════════╝
+
+// Armazenamento em memória (dois datasets)
+const vndStore = { contratos: [], produtos: [] };
+let vndPeriodo  = 'mes';
+let chartVndRank = null, chartVndPgto = null, chartVndCurva = null;
+
+// ── Normaliza forma de pagamento para grupo ──
+function normPgto(fp) {
+  const f = String(fp).toLowerCase();
+  if (f.includes('crédito') || f.includes('credito') || f.includes('online')) return 'Crédito';
+  if (f.includes('débito')  || f.includes('debito'))   return 'Débito';
+  if (f.includes('pix') || f.includes('transfer') || f.includes('depósito') || f.includes('deposito')) return 'PIX/Transf.';
+  if (f.includes('dinheiro')) return 'Dinheiro';
+  if (f === 'nenhum') return 'Nenhum';
+  return 'Outros';
+}
+
+// ── Parse do xlsx do EVO (forward-fill de colaborador) ──
+async function handleVendasUpload(evt, tipo) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  toast('Lendo arquivo…', '⏳');
+
+  try {
+    const buf  = await file.arrayBuffer();
+    const XLSX = await loadSheetJS();
+    const wb   = XLSX.read(buf, { type:'array', cellDates: true });
+    const ws   = wb.Sheets[wb.SheetNames[0]];
+    // raw: true para não converter datas
+    const raw  = XLSX.utils.sheet_to_json(ws, { header:1, defval: null, raw: false });
+
+    let colaborador = null;
+    const linhas = [];
+
+    for (const row of raw) {
+      const c0 = row[0] != null ? String(row[0]).trim() : '';
+      const c1 = row[1] != null ? String(row[1]).trim() : '';
+
+      // Linha de colaborador: col 0 contém "Colaborador:"
+      if (c0.includes('Colaborador:')) {
+        const m = c0.match(/Colaborador:\s*(.+?)\s+ID:/);
+        colaborador = m ? m[1].trim() : c0;
+        continue;
+      }
+
+      // Linha de cabeçalho ou vazia
+      if (c1 === 'Item' || c1 === '' || c1 == null) continue;
+
+      const item  = c1;
+      const desc  = row[2] != null ? String(row[2]).trim() : '';
+      const qty   = parseFloat(row[3]) || 1;
+      const valor = parseFloat(row[4]) || 0;
+      const dataRaw = row[5];
+      const pgto  = row[6] != null ? String(row[6]).trim() : '';
+
+      // Regra inadimplência: Nenhum + valor > 0 → descarta
+      if (pgto === 'Nenhum' && valor > 0) continue;
+
+      // Parse data
+      let dataObj = null;
+      if (dataRaw) {
+        // SheetJS com raw:false entrega string "YYYY-MM-DD HH:MM:SS" ou similar
+        const d = new Date(dataRaw);
+        if (!isNaN(d)) dataObj = d;
+      }
+
+      linhas.push({
+        item, desc, qty, valor,
+        data:     dataObj,
+        dataStr:  dataObj ? dataObj.toISOString().slice(0,10) : '',
+        mesKey:   dataObj ? `${dataObj.getFullYear()}-${String(dataObj.getMonth()+1).padStart(2,'0')}` : '',
+        mesLabel: dataObj ? dataObj.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}) : '',
+        diaSemana: dataObj ? dataObj.getDay() : null,
+        pgto,
+        pgtoNorm: normPgto(pgto),
+        colab:    colaborador || 'Sem colaborador',
+        tipo,
+      });
+    }
+
+    vndStore[tipo] = linhas;
+
+    // Atualizar badge
+    document.getElementById(tipo === 'contratos' ? 'vnd-badge-c' : 'vnd-badge-p').style.display = 'inline-block';
+
+    // Popular dropdown de meses e produtos
+    popularFiltros();
+    renderVendas();
+
+    toast(`${tipo === 'contratos' ? 'Contratos' : 'Produtos'}: ${linhas.length} registros carregados`, '🏆');
+
+  } catch(err) {
+    console.error(err);
+    toast('Erro: ' + err.message, '❌');
+  }
+}
+
+// ── Popular selects de mês e produto ──
+function popularFiltros() {
+  const todos = [...vndStore.contratos, ...vndStore.produtos];
+  if (!todos.length) return;
+
+  // Meses únicos ordenados
+  const meses = [...new Set(todos.map(r=>r.mesKey).filter(Boolean))].sort();
+  const selMes = document.getElementById('vnd-sel-mes');
+  selMes.innerHTML = meses.map(m => {
+    const label = todos.find(r=>r.mesKey===m)?.mesLabel || m;
+    return `<option value="${m}">${label.charAt(0).toUpperCase()+label.slice(1)}</option>`;
+  }).join('');
+  // Selecionar o mais recente por padrão
+  if (meses.length) selMes.value = meses[meses.length-1];
+
+  // Produtos únicos ordenados
+  const produtos = [...new Set(todos.map(r=>r.desc).filter(Boolean))].sort();
+  const selProd = document.getElementById('vnd-sel-produto');
+  selProd.innerHTML = '<option value="">Todos os produtos</option>' +
+    produtos.map(p=>`<option value="${p}">${p}</option>`).join('');
+
+  document.getElementById('vnd-filtros').style.display  = 'block';
+  document.getElementById('vnd-empty').style.display    = 'none';
+  document.getElementById('vnd-sub').textContent        = `${vndStore.contratos.length} contratos · ${vndStore.produtos.length} produtos/serviços`;
+}
+
+// ── Filtrar dados conforme seleção ──
+function getVndFiltered() {
+  let todos = [...vndStore.contratos, ...vndStore.produtos];
+
+  // Filtro período
+  const periodo = vndPeriodo;
+  if (periodo === 'mes') {
+    const mes = document.getElementById('vnd-sel-mes').value;
+    if (mes) todos = todos.filter(r => r.mesKey === mes);
+  } else if (periodo === 'semana') {
+    // Semana atual
+    const now = new Date();
+    const dow = now.getDay();
+    const mon = new Date(now); mon.setDate(now.getDate()-((dow+6)%7)); mon.setHours(0,0,0,0);
+    const sun = new Date(mon); sun.setDate(mon.getDate()+6); sun.setHours(23,59,59,999);
+    todos = todos.filter(r => r.data && r.data >= mon && r.data <= sun);
+  } else if (periodo === 'dia') {
+    const dia = document.getElementById('vnd-sel-dia').value;
+    if (dia !== '') todos = todos.filter(r => r.diaSemana === parseInt(dia));
+  }
+  // 'todos' = sem filtro de período
+
+  // Filtro produto
+  const prod = document.getElementById('vnd-sel-produto').value;
+  if (prod) todos = todos.filter(r => r.desc === prod);
+
+  // Filtro forma de pagamento
+  const pgto = document.getElementById('vnd-sel-pgto').value;
+  if (pgto) {
+    const pgtoMap = { credito:'Crédito', debito:'Débito', pix:'PIX/Transf.', dinheiro:'Dinheiro' };
+    const target  = pgtoMap[pgto];
+    if (target) todos = todos.filter(r => r.pgtoNorm === target);
+  }
+
+  return todos;
+}
+
+// ── Controle de período ──
+function setVndPeriodo(p) {
+  vndPeriodo = p;
+  ['mes','semana','dia','todos'].forEach(id => {
+    document.getElementById('vnd-pf-'+id).classList.toggle('active', id===p);
+  });
+  document.getElementById('vnd-sel-mes-wrap').style.display   = p==='mes'    ? 'flex' : 'none';
+  document.getElementById('vnd-sel-dia-wrap').style.display   = p==='dia'    ? 'flex' : 'none';
+  renderVendas();
+}
+
+function resetVndFiltros() {
+  document.getElementById('vnd-sel-produto').value = '';
+  document.getElementById('vnd-sel-pgto').value    = '';
+  document.getElementById('vnd-sel-dia').value     = '';
+  setVndPeriodo('mes');
+}
+
+const CORES_COLAB = ['#1e6fe8','#22c55e','#f59e0b','#7c3aed','#ef4444','#0ea5e9','#f97316','#ec4899','#14b8a6','#6b7280','#84cc16','#a855f7','#fb923c','#06b6d4','#e11d48'];
+
+// ── Render principal ──
+function renderVendas() {
+  const dados = getVndFiltered();
+
+  // ── KPIs ──
+  const total  = dados.reduce((s,r)=>s+r.valor,0);
+  const count  = dados.length;
+  const comVal = dados.filter(r=>r.valor>0);
+  const ticket = comVal.length ? comVal.reduce((s,r)=>s+r.valor,0)/comVal.length : 0;
+
+  // Ranking por colaborador
+  const colabMap = {};
+  dados.forEach(r => {
+    if (!colabMap[r.colab]) colabMap[r.colab] = { valor:0, count:0, pgtos:{} };
+    colabMap[r.colab].valor += r.valor;
+    colabMap[r.colab].count++;
+    colabMap[r.colab].pgtos[r.pgtoNorm] = (colabMap[r.colab].pgtos[r.pgtoNorm]||0) + r.valor;
+  });
+  const ranking = Object.entries(colabMap)
+    .filter(([n]) => !['SUPORTE EVO','SUPORTEEVO'].includes(n))
+    .sort((a,b)=>b[1].valor-a[1].valor);
+  const top = ranking[0];
+
+  document.getElementById('vnd-kpis').style.display      = 'grid';
+  document.getElementById('vnd-charts-1').style.display  = 'grid';
+  document.getElementById('vnd-table-panel').style.display = 'block';
+
+  document.getElementById('vnd-total').textContent      = fmtBRL(total);
+  document.getElementById('vnd-total-sub').innerHTML    = `<span style="color:var(--text-mid);font-size:12px">${count.toLocaleString('pt-BR')} transações</span>`;
+  document.getElementById('vnd-prog-total').style.width = '80%';
+  document.getElementById('vnd-top-nome').textContent   = top ? top[0].split(' ')[0] : '—';
+  document.getElementById('vnd-top-val').textContent    = top ? fmtBRL(top[1].valor) : '';
+  document.getElementById('vnd-count').textContent      = count.toLocaleString('pt-BR');
+  document.getElementById('vnd-count-sub').innerHTML    = `<span style="color:var(--text-mid);font-size:12px">registros no período</span>`;
+  document.getElementById('vnd-ticket').textContent     = fmtBRL(ticket);
+  document.getElementById('vnd-ticket-sub').innerHTML   = `<span style="color:var(--text-mid);font-size:12px">ticket médio (com valor)</span>`;
+  document.getElementById('vnd-table-badge').textContent = `${ranking.length} colaboradores`;
+
+  const nomes = ranking.map(([n])=>n);
+  const vals  = ranking.map(([,v])=>v.valor);
+  const cores = nomes.map((_,i)=>CORES_COLAB[i%CORES_COLAB.length]);
+
+  // ── Gráfico ranking ──
+  if (chartVndRank) chartVndRank.destroy();
+  chartVndRank = new Chart(document.getElementById('chart-vnd-ranking'),{
+    type:'bar',
+    data:{
+      labels: nomes,
+      datasets:[{ label:'R$ vendido', data:vals, backgroundColor:cores.map(c=>c+'cc'), borderRadius:6 }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>' '+fmtBRL(ctx.raw) } } },
+      scales:{
+        x:{ grid:{color:'rgba(0,0,0,.04)'}, ticks:{font:{family:'DM Mono',size:10}, callback:v=>'R$'+Math.round(v/1000)+'k'} },
+        y:{ grid:{display:false}, ticks:{font:{family:'DM Sans',size:11}} }
+      }
+    }
+  });
+
+  // ── Gráfico pagamento por colaborador (stacked) ──
+  const pgtoGrupos = ['Crédito','Débito','PIX/Transf.','Dinheiro','Outros'];
+  const pgtoDatasets = pgtoGrupos.map((pg,i) => ({
+    label: pg,
+    data: nomes.map(n => colabMap[n]?.pgtos[pg] || 0),
+    backgroundColor: ['#1e6fe8','#22c55e','#f59e0b','#7c3aed','#6b7280'][i],
+    borderRadius: 4,
+  }));
+
+  if (chartVndPgto) chartVndPgto.destroy();
+  chartVndPgto = new Chart(document.getElementById('chart-vnd-pgto-colab'),{
+    type:'bar',
+    data:{ labels:nomes, datasets:pgtoDatasets },
+    options:{
+      responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins:{ legend:{ position:'top', labels:{font:{family:'DM Sans',size:11},padding:10} }, tooltip:{ callbacks:{ label:ctx=>' '+ctx.dataset.label+': '+fmtBRL(ctx.raw) } } },
+      scales:{
+        x:{ stacked:true, grid:{color:'rgba(0,0,0,.04)'}, ticks:{font:{family:'DM Mono',size:10}, callback:v=>'R$'+Math.round(v/1000)+'k'} },
+        y:{ stacked:true, grid:{display:false}, ticks:{font:{family:'DM Sans',size:11}} }
+      }
+    }
+  });
+
+  // ── Curva no tempo (se produto filtrado) ──
+  const prodFiltro = document.getElementById('vnd-sel-produto').value;
+  const curvPanel  = document.getElementById('vnd-curva-panel');
+  if (prodFiltro) {
+    curvPanel.style.display = 'block';
+    document.getElementById('vnd-curva-label').textContent = prodFiltro;
+
+    const porDia = {};
+    dados.filter(r=>r.desc===prodFiltro).forEach(r=>{
+      if (!r.dataStr) return;
+      porDia[r.dataStr] = (porDia[r.dataStr]||0) + r.valor;
+    });
+    const dias  = Object.keys(porDia).sort();
+    const dVals = dias.map(d=>porDia[d]);
+
+    if (chartVndCurva) chartVndCurva.destroy();
+    chartVndCurva = new Chart(document.getElementById('chart-vnd-curva'),{
+      type:'line',
+      data:{
+        labels: dias.map(d=>new Date(d+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short'})),
+        datasets:[{ label:prodFiltro, data:dVals, borderColor:'#1e6fe8', backgroundColor:'rgba(30,111,232,.1)', tension:.3, fill:true, pointRadius:3, pointBackgroundColor:'#1e6fe8' }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>' '+fmtBRL(ctx.raw) } } },
+        scales:{
+          y:{ grid:{color:'rgba(0,0,0,.04)'}, ticks:{font:{family:'DM Mono',size:10}, callback:v=>'R$'+v} },
+          x:{ grid:{display:false}, ticks:{font:{family:'DM Sans',size:10}, maxRotation:45} }
+        }
+      }
+    });
+  } else {
+    curvPanel.style.display = 'none';
+    if (chartVndCurva) { chartVndCurva.destroy(); chartVndCurva = null; }
+  }
+
+  // ── Tabela detalhe por colaborador ──
+  const tableRows = ranking.map(([nome, v], i) => {
+    const cor   = CORES_COLAB[i%CORES_COLAB.length];
+    const pct   = total ? ((v.valor/total)*100).toFixed(1) : '0';
+    const pgtos = Object.entries(v.pgtos).filter(([,val])=>val>0).sort((a,b)=>b[1]-a[1]);
+    const pgtoStr = pgtos.slice(0,3).map(([pg,val])=>`<span class="badge badge-blue" style="font-size:10px">${pg}: ${fmtBRL(val)}</span>`).join(' ');
+
+    return `<tr>
+      <td style="padding:11px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:10px;height:10px;border-radius:50%;background:${cor};flex-shrink:0"></div>
+          <span style="font-weight:700;font-size:13px">${nome}</span>
+        </div>
+      </td>
+      <td style="padding:11px 14px;font-size:12px;color:var(--text-mid)">${v.count.toLocaleString('pt-BR')} transações</td>
+      <td style="padding:11px 14px">${pgtoStr}</td>
+      <td style="padding:11px 14px">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div style="width:60px;height:6px;background:var(--border);border-radius:99px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${cor};border-radius:99px"></div>
+          </div>
+          <span style="font-size:11px;color:var(--text-light)">${pct}%</span>
+        </div>
+      </td>
+      <td style="padding:11px 14px;font-family:var(--mono);font-weight:800;color:var(--green);font-size:14px;text-align:right">${fmtBRL(v.valor)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('vnd-table-wrap').innerHTML = `
+    <div class="table-wrapper">
+      <table>
+        <thead><tr>
+          <th>Colaborador</th><th>Transações</th><th>Formas de Pagamento</th><th style="min-width:100px">%</th><th style="text-align:right">Total Vendido</th>
+        </tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`;
+}
+
 // ╔══════════════════════════════════════════════════════════╗
 //  ABA: RECEITA — leitura do arquivo CAIXA (xlsx disfarçado)
 // ╚══════════════════════════════════════════════════════════╝
@@ -2205,59 +2698,64 @@ async function handleReceitaUpload(evt) {
   toast('Lendo arquivo…', '⏳');
 
   try {
-    // Usar SheetJS para ler xlsx
-    const buf = await file.arrayBuffer();
+    const buf  = await file.arrayBuffer();
     const XLSX = await loadSheetJS();
     const wb   = XLSX.read(buf, { type:'array' });
 
-    // Procura aba CAIXA (case-insensitive)
-    const sheetName = wb.SheetNames.find(n => n.toUpperCase() === 'CAIXA') || wb.SheetNames[0];
-    const ws   = wb.Sheets[sheetName];
-    const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+    // ── Lê aba RESUMO (totais já calculados pelo sistema) ──
+    const resumoName = wb.SheetNames.find(n => n.toUpperCase() === 'RESUMO') || null;
+    let resumoData   = null;
+    if (resumoName) {
+      const wsR  = wb.Sheets[resumoName];
+      const rowsR = XLSX.utils.sheet_to_json(wsR, { header:1, defval:'' });
+      // Formato: [['FORMA DE PAGAMENTO','VALOR'], ['Dinheiro','18.589,29'], ...]
+      resumoData = {};
+      rowsR.slice(1).forEach(r => {
+        const forma = String(r[0]).trim();
+        const val   = parseValBRL(r[1]);
+        if (forma && forma !== 'Total' && forma !== 'Sem recebimento' && forma !== 'Abertura do caixa') {
+          resumoData[forma] = val;
+        }
+        if (forma === 'Total') resumoData['__total__'] = val;
+      });
+    }
 
-    // Colunas esperadas
+    // ── Lê aba CAIXA (lançamentos detalhados) ──
+    const caixaName = wb.SheetNames.find(n => n.toUpperCase() === 'CAIXA') || wb.SheetNames[0];
+    const wsC  = wb.Sheets[caixaName];
+    const rowsC = XLSX.utils.sheet_to_json(wsC, { defval: '' });
+
     const COL = {
-      LANCAMENTO: 'LANÇAMENTO',
-      TIPO:       'TIPO',
-      ID:         'ID CLIENTE',
-      NOME:       'NOME',
-      PGTO:       'FORMAS DE PAGAMENTO',
-      DESC:       'DESCRIÇÃO',
-      VENCIMENTO: 'VENCIMENTO',
-      COLABORADOR:'COLABORADOR',
-      DATA_VENDA: 'DATA DA VENDA',
-      ID_VENDA:   'ID DA VENDA',
-      VENDA:      'VENDA',
-      VALOR:      'VALOR',
-      EXCLUIDA:   'VENDA EXCLUÍDA',
-      CANCELADO:  'RECEBIMENTO CANCELADO',
+      TIPO:'TIPO', NOME:'NOME', PGTO:'FORMAS DE PAGAMENTO',
+      DATA_VENDA:'DATA DA VENDA', LANCAMENTO:'LANÇAMENTO',
+      VENDA:'VENDA', VALOR:'VALOR',
+      EXCLUIDA:'VENDA EXCLUÍDA', CANCELADO:'RECEBIMENTO CANCELADO',
     };
 
-    // Filtrar recebimentos válidos
-    const validos = rows.filter(r =>
-      r[COL.TIPO]      === 'Recebimento' &&
-      r[COL.EXCLUIDA]  !== 'Sim' &&
-      r[COL.CANCELADO] !== 'Sim'
+    // Recebimentos válidos para tabela de lançamentos
+    const validos = rowsC.filter(r =>
+      r[COL.TIPO]     === 'Recebimento' &&
+      r[COL.EXCLUIDA] !== 'Sim' &&
+      r[COL.CANCELADO]!== 'Sim'
     ).map(r => ({
-      lancamento: r[COL.LANCAMENTO],
-      nome:       r[COL.NOME],
-      pgto:       r[COL.PGTO],
-      data:       extractDate(r[COL.DATA_VENDA] || r[COL.LANCAMENTO]),
-      venda:      r[COL.VENDA],
-      valor:      parseValBRL(r[COL.VALOR]),
-      cat:        catVenda(r[COL.VENDA]),
-      catPgto:    catPgto(r[COL.PGTO]),
-      colaborador:r[COL.COLABORADOR],
+      data:    extractDate(r[COL.DATA_VENDA] || r[COL.LANCAMENTO]),
+      nome:    r[COL.NOME],
+      venda:   r[COL.VENDA],
+      pgto:    r[COL.PGTO],
+      valor:   parseValBRL(r[COL.VALOR]),
+      cat:     catVenda(r[COL.VENDA]),
+      catPgto: catPgto(r[COL.PGTO]),
     }));
 
-    if (!validos.length) {
-      toast('Nenhum recebimento válido encontrado', '⚠️');
+    if (!validos.length && !resumoData) {
+      toast('Nenhum dado encontrado no arquivo', '⚠️');
       return;
     }
 
     receitaData = validos;
-    renderReceita(validos, file.name);
-    toast(`${validos.length} recebimentos carregados — R$ ${fmtBRL(validos.reduce((s,r)=>s+r.valor,0)).replace('R$ ','')}`, '💚');
+    renderReceita(validos, resumoData, file.name);
+    const totalExibido = resumoData ? resumoData['__total__'] : validos.reduce((s,r)=>s+r.valor,0);
+    toast(`Caixa carregado — ${validos.length} lançamentos | Total: ${fmtBRL(totalExibido)}`, '💚');
 
   } catch(err) {
     console.error(err);
@@ -2279,78 +2777,94 @@ function loadSheetJS() {
 
 const PALETTE_REC = ['#22c55e','#1e6fe8','#f59e0b','#7c3aed','#ef4444','#0ea5e9','#f97316'];
 
-function renderReceita(data, fileName) {
-  const total  = data.reduce((s,r) => s+r.valor, 0);
-  const count  = data.length;
-  const ticket = count ? total/count : 0;
+function renderReceita(data, resumo, fileName) {
+  // ── Totais: usa RESUMO se disponível (fonte de verdade = sistema) ──
+  const totalSistema = resumo ? (resumo['__total__'] || 0) : data.reduce((s,r)=>s+r.valor,0);
+  const count        = data.length;
+  const comValor     = data.filter(r=>r.valor>0);
+  const ticket       = comValor.length ? comValor.reduce((s,r)=>s+r.valor,0)/comValor.length : 0;
 
-  // Agrupar por canal
+  // ── Grupos de pagamento (da aba RESUMO) ──
+  let canalPgto, topPgto;
+  if (resumo) {
+    // Mapear formas do RESUMO para grupos exibidos
+    const grupos = {
+      'Dinheiro':         (resumo['Dinheiro']||0),
+      'Cheque':           (resumo['Cheque á vista']||0) + (resumo['Cheque pré-datado']||0),
+      'Cartão Crédito':   (resumo['Cartão de crédito']||0) + (resumo['Transação online']||0),
+      'Cartão Débito':    (resumo['Cartão de débito']||0),
+      'PIX / Transf.':    (resumo['Transferência']||0),
+      'Boleto':           (resumo['Boleto']||0),
+    };
+    canalPgto = Object.entries(grupos).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
+  } else {
+    const pgtoMap = {};
+    data.forEach(r => { pgtoMap[r.catPgto]=(pgtoMap[r.catPgto]||0)+r.valor; });
+    canalPgto = Object.entries(pgtoMap).sort((a,b)=>b[1]-a[1]);
+  }
+  topPgto = canalPgto[0];
+
+  // ── Canal por tipo de venda (da aba CAIXA) ──
   const canalMap = {};
-  data.forEach(r => { canalMap[r.cat] = (canalMap[r.cat]||0) + r.valor; });
-  const canais = Object.entries(canalMap).sort((a,b)=>b[1]-a[1]);
-
-  // Agrupar por forma de pagamento
-  const pgtoMap = {};
-  data.forEach(r => { pgtoMap[r.catPgto] = (pgtoMap[r.catPgto]||0) + r.valor; });
-  const pgtos = Object.entries(pgtoMap).sort((a,b)=>b[1]-a[1]);
-
+  data.forEach(r => { canalMap[r.cat]=(canalMap[r.cat]||0)+r.valor; });
+  const canais = Object.entries(canalMap).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]);
   const topCanal = canais[0];
 
   // Detectar período
-  const datas = data.map(r => r.data).filter(Boolean);
+  const datas   = data.map(r=>r.data).filter(Boolean);
   const periodo = datas.length ? `${datas[datas.length-1]} – ${datas[0]}` : fileName;
 
   // ── KPIs ──
-  document.getElementById('rec-total').textContent     = fmtBRL(total);
-  document.getElementById('rec-total-sub').innerHTML   = `<span class="delta-up">▲ ${count.toLocaleString('pt-BR')} transações válidas</span>`;
+  document.getElementById('rec-total').textContent     = fmtBRL(totalSistema);
+  document.getElementById('rec-total-sub').innerHTML   = `<span class="delta-up">▲ fonte: aba RESUMO do sistema</span>`;
   document.getElementById('rec-prog').style.width      = '85%';
   document.getElementById('rec-count').textContent     = count.toLocaleString('pt-BR');
-  document.getElementById('rec-count-sub').innerHTML   = `<span style="color:var(--text-mid);font-size:12px">recebimentos no período</span>`;
+  document.getElementById('rec-count-sub').innerHTML   = `<span style="color:var(--text-mid);font-size:12px">recebimentos válidos</span>`;
   document.getElementById('rec-ticket').textContent    = fmtBRL(ticket);
-  document.getElementById('rec-ticket-sub').innerHTML  = `<span style="color:var(--text-mid);font-size:12px">por transação</span>`;
-  document.getElementById('rec-top-canal').textContent = topCanal ? topCanal[0] : '—';
-  document.getElementById('rec-top-val').textContent   = topCanal ? fmtBRL(topCanal[1]) : '';
+  document.getElementById('rec-ticket-sub').innerHTML  = `<span style="color:var(--text-mid);font-size:12px">ticket médio (com valor)</span>`;
+  document.getElementById('rec-top-canal').textContent = topPgto ? topPgto[0] : '—';
+  document.getElementById('rec-top-val').textContent   = topPgto ? fmtBRL(topPgto[1]) : '';
 
-  // ── Mostrar seções ──
-  document.getElementById('rec-kpis').style.display           = 'grid';
-  document.getElementById('rec-charts').style.display         = 'grid';
-  document.getElementById('rec-canal-panel').style.display    = 'block';
+  // Mostrar seções
+  document.getElementById('rec-kpis').style.display              = 'grid';
+  document.getElementById('rec-charts').style.display            = 'grid';
+  document.getElementById('rec-canal-panel').style.display       = 'block';
   document.getElementById('rec-lancamentos-panel').style.display = 'block';
-  document.getElementById('rec-empty').style.display          = 'none';
-  document.getElementById('rec-badge').style.display          = 'inline-block';
-  document.getElementById('rec-sub').textContent              = `Arquivo: ${fileName}`;
-  document.getElementById('rec-periodo-badge').textContent    = periodo;
-  document.getElementById('rec-count-badge').textContent      = `${count} registros`;
+  document.getElementById('rec-empty').style.display             = 'none';
+  document.getElementById('rec-badge').style.display             = 'inline-block';
+  document.getElementById('rec-sub').textContent                 = `Arquivo: ${fileName}`;
+  document.getElementById('rec-periodo-badge').textContent       = periodo;
+  document.getElementById('rec-count-badge').textContent         = `${count} registros`;
 
-  // ── Gráfico canal ──
+  // ── Gráfico canal (tipo de venda — aba CAIXA) ──
   if (chartRecCanal) chartRecCanal.destroy();
   chartRecCanal = new Chart(document.getElementById('chart-rec-canal'), {
-    type: 'doughnut',
-    data: {
+    type:'doughnut',
+    data:{
       labels: canais.map(([k])=>k),
-      datasets: [{ data: canais.map(([,v])=>v), backgroundColor: canais.map((_,i)=>PALETTE_REC[i%PALETTE_REC.length]), borderWidth:2, borderColor:'#fff', hoverOffset:6 }]
+      datasets:[{ data:canais.map(([,v])=>v), backgroundColor:canais.map((_,i)=>PALETTE_REC[i%PALETTE_REC.length]), borderWidth:2, borderColor:'#fff', hoverOffset:6 }]
     },
-    options: {
+    options:{
       responsive:true, maintainAspectRatio:false,
       plugins:{
-        legend:{ position:'right', labels:{ font:{family:'DM Sans',size:11}, padding:10 } },
-        tooltip:{ callbacks:{ label: ctx => ' ' + fmtBRL(ctx.raw) } }
+        legend:{ position:'right', labels:{font:{family:'DM Sans',size:11},padding:10} },
+        tooltip:{ callbacks:{ label: ctx=>' '+fmtBRL(ctx.raw) } }
       },
       cutout:'66%'
     }
   });
 
-  // ── Gráfico pagamento ──
+  // ── Gráfico pagamento (da aba RESUMO) ──
   if (chartRecPgto) chartRecPgto.destroy();
   chartRecPgto = new Chart(document.getElementById('chart-rec-pgto'), {
-    type: 'bar',
-    data: {
-      labels: pgtos.map(([k])=>k),
-      datasets: [{ label:'Receita', data: pgtos.map(([,v])=>v), backgroundColor: pgtos.map((_,i)=>PALETTE_REC[i%PALETTE_REC.length]+'cc'), borderRadius:6 }]
+    type:'bar',
+    data:{
+      labels: canalPgto.map(([k])=>k),
+      datasets:[{ label:'Receita', data:canalPgto.map(([,v])=>v), backgroundColor:canalPgto.map((_,i)=>PALETTE_REC[i%PALETTE_REC.length]+'cc'), borderRadius:6 }]
     },
-    options: {
+    options:{
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display:false }, tooltip:{ callbacks:{ label: ctx=>' '+fmtBRL(ctx.raw) } } },
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label:ctx=>' '+fmtBRL(ctx.raw) } } },
       scales:{
         y:{ grid:{color:'rgba(0,0,0,.04)'}, ticks:{font:{family:'DM Mono',size:10}, callback:v=>'R$'+Math.round(v/1000)+'k'} },
         x:{ grid:{display:false}, ticks:{font:{family:'DM Sans',size:12}} }
@@ -2358,11 +2872,12 @@ function renderReceita(data, fileName) {
     }
   });
 
-  // ── Tabela canal ──
+  // ── Tabela canal (tipos de venda) ──
+  const totalCanais = canais.reduce((s,[,v])=>s+v,0);
   const canalRows = canais.map(([cat,val],i) => {
-    const pct   = total ? ((val/total)*100).toFixed(1) : '0';
-    const color = PALETTE_REC[i%PALETTE_REC.length];
-    const count = data.filter(r=>r.cat===cat).length;
+    const pct    = totalCanais ? ((val/totalCanais)*100).toFixed(1) : '0';
+    const color  = PALETTE_REC[i%PALETTE_REC.length];
+    const qtd    = data.filter(r=>r.cat===cat).length;
     return `<tr>
       <td style="padding:10px 14px">
         <div style="display:flex;align-items:center;gap:8px">
@@ -2370,7 +2885,7 @@ function renderReceita(data, fileName) {
           <span style="font-weight:600;font-size:13px">${cat}</span>
         </div>
       </td>
-      <td style="padding:10px 14px;font-size:12px;color:var(--text-mid)">${count} transações</td>
+      <td style="padding:10px 14px;font-size:12px;color:var(--text-mid)">${qtd} transações</td>
       <td style="padding:10px 14px">
         <div style="display:flex;align-items:center;gap:8px">
           <div style="flex:1;height:8px;background:var(--border);border-radius:99px;overflow:hidden">
@@ -2383,21 +2898,43 @@ function renderReceita(data, fileName) {
     </tr>`;
   }).join('');
 
+  // Tabela resumo pagamento (da aba RESUMO — valores do sistema)
+  const pgtoRows = canalPgto.map(([forma,val]) => {
+    const pct = totalSistema ? ((val/totalSistema)*100).toFixed(1) : '0';
+    return `<tr>
+      <td style="padding:8px 14px;font-size:13px;font-weight:600">${forma}</td>
+      <td style="padding:8px 14px;font-size:11px;color:var(--text-light)">${pct}%</td>
+      <td style="padding:8px 14px;font-family:var(--mono);font-weight:700;color:var(--green);text-align:right">${fmtBRL(val)}</td>
+    </tr>`;
+  }).join('');
+
   document.getElementById('rec-canal-table').innerHTML = `
-    <div class="table-wrapper">
-      <table>
-        <thead><tr>
-          <th>Canal</th><th>Transações</th><th style="min-width:160px">Participação</th><th style="text-align:right">Receita</th>
-        </tr></thead>
-        <tbody>${canalRows}</tbody>
-      </table>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Por Tipo de Venda</div>
+        <div class="table-wrapper">
+          <table><thead><tr><th>Canal</th><th>Qtd</th><th style="min-width:120px">%</th><th style="text-align:right">Receita</th></tr></thead>
+          <tbody>${canalRows}</tbody></table>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Por Forma de Pagamento <span style="background:#dcfce7;color:#166534;font-size:10px;padding:1px 7px;border-radius:99px;font-weight:700;margin-left:4px">● Sistema</span></div>
+        <div class="table-wrapper">
+          <table><thead><tr><th>Forma</th><th>%</th><th style="text-align:right">Valor</th></tr></thead>
+          <tbody>${pgtoRows}</tbody></table>
+        </div>
+        <div style="padding:10px 14px;border-top:2px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:12px;font-weight:700;color:var(--text-dark)">Total do Sistema</span>
+          <span style="font-family:var(--mono);font-size:15px;font-weight:800;color:var(--green)">${fmtBRL(totalSistema)}</span>
+        </div>
+      </div>
     </div>`;
 
-  // ── Tabela lançamentos (últimos 100, com valor > 0) ──
-  const comValor = data.filter(r=>r.valor>0).sort((a,b)=>b.valor-a.valor).slice(0,100);
-  const lancRows = comValor.map(r => `<tr>
+  // ── Tabela lançamentos (top 100 por valor) ──
+  const top100 = comValor.sort((a,b)=>b.valor-a.valor).slice(0,100);
+  const lancRows = top100.map(r=>`<tr>
     <td style="font-family:var(--mono);font-size:11px;color:var(--text-mid);white-space:nowrap">${r.data}</td>
-    <td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.nome||'—'}</td>
+    <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.nome||'—'}</td>
     <td style="font-size:11px;color:var(--text-mid);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.venda||'—'}</td>
     <td><span class="badge badge-blue" style="font-size:10px">${r.cat}</span></td>
     <td><span class="badge badge-purple" style="font-size:10px">${r.catPgto}</span></td>
@@ -2407,61 +2944,11 @@ function renderReceita(data, fileName) {
   document.getElementById('rec-table-wrap').innerHTML = `
     <div class="table-wrapper">
       <table>
-        <thead><tr>
-          <th>Data</th><th>Cliente</th><th>Produto / Plano</th><th>Canal</th><th>Pagamento</th><th style="text-align:right">Valor</th>
-        </tr></thead>
+        <thead><tr><th>Data</th><th>Cliente</th><th>Produto / Plano</th><th>Canal</th><th>Pagamento</th><th style="text-align:right">Valor</th></tr></thead>
         <tbody>${lancRows}</tbody>
       </table>
     </div>
-    ${data.filter(r=>r.valor>0).length > 100 ? `<div style="text-align:center;padding:12px;font-size:12px;color:var(--text-light)">Exibindo os 100 maiores lançamentos</div>` : ''}`;
+    ${comValor.length>100?`<div style="text-align:center;padding:12px;font-size:12px;color:var(--text-light)">Exibindo os 100 maiores — total de ${comValor.length} lançamentos com valor</div>`:''}`;
 }
 
-document.getElementById('topbar-date').textContent =
-  new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
 
-// ── AUTO-REFRESH a cada 1 hora ──
-const REFRESH_INTERVAL_MS = 60 * 60 * 1000; // 1 hora
-let nextRefreshAt = null;
-let refreshTimer  = null;
-let countdownTimer = null;
-
-function startAutoRefresh() {
-  // Cancela timers anteriores se houver
-  if (refreshTimer)   clearTimeout(refreshTimer);
-  if (countdownTimer) clearInterval(countdownTimer);
-
-  nextRefreshAt = Date.now() + REFRESH_INTERVAL_MS;
-
-  // Atualiza o label de countdown a cada segundo
-  countdownTimer = setInterval(() => {
-    const remaining = nextRefreshAt - Date.now();
-    if (remaining <= 0) { updateNextLabel('Atualizando…'); return; }
-    const m = Math.floor(remaining / 60000);
-    const s = Math.floor((remaining % 60000) / 1000);
-    updateNextLabel(`Próx. atualização em ${m}:${String(s).padStart(2,'0')}`);
-  }, 1000);
-
-  // Dispara o refresh após 1 hora
-  refreshTimer = setTimeout(() => {
-    if (finLoaded) loadFinanceiro(false);
-    startAutoRefresh(); // reagenda
-  }, REFRESH_INTERVAL_MS);
-}
-
-function updateNextLabel(text) {
-  const el = document.getElementById('next-update-label');
-  if (el) el.textContent = text;
-}
-
-// Inicia o ciclo de auto-refresh ao carregar a página
-startAutoRefresh();
-
-// Reinicia o countdown quando o usuário atualiza manualmente
-const _origLoad = loadFinanceiro;
-loadFinanceiro = async function(force) {
-  await _origLoad(force);
-  if (force) startAutoRefresh(); // reseta o timer ao clicar em Atualizar
-};
-</script>
-</body>
-</html>
