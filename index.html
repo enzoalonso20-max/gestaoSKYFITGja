@@ -8,6 +8,8 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -923,35 +925,146 @@
     <!-- ════ ABA: AGREGADORES ════ -->
     <div class="tab-pane" id="tab-agregadores">
       <div class="section-header">
-        <div><div class="section-title">Agregadores</div><div class="section-sub">Wellhub e TotalPass — importação separada</div></div>
-      </div>
-      <div class="cards-grid" style="margin-bottom:24px">
-        <div class="kpi-card"><div class="kpi-icon" style="color:#ff6b35;opacity:.8">W</div><div class="kpi-label">Registros Wellhub</div><div class="kpi-value" id="kpi-wh-count">—</div><div class="kpi-delta"><span style="color:var(--text-light);font-size:12px">Aguardando upload</span></div></div>
-        <div class="kpi-card"><div class="kpi-icon" style="color:#7c3aed;opacity:.8">T</div><div class="kpi-label">Registros TotalPass</div><div class="kpi-value" id="kpi-tp-count">—</div><div class="kpi-delta"><span style="color:var(--text-light);font-size:12px">Aguardando upload</span></div></div>
-        <div class="kpi-card green"><div class="kpi-icon">👥</div><div class="kpi-label">Total Combinado</div><div class="kpi-value" id="kpi-agg-total">—</div><div class="kpi-delta"><span style="color:var(--text-light);font-size:12px">Soma dos agregadores</span></div></div>
-      </div>
-      <div class="agg-grid">
-        <div class="agg-card">
-          <div class="agg-header">
-            <div class="agg-logo wh">W</div><div class="agg-name">Wellhub</div>
-            <div style="margin-left:auto"><label for="upload-wellhub" class="btn btn-wellhub">⬆️ Upload</label><input type="file" id="upload-wellhub" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleAggUpload(event,'wellhub')"></div>
-          </div>
-          <div class="agg-body"><div id="wellhub-table-wrap"><div class="empty-state" style="padding:28px 12px"><div class="empty-icon" style="font-size:28px">📋</div><div class="empty-title" style="font-size:13px">Sem dados Wellhub</div><div class="empty-desc" style="font-size:12px">Faça upload do relatório</div></div></div></div>
+        <div>
+          <div class="section-title">🔗 Agregadores</div>
+          <div class="section-sub" id="agg-sub">Carregando dados do Google Sheets…</div>
         </div>
-        <div class="agg-card">
-          <div class="agg-header">
-            <div class="agg-logo tp">T</div><div class="agg-name">TotalPass</div>
-            <div style="margin-left:auto"><label for="upload-totalpass" class="btn btn-totalpass">⬆️ Upload</label><input type="file" id="upload-totalpass" accept=".csv,.xlsx,.xls" style="display:none" onchange="handleAggUpload(event,'totalpass')"></div>
-          </div>
-          <div class="agg-body"><div id="totalpass-table-wrap"><div class="empty-state" style="padding:28px 12px"><div class="empty-icon" style="font-size:28px">📋</div><div class="empty-title" style="font-size:13px">Sem dados TotalPass</div><div class="empty-desc" style="font-size:12px">Faça upload do relatório</div></div></div></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-secondary" onclick="loadAgregadores(true)">🔄 Atualizar</button>
+          <button class="btn btn-primary" id="agg-btn-pdf" onclick="exportarAgregadoresPDF()" style="display:none">📄 Baixar PDF</button>
+          <span class="badge badge-green" id="agg-badge" style="display:none">● Google Sheets</span>
         </div>
       </div>
-      <div class="panel">
-        <div class="panel-header"><span class="panel-title">🔄 Consolidado (Futuro)</span><span class="badge badge-amber">Em breve</span></div>
-        <div class="panel-body"><div class="empty-state" style="padding:28px"><div class="empty-icon">🧩</div><div class="empty-title">Consolidação automática</div><div class="empty-desc">Após o upload de ambos os agregadores, será exibido um relatório unificado</div></div></div>
+
+      <!-- FILTROS -->
+      <div class="panel" id="agg-filtros" style="display:none">
+        <div class="panel-body" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label class="filter-label">Ano</label>
+            <select id="agg-sel-ano" onchange="renderAgregadores()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label class="filter-label">Mês</label>
+            <select id="agg-sel-mes" onchange="renderAgregadores()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label class="filter-label">Agregador</label>
+            <select id="agg-sel-agr" onchange="renderAgregadores()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" onclick="resetAggFiltros()">🔄 Limpar</button>
+        </div>
+      </div>
+
+      <!-- KPIs estratégicos -->
+      <div class="cards-grid" id="agg-kpis" style="display:none">
+        <div class="kpi-card green">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-label">Faturamento Total</div>
+          <div class="kpi-value" id="agg-fat">—</div>
+          <div class="kpi-delta" id="agg-fat-sub"></div>
+          <div class="progress-bar"><div class="progress-fill" id="agg-fat-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-label">Valor Médio / Visita</div>
+          <div class="kpi-value" id="agg-vmv">—</div>
+          <div class="kpi-delta" id="agg-vmv-sub"></div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-icon">🎟️</div>
+          <div class="kpi-label">Ticket Médio Mensal</div>
+          <div class="kpi-value" id="agg-tmm">—</div>
+          <div class="kpi-delta" id="agg-tmm-sub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">🏃</div>
+          <div class="kpi-label">Frequência Média</div>
+          <div class="kpi-value" id="agg-freq">—</div>
+          <div class="kpi-delta" id="agg-freq-sub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-label">Usuários Únicos</div>
+          <div class="kpi-value" id="agg-users">—</div>
+          <div class="kpi-delta" id="agg-users-sub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">📋</div>
+          <div class="kpi-label">Check-ins</div>
+          <div class="kpi-value" id="agg-checkins">—</div>
+          <div class="kpi-delta" id="agg-checkins-sub"></div>
+        </div>
+        <div class="kpi-card" id="agg-mom-card">
+          <div class="kpi-icon">📈</div>
+          <div class="kpi-label">Crescimento MoM</div>
+          <div class="kpi-value" id="agg-mom">—</div>
+          <div class="kpi-delta" id="agg-mom-sub"></div>
+        </div>
+      </div>
+
+      <!-- Gráficos -->
+      <div class="chart-grid" id="agg-charts-1" style="display:none">
+        <div class="panel" style="grid-column:1/-1">
+          <div class="panel-header"><span class="panel-title">📈 Evolução do Faturamento por Agregador</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="chart-agg-fat"></canvas></div></div>
+        </div>
+      </div>
+      <div class="chart-grid" id="agg-charts-2" style="display:none">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">🏃 Check-ins por Mês</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-agg-checkins"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">💰 Valor Médio / Visita</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-agg-vmv"></canvas></div></div>
+        </div>
+      </div>
+      <div class="chart-grid" id="agg-charts-3" style="display:none">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">🍩 Participação por Agregador</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-agg-pie"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">🎟️ Ticket Médio Mensal</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-agg-ticket"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- Resumo estratégico automático -->
+      <div class="panel" id="agg-resumo-panel" style="display:none">
+        <div class="panel-header"><span class="panel-title">🧠 Resumo Estratégico</span></div>
+        <div class="panel-body" id="agg-resumo-body" style="font-size:14px;line-height:1.7;color:var(--text-dark)"></div>
+      </div>
+
+      <!-- Tabela detalhada -->
+      <div class="panel" id="agg-table-panel" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">📋 Dados Detalhados</span>
+          <span class="badge badge-green" id="agg-table-badge">● Google Sheets</span>
+        </div>
+        <div class="panel-body" id="agg-table-wrap"></div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="agg-empty" class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">🔗</div>
+        <div class="fin-ph-title">Agregadores</div>
+        <div class="fin-ph-desc">Os dados serão carregados automaticamente via Google Sheets (aba Agregadores)</div>
+        <div class="feature-chips" style="justify-content:center;margin-top:16px">
+          <span class="chip">💰 Valor médio por visita</span>
+          <span class="chip">🎟️ Ticket médio mensal</span>
+          <span class="chip">🏃 Frequência média</span>
+          <span class="chip">📈 Crescimento MoM</span>
+          <span class="chip">🔍 Filtro por ano · mês · agregador</span>
+        </div>
       </div>
     </div>
-
     <!-- ════ ABA: FINANCEIRO ════ -->
     <!-- ════ ABA: FIN-FATURAMENTO ════ -->
     <div class="tab-pane" id="tab-fin-faturamento">
@@ -960,8 +1073,9 @@
           <div class="section-title">📈 Faturamento Geral</div>
           <div class="section-sub" id="fat-sub">Carregando dados do Google Sheets…</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <button class="btn btn-secondary" onclick="loadFaturamento(true)">🔄 Atualizar</button>
+          <button class="btn btn-primary" id="fat-btn-pdf" onclick="exportarFaturamentoPDF()" style="display:none">📄 Baixar PDF</button>
           <span class="badge badge-green" id="fat-badge" style="display:none">● Google Sheets</span>
         </div>
       </div>
@@ -1400,7 +1514,7 @@
           <div class="kpi-delta" id="det-total-sub"></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-icon">🛒</div><div class="kpi-label">Unidades Vendidas</div>
+          <div class="kpi-icon">🛒</div><div class="kpi-label">Vendas Únicas</div>
           <div class="kpi-value" id="det-qty">—</div>
           <div class="kpi-delta" id="det-qty-sub"></div>
         </div>
@@ -1877,7 +1991,7 @@ function toast(msg, icon='✅') {
 // ╚══════════════════════════════════════════════════════════╝
 const tabMeta = {
   vendas:         { title:'Vendas',              sub:'Análise de vendas e desempenho comercial' },
-  agregadores:    { title:'Agregadores',          sub:'Wellhub e TotalPass -- importação de relatórios' },
+  agregadores:    { title:'Agregadores',          sub:'TotalPass · Gympass · Wellhub — via Google Sheets' },
   'fin-visao':    { title:'Visão Geral',          sub:'Saúde financeira da unidade em tempo real', fin:true },
   'fin-receita':  { title:'Receita',              sub:'Origem, composição e evolução da receita', fin:true },
   'fin-despesas': { title:'Despesas',             sub:'Despesas reais via Google Sheets', fin:true },
@@ -1937,6 +2051,7 @@ function switchTab(tab, el) {
     }
   } else {
     pf.classList.remove('show');
+    if (tab === 'agregadores' && !aggLoaded) loadAgregadores(false);
   }
 
   syncBottomNav(tab);
@@ -2487,19 +2602,19 @@ function handleVendasUpload(evt) {
 }
 
 // ╔══════════════════════════════════════════════════════════╗
-//  ABA: AGREGADORES
+//  ABA: AGREGADORES (upload legado — mantido para compatibilidade)
 // ╚══════════════════════════════════════════════════════════╝
-const aggData = { wellhub:null, totalpass:null };
+const aggLegacy = { wellhub:null, totalpass:null };
 
 function handleAggUpload(evt, src) {
   const file = evt.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
     const { headers, rows } = parseCSV(e.target.result);
-    aggData[src] = { headers, rows };
+    aggLegacy[src] = { headers, rows };
     renderTable(document.getElementById(src==='wellhub'?'wellhub-table-wrap':'totalpass-table-wrap'), headers, rows, 50);
-    const wn = aggData.wellhub?.rows.length  ?? null;
-    const tn = aggData.totalpass?.rows.length ?? null;
+    const wn = aggLegacy.wellhub?.rows.length  ?? null;
+    const tn = aggLegacy.totalpass?.rows.length ?? null;
     document.getElementById('kpi-wh-count').textContent  = wn!==null ? wn.toLocaleString('pt-BR') : '--';
     document.getElementById('kpi-tp-count').textContent  = tn!==null ? tn.toLocaleString('pt-BR') : '--';
     if (wn!==null && tn!==null) document.getElementById('kpi-agg-total').textContent = (wn+tn).toLocaleString('pt-BR');
@@ -2809,7 +2924,10 @@ function parseCaixaRow(row) {
     turno = 'Automático (00h)';
   }
 
-  return {colab:colabFinal,colabOriginal:colab,dt,dataStr,mesKey,mesLabel,diaSemana,hora,turno,semanaKey,semanaLabel,item,desc,valor,pgto,pgtoNorm,tipo,qty:1};
+  // idVenda para contar transações únicas (ticket médio correto)
+  const idVenda = String(row['ID DA VENDA']||'').trim();
+
+  return {colab:colabFinal,colabOriginal:colab,dt,dataStr,mesKey,mesLabel,diaSemana,hora,turno,semanaKey,semanaLabel,item,desc,valor,pgto,pgtoNorm,tipo,qty:1,idVenda};
 }
 
 function handleCaixaUpload(evt) {
@@ -2969,7 +3087,11 @@ function renderVendas() {
   const total=dados.reduce((s,r)=>s+r.valor,0);
   const count=dados.length;
   const comVal=dados.filter(r=>r.valor>0);
-  const ticket=comVal.length?comVal.reduce((s,r)=>s+r.valor,0)/comVal.length:0;
+  // Ticket Médio correto: receita total / vendas únicas (IDs distintos)
+  // Cada ID pode ter múltiplas linhas (parcelas, multi-item) mas é 1 venda
+  const idsUnicos=new Set(comVal.map(r=>r.idVenda).filter(Boolean));
+  const nVendasUnicas=idsUnicos.size||comVal.length; // fallback se idVenda ausente
+  const ticket=nVendasUnicas?comVal.reduce((s,r)=>s+r.valor,0)/nVendasUnicas:0;
 
   const colabMap={};
   dados.forEach(r=>{if(!colabMap[r.colab])colabMap[r.colab]={valor:0,count:0,pgtos:{}};colabMap[r.colab].valor+=r.valor;colabMap[r.colab].count++;colabMap[r.colab].pgtos[r.pgtoNorm]=(colabMap[r.colab].pgtos[r.pgtoNorm]||0)+r.valor;});
@@ -2989,9 +3111,10 @@ function renderVendas() {
   document.getElementById('vnd-top-label').textContent='Top Vendedor';
   document.getElementById('vnd-top-nome').textContent=top?top[0].split(' ')[0]:'--';
   document.getElementById('vnd-top-val').textContent=top?fmtBRL(top[1].valor):'';
-  document.getElementById('vnd-count').textContent=count.toLocaleString('pt-BR');
-  document.getElementById('vnd-count-sub').innerHTML=`<span style="color:var(--text-mid);font-size:12px">registros</span>`;
+  document.getElementById('vnd-count').textContent=nVendasUnicas.toLocaleString('pt-BR');
+  document.getElementById('vnd-count-sub').innerHTML=`<span style="color:var(--text-mid);font-size:12px">vendas únicas · ${count.toLocaleString('pt-BR')} lançamentos</span>`;
   document.getElementById('vnd-ticket').textContent=fmtBRL(ticket);
+  document.getElementById('vnd-ticket-sub').innerHTML=`<span style="color:var(--text-mid);font-size:12px">por venda única (${nVendasUnicas.toLocaleString('pt-BR')} IDs)</span>`;
 
   const nomes=ranking.map(([n])=>n);
   const vals=ranking.map(([,v])=>v.valor);
@@ -3247,8 +3370,10 @@ function renderDetalhes() {
   if (prodSel.length) dados=dados.filter(r=>prodSel.includes(r.desc));
 
   const total    = dados.reduce((s,r)=>s+r.valor,0);
-  const qty      = dados.reduce((s,r)=>s+r.qty,0);
-  const distintos= new Set(dados.map(r=>r.desc)).size;
+  const qty      = dados.length; // lançamentos individuais
+  const idsUnicos= new Set(dados.map(r=>r.idVenda).filter(Boolean));
+  const nVendas  = idsUnicos.size || qty; // vendas únicas
+  const distintos= new Set(dados.map(r=>r.desc).filter(Boolean)).size;
   const nColabs  = new Set(dados.map(r=>r.colab)).size;
 
   document.getElementById('det-kpis').style.display='grid';
@@ -3257,8 +3382,8 @@ function renderDetalhes() {
   document.getElementById('det-empty').style.display='none';
   document.getElementById('det-total').textContent=fmtBRL(total);
   document.getElementById('det-total-sub').innerHTML=`<span style="color:var(--text-mid);font-size:12px">${dados.length} registros</span>`;
-  document.getElementById('det-qty').textContent=qty.toLocaleString('pt-BR');
-  document.getElementById('det-qty-sub').innerHTML=`<span style="color:var(--text-mid);font-size:12px">unidades</span>`;
+  document.getElementById('det-qty').textContent=nVendas.toLocaleString('pt-BR');
+  document.getElementById('det-qty-sub').innerHTML=`<span style="color:var(--text-mid);font-size:12px">vendas únicas · ${qty} lançamentos</span>`;
   document.getElementById('det-distintos').textContent=distintos;
   document.getElementById('det-distintos-sub').innerHTML=`<span style="color:var(--text-mid);font-size:12px">itens distintos</span>`;
   document.getElementById('det-colabs').textContent=nColabs;
@@ -3342,6 +3467,12 @@ let chartFatEvol  = null;
 let chartFatCat   = null;
 let chartFatBar   = null;
 
+// Agregadores — declarações globais (aqui para evitar TDZ no switchTab)
+let aggData    = [];
+let aggLoaded  = false;
+let chartAggFat=null, chartAggCheckins=null, chartAggVmv=null;
+let chartAggPie=null, chartAggTicket=null;
+
 async function loadFaturamento(force) {
   document.getElementById('fat-sub').textContent = 'Conectando…';
   document.getElementById('fat-empty').style.display = 'block';
@@ -3419,6 +3550,9 @@ function renderFaturamento(rows) {
   SISTEMAS.forEach(s => { totSis[s] = meses.reduce((sum, [, m]) => sum + (m[s] || 0), 0); });
 
   document.getElementById('fat-kpis').style.display    = 'grid';
+  // Mostrar botão PDF quando dados estiverem carregados
+  const fatBtnPdf = document.getElementById('fat-btn-pdf');
+  if (fatBtnPdf) fatBtnPdf.style.display = 'inline-flex';
   document.getElementById('fat-total').textContent     = fmtBRL(totalGeral);
   document.getElementById('fat-total-sub').innerHTML   =
     SISTEMAS.map(s => `<span style="font-size:11px;color:var(--text-mid)">${s}: ${fmtBRL(totSis[s])}</span>`).join(' · ');
@@ -3593,6 +3727,677 @@ function exportarRelatorio(aba) {
     // Restaura aba ativa
     document.getElementById(tabId).classList.add('active');
   }, 150);
+}
+
+
+// ╔══════════════════════════════════════════════════════════╗
+//  EXPORTAR PDF — ABA FATURAMENTO GERAL
+// ╚══════════════════════════════════════════════════════════╝
+async function exportarFaturamentoPDF() {
+  // Verificar dependências
+  if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
+    toast('Carregando bibliotecas de PDF…', '⏳');
+    await new Promise(r => setTimeout(r, 1500));
+    if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
+      toast('Erro: bibliotecas não carregadas. Recarregue a página.', '❌');
+      return;
+    }
+  }
+
+  toast('Gerando PDF…', '⏳');
+
+  try {
+    const { jsPDF } = jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W   = pdf.internal.pageSize.getWidth();   // 210mm
+    const H   = pdf.internal.pageSize.getHeight();  // 297mm
+    const MAR = 12; // margem lateral mm
+    const CW  = W - MAR * 2; // largura útil
+    let cursorY = MAR;
+
+    // ── Paleta ──────────────────────────────────────────────
+    const VERDE  = [34, 197, 94];
+    const AZUL   = [30, 111, 232];
+    const ESCURO = [15, 28, 45];
+    const CINZA  = [139, 163, 177];
+    const BORDA  = [226, 234, 240];
+
+    // ── Helper: adicionar nova página se necessário ──────────
+    function checkPage(needed) {
+      if (cursorY + needed > H - MAR) {
+        pdf.addPage();
+        cursorY = MAR;
+      }
+    }
+
+    // ── Helper: capturar elemento como imagem PNG ────────────
+    async function captureEl(el, opts = {}) {
+      const canvas = await html2canvas(el, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: document.body.classList.contains('dark') ? '#1a2535' : '#ffffff',
+        logging: false,
+        ...opts
+      });
+      return canvas.toDataURL('image/png');
+    }
+
+    // ══════════════════════════════════════════════════════
+    // CABEÇALHO
+    // ══════════════════════════════════════════════════════
+    pdf.setFillColor(...AZUL);
+    pdf.roundedRect(MAR, cursorY, CW, 20, 3, 3, 'F');
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(13);
+    pdf.text('SkyFit Guarujá — Faturamento Geral', MAR + 5, cursorY + 8);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    const now = new Date();
+    const dtStr = now.toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
+    pdf.text(`Gerado em ${dtStr}`, MAR + 5, cursorY + 15);
+    pdf.setTextColor(...ESCURO);
+    cursorY += 26;
+
+    // ══════════════════════════════════════════════════════
+    // KPIs — ler valores dos elementos DOM
+    // ══════════════════════════════════════════════════════
+    const kpiData = [
+      { label: 'Faturamento Total',  val: document.getElementById('fat-total')?.textContent    || '—', cor: VERDE },
+      { label: 'Períodos',           val: document.getElementById('fat-periodos')?.textContent || '—', cor: AZUL  },
+      { label: 'Melhor Mês',         val: document.getElementById('fat-melhor')?.textContent   || '—', cor: AZUL  },
+      { label: 'Média Mensal',       val: document.getElementById('fat-media')?.textContent    || '—', cor: AZUL  },
+    ];
+    const kpiSubData = [
+      document.getElementById('fat-total-sub')?.textContent  || '',
+      document.getElementById('fat-periodos-sub')?.textContent || '',
+      document.getElementById('fat-melhor-val')?.textContent  || '',
+      document.getElementById('fat-media-sub')?.textContent   || '',
+    ];
+
+    checkPage(32);
+    const kpiW = CW / 4 - 2;
+    kpiData.forEach((k, i) => {
+      const x = MAR + i * (kpiW + 2.7);
+      // Card background
+      pdf.setFillColor(245, 248, 252);
+      pdf.roundedRect(x, cursorY, kpiW, 26, 2, 2, 'F');
+      pdf.setDrawColor(...BORDA);
+      pdf.roundedRect(x, cursorY, kpiW, 26, 2, 2, 'S');
+      // Borda colorida topo
+      pdf.setFillColor(...k.cor);
+      pdf.roundedRect(x, cursorY, kpiW, 1.5, 0.5, 0.5, 'F');
+      // Label
+      pdf.setTextColor(...CINZA);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(6.5);
+      pdf.text(k.label.toUpperCase(), x + 3, cursorY + 7);
+      // Valor
+      pdf.setTextColor(...k.cor);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(k.val.length > 12 ? 8 : 10);
+      pdf.text(k.val, x + 3, cursorY + 15);
+      // Sub
+      pdf.setTextColor(...CINZA);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(6);
+      if (kpiSubData[i]) pdf.text(kpiSubData[i].slice(0,30), x + 3, cursorY + 22);
+    });
+    cursorY += 32;
+
+    // ══════════════════════════════════════════════════════
+    // GRÁFICO 1: Evolução (barras empilhadas — largura total)
+    // ══════════════════════════════════════════════════════
+    const canvasEvol = document.getElementById('chart-fat-evolucao');
+    if (canvasEvol) {
+      checkPage(80);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9);
+      pdf.setTextColor(...ESCURO);
+      pdf.text('Evolução do Faturamento por Sistema', MAR, cursorY + 5);
+      cursorY += 8;
+      const imgEvol = await captureEl(canvasEvol.parentElement);
+      const cH = canvasEvol.parentElement.offsetHeight;
+      const ratio = cH / canvasEvol.parentElement.offsetWidth;
+      const imgH = CW * ratio;
+      checkPage(imgH + 4);
+      pdf.addImage(imgEvol, 'PNG', MAR, cursorY, CW, Math.min(imgH, 70));
+      cursorY += Math.min(imgH, 70) + 6;
+    }
+
+    // ══════════════════════════════════════════════════════
+    // GRÁFICOS 2 e 3 lado a lado: doughnut + linha
+    // ══════════════════════════════════════════════════════
+    const canvasCat  = document.getElementById('chart-fat-cat');
+    const canvasBar  = document.getElementById('chart-fat-barras');
+    if (canvasCat && canvasBar) {
+      checkPage(72);
+      const halfW = (CW - 4) / 2;
+
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9);
+      pdf.setTextColor(...ESCURO);
+      pdf.text('Composição por Sistema', MAR, cursorY + 5);
+      pdf.text('Tendência Mensal', MAR + halfW + 4, cursorY + 5);
+      cursorY += 8;
+
+      const [imgCat, imgBar] = await Promise.all([
+        captureEl(canvasCat.parentElement),
+        captureEl(canvasBar.parentElement),
+      ]);
+
+      const gH = 58;
+      pdf.addImage(imgCat, 'PNG', MAR,             cursorY, halfW, gH);
+      pdf.addImage(imgBar, 'PNG', MAR + halfW + 4, cursorY, halfW, gH);
+      cursorY += gH + 8;
+    }
+
+    // ══════════════════════════════════════════════════════
+    // TABELA — ler do DOM (fat-table-wrap)
+    // ══════════════════════════════════════════════════════
+    const tableEl = document.getElementById('fat-table-wrap');
+    if (tableEl) {
+      checkPage(12);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(9);
+      pdf.setTextColor(...ESCURO);
+      pdf.text('Tabela de Faturamento — Mês × Sistema', MAR, cursorY + 5);
+      cursorY += 9;
+
+      // Capturar tabela como imagem (mais fiel)
+      const imgTable = await captureEl(tableEl, { backgroundColor: '#ffffff' });
+      const tEl = tableEl.querySelector('table');
+      const tRatio = tEl ? tEl.offsetHeight / tEl.offsetWidth : 0.4;
+      const tImgH  = Math.min(CW * tRatio, H - cursorY - MAR - 20);
+
+      checkPage(tImgH + 4);
+      pdf.addImage(imgTable, 'PNG', MAR, cursorY, CW, tImgH);
+      cursorY += tImgH + 6;
+    }
+
+    // ══════════════════════════════════════════════════════
+    // RODAPÉ em todas as páginas
+    // ══════════════════════════════════════════════════════
+    const totalPages = pdf.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPages; p++) {
+      pdf.setPage(p);
+      pdf.setDrawColor(...BORDA);
+      pdf.line(MAR, H - 10, W - MAR, H - 10);
+      pdf.setTextColor(...CINZA);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(7);
+      pdf.text('SkyFit Guarujá — Dashboard de Gestão', MAR, H - 6);
+      pdf.text(`Página ${p} de ${totalPages}`, W - MAR, H - 6, { align: 'right' });
+    }
+
+    // ══════════════════════════════════════════════════════
+    // SALVAR — nome dinâmico com data
+    // ══════════════════════════════════════════════════════
+    const dd   = String(now.getDate()).padStart(2,'0');
+    const mm   = String(now.getMonth()+1).padStart(2,'0');
+    const aaaa = now.getFullYear();
+    pdf.save(`Faturamento_Geral_SkyFit_${dd}_${mm}_${aaaa}.pdf`);
+    toast('PDF gerado com sucesso!', '✅');
+
+  } catch(err) {
+    console.error(err);
+    toast('Erro ao gerar PDF: ' + err.message, '❌');
+  }
+}
+
+
+// ╔══════════════════════════════════════════════════════════╗
+//  ABA: AGREGADORES — Google Sheets (aba Agregadores)
+// ╚══════════════════════════════════════════════════════════╝
+const APPS_SCRIPT_AGG_URL = APPS_SCRIPT_URL + '?sheet=Agregadores';
+const MESES_NOME = ['janeiro','fevereiro','março','abril','maio','junho',
+                    'julho','agosto','setembro','outubro','novembro','dezembro'];
+
+const COR_AGG = {
+  TotalPass: '#22c55e',
+  Gympass:   '#f59e0b',
+  Wellhub:   '#f59e0b',
+  default:   ['#1e6fe8','#f59e0b','#22c55e','#7c3aed','#ef4444','#0ea5e9'],
+};
+function corAgr(nome, idx) {
+  return COR_AGG[nome] || COR_AGG.default[idx % COR_AGG.default.length];
+}
+
+// ── Carregar dados do Apps Script ──────────────────────────────────────────
+async function loadAgregadores(force) {
+  document.getElementById('agg-sub').textContent = 'Conectando…';
+  try {
+    const resp = await fetch(APPS_SCRIPT_AGG_URL);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const json = await resp.json();
+    const rows = json.rows || [];
+    if (!rows.length) throw new Error('Aba Agregadores sem dados');
+
+    aggData   = rows;
+    aggLoaded = true;
+
+    document.getElementById('agg-badge').style.display = 'inline-block';
+    document.getElementById('agg-empty').style.display = 'none';
+
+    popularFiltrosAgg();
+    renderAgregadores();
+
+    if (force) toast(`Agregadores: ${rows.length} registros`, '🔗');
+  } catch(err) {
+    console.error('[Agregadores]', err);
+    document.getElementById('agg-sub').textContent = 'Erro: ' + err.message;
+    document.getElementById('agg-empty').querySelector('.fin-ph-desc').textContent =
+      'Erro ao carregar — verifique se a aba "Agregadores" existe no Google Sheets. ' + err.message;
+    toast('Erro Agregadores: ' + err.message, '❌');
+  }
+}
+
+// ── Popular selects de filtro ──────────────────────────────────────────────
+function popularFiltrosAgg() {
+  const anos = [...new Set(aggData.map(r => String(r['Ano']||'')).filter(Boolean))].sort();
+  const meses= [...new Set(aggData.map(r => String(r['Mês']||'').toLowerCase()).filter(Boolean))]
+               .sort((a,b) => MESES_NOME.indexOf(a) - MESES_NOME.indexOf(b));
+  const agrs = [...new Set(aggData.map(r => String(r['Agregador']||'')).filter(Boolean))].sort();
+
+  const selAno = document.getElementById('agg-sel-ano');
+  selAno.innerHTML = '<option value="">Todos</option>' + anos.map(a=>`<option>${a}</option>`).join('');
+
+  const selMes = document.getElementById('agg-sel-mes');
+  selMes.innerHTML = '<option value="">Todos</option>' + meses.map(m=>`<option>${m.charAt(0).toUpperCase()+m.slice(1)}</option>`).join('');
+
+  const selAgr = document.getElementById('agg-sel-agr');
+  selAgr.innerHTML = '<option value="">Todos</option>' + agrs.map(a=>`<option>${a}</option>`).join('');
+
+  document.getElementById('agg-filtros').style.display = 'block';
+}
+
+function resetAggFiltros() {
+  ['agg-sel-ano','agg-sel-mes','agg-sel-agr'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  renderAgregadores();
+}
+
+// ── Filtrar dados ──────────────────────────────────────────────────────────
+function getAggFiltered() {
+  let dados = [...aggData];
+  const ano = document.getElementById('agg-sel-ano')?.value;
+  const mes = document.getElementById('agg-sel-mes')?.value;
+  const agr = document.getElementById('agg-sel-agr')?.value;
+  if (ano) dados = dados.filter(r => String(r['Ano']) === ano);
+  if (mes) dados = dados.filter(r => String(r['Mês']||'').toLowerCase() === mes.toLowerCase());
+  if (agr) dados = dados.filter(r => String(r['Agregador']||'') === agr);
+  return dados;
+}
+
+// ── Render principal ───────────────────────────────────────────────────────
+function renderAgregadores() {
+  const dados = getAggFiltered();
+  if (!dados.length) return;
+
+  const n  = r => parseFloat(String(r).replace(',','.')) || 0;
+  const fatTotal  = dados.reduce((s,r)=>s+n(r['Faturamento']),0);
+  const checkins  = dados.reduce((s,r)=>s+n(r['Check-ins']),0);
+  const usuarios  = dados.reduce((s,r)=>s+n(r['Usuários Únicos']),0);
+
+  const vmv  = checkins  ? fatTotal/checkins  : 0;  // Valor médio por visita
+  const tmm  = usuarios  ? fatTotal/usuarios  : 0;  // Ticket médio mensal
+  const freq = usuarios  ? checkins/usuarios  : 0;  // Frequência média
+
+  // Calcular MoM: comparar último mês vs penúltimo (nos dados filtrados, agrupados por mês)
+  const mesMap = {};
+  dados.forEach(r => {
+    const key = `${r['Ano']}-${String(MESES_NOME.indexOf(String(r['Mês']||'').toLowerCase())+1).padStart(2,'0')}`;
+    mesMap[key] = (mesMap[key]||0) + n(r['Faturamento']);
+  });
+  const mesesOrd = Object.keys(mesMap).sort();
+  let mom = null;
+  if (mesesOrd.length >= 2) {
+    const ult = mesMap[mesesOrd[mesesOrd.length-1]];
+    const ant = mesMap[mesesOrd[mesesOrd.length-2]];
+    mom = ant ? ((ult-ant)/ant*100) : null;
+  }
+
+  // ── KPIs ──────────────────────────────────────────────────────────────
+  document.getElementById('agg-kpis').style.display       = 'grid';
+  document.getElementById('agg-charts-1').style.display   = 'grid';
+  document.getElementById('agg-charts-2').style.display   = 'grid';
+  document.getElementById('agg-charts-3').style.display   = 'grid';
+  document.getElementById('agg-resumo-panel').style.display = 'block';
+  document.getElementById('agg-table-panel').style.display  = 'block';
+  document.getElementById('agg-btn-pdf').style.display      = 'inline-flex';
+  document.getElementById('agg-sub').textContent = `${aggData.length} registros · ${[...new Set(dados.map(r=>r['Agregador']))].join(' · ')}`;
+
+  const setKPI = (id, val, sub) => {
+    document.getElementById(id).textContent = val;
+    if (sub !== undefined) document.getElementById(id+'-sub').innerHTML =
+      `<span style="color:var(--text-mid);font-size:12px">${sub}</span>`;
+  };
+  setKPI('agg-fat',      fmtBRL(fatTotal), `${dados.length} registros`);
+  document.getElementById('agg-fat-prog').style.width = '80%';
+  setKPI('agg-vmv',      fmtBRL(vmv),  `fat ÷ check-ins`);
+  setKPI('agg-tmm',      fmtBRL(tmm),  `fat ÷ usuários únicos`);
+  setKPI('agg-freq',     freq.toFixed(1)+'×', `check-ins ÷ usuários`);
+  setKPI('agg-users',    Math.round(usuarios).toLocaleString('pt-BR'), `usuários únicos`);
+  setKPI('agg-checkins', Math.round(checkins).toLocaleString('pt-BR'), `check-ins`);
+
+  const momCard = document.getElementById('agg-mom-card');
+  if (mom !== null) {
+    const sinal = mom >= 0 ? '▲' : '▼';
+    const cor   = mom >= 0 ? 'var(--green)' : 'var(--red)';
+    document.getElementById('agg-mom').textContent = `${sinal} ${Math.abs(mom).toFixed(1)}%`;
+    document.getElementById('agg-mom').style.color = cor;
+    setKPI('agg-mom', `${sinal} ${Math.abs(mom).toFixed(1)}%`,
+      `vs mês anterior`);
+    document.getElementById('agg-mom').style.color = cor;
+    momCard.style.display = 'block';
+  } else {
+    momCard.style.display = 'none';
+  }
+
+  // ── Gráficos ──────────────────────────────────────────────────────────
+  // Agrupar por mês × agregador para séries
+  const agrs    = [...new Set(dados.map(r=>r['Agregador']))].sort();
+  const labels  = mesesOrd.map(k => {
+    const [a,m] = k.split('-');
+    const mn = MESES_NOME[parseInt(m)-1] || m;
+    return mn.slice(0,3).charAt(0).toUpperCase()+mn.slice(1,3)+'/'+a.slice(2);
+  });
+
+  // Dataset por agregador
+  const makeDataset = (col) => agrs.map((agr,i) => ({
+    label: agr,
+    data: mesesOrd.map(k => {
+      const [a,mi] = k.split('-');
+      return dados.filter(r => String(r['Ano'])===a &&
+        MESES_NOME.indexOf(String(r['Mês']||'').toLowerCase())+1 === parseInt(mi) &&
+        r['Agregador'] === agr
+      ).reduce((s,r) => s + (parseFloat(String(r[col]).replace(',','.'))||0), 0);
+    }),
+    borderColor: corAgr(agr,i),
+    backgroundColor: corAgr(agr,i)+'33',
+    tension: 0.35, fill: false, pointRadius: 4,
+    borderWidth: 2, pointBackgroundColor: corAgr(agr,i),
+  }));
+
+  const chartOpts = (yFmt) => ({
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { position:'top', labels:{font:{family:'DM Sans',size:11},padding:10} },
+      tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${yFmt(ctx.raw)}` } }
+    },
+    scales: {
+      y: { grid:{color:'rgba(0,0,0,.04)'}, ticks:{font:{family:'DM Mono',size:10}, callback: yFmt} },
+      x: { grid:{display:false}, ticks:{font:{family:'DM Sans',size:10},maxRotation:40} }
+    }
+  });
+
+  // Faturamento
+  if (chartAggFat) chartAggFat.destroy();
+  chartAggFat = new Chart(document.getElementById('chart-agg-fat'), {
+    type:'line', data:{labels, datasets:makeDataset('Faturamento')},
+    options: chartOpts(v => fmtBRL(v))
+  });
+
+  // Check-ins — barras
+  const dsCheckins = agrs.map((agr,i) => ({
+    label: agr,
+    data: mesesOrd.map(k => {
+      const [a,mi]=k.split('-');
+      return dados.filter(r=>String(r['Ano'])===a&&
+        MESES_NOME.indexOf(String(r['Mês']||'').toLowerCase())+1===parseInt(mi)&&r['Agregador']===agr
+      ).reduce((s,r)=>s+(parseFloat(String(r['Check-ins']).replace(',','.'))||0),0);
+    }),
+    backgroundColor: corAgr(agr,i)+'cc', borderRadius:4,
+  }));
+  if (chartAggCheckins) chartAggCheckins.destroy();
+  chartAggCheckins = new Chart(document.getElementById('chart-agg-checkins'),{
+    type:'bar', data:{labels, datasets:dsCheckins},
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{position:'top',labels:{font:{family:'DM Sans',size:11},padding:10}},
+               tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${Math.round(ctx.raw)} check-ins`}}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{font:{family:'DM Sans',size:10},maxRotation:40}},
+              y:{stacked:true,grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'DM Mono',size:10}}}}
+    }
+  });
+
+  // Valor médio por visita
+  const dsVmv = agrs.map((agr,i) => ({
+    label: agr,
+    data: mesesOrd.map(k => {
+      const [a,mi]=k.split('-');
+      const sub=dados.filter(r=>String(r['Ano'])===a&&
+        MESES_NOME.indexOf(String(r['Mês']||'').toLowerCase())+1===parseInt(mi)&&r['Agregador']===agr);
+      const f=sub.reduce((s,r)=>s+(parseFloat(String(r['Faturamento']).replace(',','.'))||0),0);
+      const c=sub.reduce((s,r)=>s+(parseFloat(String(r['Check-ins']).replace(',','.'))||0),0);
+      return c ? f/c : 0;
+    }),
+    borderColor:corAgr(agr,i), backgroundColor:corAgr(agr,i)+'22',
+    tension:0.35, fill:false, pointRadius:4, borderWidth:2,
+    pointBackgroundColor:corAgr(agr,i),
+  }));
+  if (chartAggVmv) chartAggVmv.destroy();
+  chartAggVmv = new Chart(document.getElementById('chart-agg-vmv'),{
+    type:'line', data:{labels, datasets:dsVmv},
+    options: chartOpts(v => fmtBRL(v))
+  });
+
+  // Doughnut participação
+  const fatPorAgr = agrs.map(agr =>
+    dados.filter(r=>r['Agregador']===agr).reduce((s,r)=>s+(parseFloat(String(r['Faturamento']).replace(',','.'))||0),0)
+  );
+  if (chartAggPie) chartAggPie.destroy();
+  chartAggPie = new Chart(document.getElementById('chart-agg-pie'),{
+    type:'doughnut',
+    data:{labels:agrs, datasets:[{data:fatPorAgr, backgroundColor:agrs.map((a,i)=>corAgr(a,i)),
+      borderWidth:2, borderColor:'#fff', hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{
+      legend:{position:'right',labels:{font:{family:'DM Sans',size:11},padding:10}},
+      tooltip:{callbacks:{label:ctx=>{const pct=(fatTotal?ctx.raw/fatTotal*100:0).toFixed(1);return ` ${fmtBRL(ctx.raw)} (${pct}%)`;}}},
+    },cutout:'60%'}
+  });
+
+  // Ticket médio mensal por agregador
+  const dsTicket = agrs.map((agr,i) => ({
+    label:agr,
+    data: mesesOrd.map(k => {
+      const [a,mi]=k.split('-');
+      const sub=dados.filter(r=>String(r['Ano'])===a&&
+        MESES_NOME.indexOf(String(r['Mês']||'').toLowerCase())+1===parseInt(mi)&&r['Agregador']===agr);
+      const f=sub.reduce((s,r)=>s+(parseFloat(String(r['Faturamento']).replace(',','.'))||0),0);
+      const u=sub.reduce((s,r)=>s+(parseFloat(String(r['Usuários Únicos']).replace(',','.'))||0),0);
+      return u ? f/u : 0;
+    }),
+    borderColor:corAgr(agr,i), backgroundColor:corAgr(agr,i)+'22',
+    tension:0.35, fill:false, pointRadius:4, borderWidth:2, pointBackgroundColor:corAgr(agr,i),
+  }));
+  if (chartAggTicket) chartAggTicket.destroy();
+  chartAggTicket = new Chart(document.getElementById('chart-agg-ticket'),{
+    type:'line', data:{labels, datasets:dsTicket},
+    options: chartOpts(v => fmtBRL(v))
+  });
+
+  // ── Resumo estratégico automático ─────────────────────────────────────
+  const melhorMes  = mesesOrd.reduce((a,b)=>mesMap[a]>mesMap[b]?a:b);
+  const [mA,mM]    = melhorMes.split('-');
+  const nomeMelhor = (MESES_NOME[parseInt(mM)-1]||mM).charAt(0).toUpperCase()+(MESES_NOME[parseInt(mM)-1]||mM).slice(1);
+  const maiorAgr   = agrs.reduce((a,b)=>fatPorAgr[agrs.indexOf(a)]>fatPorAgr[agrs.indexOf(b)]?a:b, agrs[0]);
+  const pctMaior   = fatTotal ? (fatPorAgr[agrs.indexOf(maiorAgr)]/fatTotal*100).toFixed(1) : 0;
+
+  document.getElementById('agg-resumo-body').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div style="background:var(--bg);border-radius:10px;padding:14px 16px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:6px">📅 Mês de Maior Rentabilidade</div>
+        <div style="font-size:16px;font-weight:800;color:var(--green)">${nomeMelhor}/${mA}</div>
+        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">${fmtBRL(mesMap[melhorMes])} faturados</div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:14px 16px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:6px">🏆 Maior Agregador</div>
+        <div style="font-size:16px;font-weight:800;color:var(--accent)">${maiorAgr}</div>
+        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">${pctMaior}% do faturamento total</div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:14px 16px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:6px">🏃 Frequência Média</div>
+        <div style="font-size:16px;font-weight:800;color:var(--amber)">${freq.toFixed(2)}×</div>
+        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">check-ins por usuário no período</div>
+      </div>
+      <div style="background:var(--bg);border-radius:10px;padding:14px 16px">
+        <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:6px">💰 Valor Médio / Visita</div>
+        <div style="font-size:16px;font-weight:800;color:var(--text-dark)">${fmtBRL(vmv)}</div>
+        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">receita por check-in registrado</div>
+      </div>
+    </div>`;
+
+  // ── Tabela detalhada ───────────────────────────────────────────────────
+  const thead = `<tr><th>Ano</th><th>Mês</th><th>Agregador</th>
+    <th style="text-align:right">Faturamento</th>
+    <th style="text-align:right">Check-ins</th>
+    <th style="text-align:right">Usuários Únicos</th>
+    <th style="text-align:right">R$/visita</th>
+    <th style="text-align:right">Ticket Mensal</th>
+    <th style="text-align:right">Freq.</th></tr>`;
+
+  const tbody = dados.map(r => {
+    const f=parseFloat(String(r['Faturamento']).replace(',','.'))||0;
+    const c=parseFloat(String(r['Check-ins']).replace(',','.'))||0;
+    const u=parseFloat(String(r['Usuários Únicos']).replace(',','.'))||0;
+    return `<tr>
+      <td style="padding:9px 12px;font-size:12px">${r['Ano']}</td>
+      <td style="padding:9px 12px;font-size:12px">${r['Mês']}</td>
+      <td style="padding:9px 12px"><span class="badge badge-blue" style="font-size:11px">${r['Agregador']}</span></td>
+      <td style="padding:9px 12px;font-family:var(--mono);font-weight:700;color:var(--green);text-align:right">${fmtBRL(f)}</td>
+      <td style="padding:9px 12px;font-family:var(--mono);text-align:right">${Math.round(c).toLocaleString('pt-BR')}</td>
+      <td style="padding:9px 12px;font-family:var(--mono);text-align:right">${Math.round(u).toLocaleString('pt-BR')}</td>
+      <td style="padding:9px 12px;font-family:var(--mono);text-align:right">${fmtBRL(c?f/c:0)}</td>
+      <td style="padding:9px 12px;font-family:var(--mono);text-align:right">${fmtBRL(u?f/u:0)}</td>
+      <td style="padding:9px 12px;font-family:var(--mono);text-align:right">${(u?c/u:0).toFixed(2)}×</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('agg-table-badge').textContent = `${dados.length} registros`;
+  document.getElementById('agg-table-wrap').innerHTML =
+    `<div class="table-wrapper"><table><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+}
+
+// ── Exportar PDF da aba Agregadores ──────────────────────────────────────
+async function exportarAgregadoresPDF() {
+  if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
+    toast('Bibliotecas PDF não carregadas. Recarregue a página.', '❌'); return;
+  }
+  toast('Gerando PDF…', '⏳');
+  try {
+    const { jsPDF } = jspdf;
+    const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const W=pdf.internal.pageSize.getWidth(), H=pdf.internal.pageSize.getHeight();
+    const MAR=12, CW=W-MAR*2;
+    let Y=MAR;
+
+    const VERDE=[34,197,94], AZUL=[30,111,232], ESCURO=[15,28,45], CINZA=[139,163,177], BORDA=[226,234,240];
+
+    function checkPage(needed) { if(Y+needed>H-MAR){ pdf.addPage(); Y=MAR; } }
+    async function cap(el, bg) {
+      return (await html2canvas(el,{scale:2,useCORS:true,backgroundColor:bg||'#ffffff',logging:false})).toDataURL('image/png');
+    }
+
+    // Cabeçalho
+    pdf.setFillColor(...AZUL);
+    pdf.roundedRect(MAR,Y,CW,20,3,3,'F');
+    pdf.setTextColor(255,255,255);
+    pdf.setFont('helvetica','bold'); pdf.setFontSize(13);
+    pdf.text('SkyFit Guarujá — Agregadores', MAR+5, Y+8);
+    pdf.setFont('helvetica','normal'); pdf.setFontSize(8);
+    const now=new Date();
+    pdf.text(`Gerado em ${now.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}`, MAR+5, Y+15);
+    // Filtros aplicados
+    const fAno=document.getElementById('agg-sel-ano')?.value||'Todos';
+    const fMes=document.getElementById('agg-sel-mes')?.value||'Todos';
+    const fAgr=document.getElementById('agg-sel-agr')?.value||'Todos';
+    pdf.text(`Filtros: Ano=${fAno} · Mês=${fMes} · Agregador=${fAgr}`, W-MAR, Y+15, {align:'right'});
+    pdf.setTextColor(...ESCURO); Y+=26;
+
+    // KPIs como imagem
+    const kpiEl = document.getElementById('agg-kpis');
+    if (kpiEl && kpiEl.style.display!=='none') {
+      checkPage(40);
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(9); pdf.setTextColor(...ESCURO);
+      pdf.text('Indicadores Estratégicos', MAR, Y+5); Y+=8;
+      const imgKpi = await cap(kpiEl);
+      const kH = Math.min(CW * (kpiEl.offsetHeight/kpiEl.offsetWidth), 45);
+      checkPage(kH+4);
+      pdf.addImage(imgKpi,'PNG',MAR,Y,CW,kH); Y+=kH+6;
+    }
+
+    // Gráfico evolução faturamento (largura total)
+    const cFat = document.getElementById('chart-agg-fat');
+    if (cFat) {
+      checkPage(72);
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
+      pdf.text('Evolução do Faturamento', MAR, Y+5); Y+=8;
+      const img=await cap(cFat.parentElement);
+      const gH=Math.min(CW*(cFat.parentElement.offsetHeight/cFat.parentElement.offsetWidth),65);
+      pdf.addImage(img,'PNG',MAR,Y,CW,gH); Y+=gH+6;
+    }
+
+    // Check-ins + Valor médio por visita (lado a lado)
+    const cCi=document.getElementById('chart-agg-checkins');
+    const cVmv=document.getElementById('chart-agg-vmv');
+    if (cCi&&cVmv) {
+      checkPage(68);
+      const hw=(CW-4)/2;
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
+      pdf.text('Check-ins por Mês', MAR, Y+5);
+      pdf.text('Valor Médio / Visita', MAR+hw+4, Y+5); Y+=8;
+      const [i1,i2]=await Promise.all([cap(cCi.parentElement),cap(cVmv.parentElement)]);
+      const gH=55;
+      pdf.addImage(i1,'PNG',MAR,Y,hw,gH);
+      pdf.addImage(i2,'PNG',MAR+hw+4,Y,hw,gH); Y+=gH+6;
+    }
+
+    // Participação + Ticket médio (lado a lado)
+    const cPie=document.getElementById('chart-agg-pie');
+    const cTk=document.getElementById('chart-agg-ticket');
+    if (cPie&&cTk) {
+      checkPage(68);
+      const hw=(CW-4)/2;
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
+      pdf.text('Participação por Agregador', MAR, Y+5);
+      pdf.text('Ticket Médio Mensal', MAR+hw+4, Y+5); Y+=8;
+      const [i1,i2]=await Promise.all([cap(cPie.parentElement),cap(cTk.parentElement)]);
+      const gH=55;
+      pdf.addImage(i1,'PNG',MAR,Y,hw,gH);
+      pdf.addImage(i2,'PNG',MAR+hw+4,Y,hw,gH); Y+=gH+6;
+    }
+
+    // Resumo estratégico como imagem
+    const rEl=document.getElementById('agg-resumo-body');
+    if (rEl) {
+      checkPage(50);
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
+      pdf.text('Resumo Estratégico', MAR, Y+5); Y+=8;
+      const imgR=await cap(rEl,'#f0f4f9');
+      const rH=Math.min(CW*(rEl.offsetHeight/rEl.offsetWidth),55);
+      pdf.addImage(imgR,'PNG',MAR,Y,CW,rH); Y+=rH+6;
+    }
+
+    // Rodapé
+    const np=pdf.internal.getNumberOfPages();
+    for(let p=1;p<=np;p++){
+      pdf.setPage(p);
+      pdf.setDrawColor(...BORDA); pdf.line(MAR,H-10,W-MAR,H-10);
+      pdf.setTextColor(...CINZA); pdf.setFont('helvetica','normal'); pdf.setFontSize(7);
+      pdf.text('SkyFit Guarujá — Dashboard de Gestão',MAR,H-6);
+      pdf.text(`Página ${p} de ${np}`,W-MAR,H-6,{align:'right'});
+    }
+
+    const dd=String(now.getDate()).padStart(2,'0');
+    const mm=String(now.getMonth()+1).padStart(2,'0');
+    pdf.save(`Agregadores_SkyFit_${dd}_${mm}_${now.getFullYear()}.pdf`);
+    toast('PDF gerado com sucesso!','✅');
+  } catch(err) {
+    console.error(err);
+    toast('Erro ao gerar PDF: '+err.message,'❌');
+  }
 }
 
 const REFRESH_INTERVAL_MS = 60 * 60 * 1000;
