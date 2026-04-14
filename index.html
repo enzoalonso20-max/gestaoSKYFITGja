@@ -133,9 +133,13 @@
   }
   .nav-group {
     overflow: hidden; max-height: 0;
-    transition: max-height .3s ease;
+    transition: max-height .35s ease;
   }
-  .nav-group.open { max-height: 400px; }
+  .nav-group.open { max-height: 600px; }
+  /* Linha colorida discreta na borda esquerda por grupo */
+  .nav-group.grp-comercial .nav-sub.active { border-left: 2px solid #0ea5e9; }
+  .nav-group.grp-financeiro .nav-sub.active { border-left: 2px solid #22c55e; }
+  .nav-group.grp-clientes   .nav-sub.active { border-left: 2px solid #f59e0b; }
   .nav-chevron.open { transform: rotate(90deg); color: rgba(255,255,255,.6); }
 
   .nav-sub {
@@ -781,43 +785,47 @@
   </div>
   <nav class="sidebar-nav">
 
-    <div class="nav-label">Comercial</div>
-    <div class="nav-item active" onclick="switchTab('vendas',this)"><span class="nav-icon">📊</span>Vendas</div>
-    <div class="nav-item" onclick="switchTab('agregadores',this)"><span class="nav-icon">🔗</span>Agregadores</div>
+    <!-- ══ VENDAS ══ -->
+    <div class="nav-label">Vendas</div>
+    <div class="nav-item nav-parent" onclick="toggleNavGroup('vnd-group')">
+      <span class="nav-icon">📊</span>Vendas
+      <span class="nav-chevron open" id="vnd-chevron">›</span>
+    </div>
+    <div class="nav-group open" id="vnd-group">
+      <div class="nav-sub" onclick="switchTab('fin-vendas',this)"><span class="nav-sub-dot">◉</span>Por Colaborador</div>
+      <div class="nav-sub" onclick="switchTab('fin-detalhes',this)"><span class="nav-sub-dot">◉</span>Detalhadas</div>
+    </div>
 
+    <!-- ══ FINANCEIRO ══ -->
     <div class="nav-label" style="margin-top:8px">Financeiro</div>
     <div class="nav-item nav-parent" onclick="toggleNavGroup('fin-group')">
       <span class="nav-icon">💰</span>Financeiro
       <span class="nav-chevron" id="fin-chevron">›</span>
     </div>
     <div class="nav-group" id="fin-group">
-      <div class="nav-sub" onclick="switchTab('fin-visao',this)"><span class="nav-sub-dot">◉</span>Visão Geral</div>
-      <div class="nav-sub" onclick="switchTab('fin-receita',this)"><span class="nav-sub-dot">◉</span>Receita</div>
-      <div class="nav-sub" onclick="switchTab('fin-vendas',this)"><span class="nav-sub-dot">◉</span>Vendas por Colaborador</div>
+      <div class="nav-sub" onclick="switchTab('fin-faturamento',this)"><span class="nav-sub-dot">◉</span>Receita</div>
       <div class="nav-sub" onclick="switchTab('fin-despesas',this)"><span class="nav-sub-dot">◉</span>Despesas</div>
-      <div class="nav-sub" onclick="switchTab('fin-lucro',this)"><span class="nav-sub-dot">◉</span>Lucro & Margem</div>
-      <div class="nav-sub" onclick="switchTab('fin-caixa',this)"><span class="nav-sub-dot">◉</span>Fluxo de Caixa</div>
+      <div class="nav-sub" onclick="switchTab('fin-lucro',this)"><span class="nav-sub-dot">◉</span>Lucro</div>
       <div class="nav-sub" onclick="switchTab('fin-pagamentos',this)"><span class="nav-sub-dot">◉</span>Formas de Pagamento</div>
-      <div class="nav-sub" onclick="switchTab('fin-detalhes',this)"><span class="nav-sub-dot">◉</span>Vendas Detalhadas</div>
-      <div class="nav-sub" onclick="switchTab('fin-faturamento',this)"><span class="nav-sub-dot">◉</span>Faturamento Geral</div>
     </div>
 
-    <div class="nav-label" style="margin-top:8px">Crescimento</div>
-    <div class="nav-item" onclick="switchTab('retencao',this)">
-      <span class="nav-icon">🔄</span>Retenção & Churn
-      <span class="nav-badge">EM BREVE</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('inadimplencia',this)">
-      <span class="nav-icon">⚠️</span>Inadimplência
-      <span class="nav-badge">EM BREVE</span>
-    </div>
-    <div class="nav-item" onclick="switchTab('indicadores',this)">
-      <span class="nav-icon">🎯</span>Indicadores
-      <span class="nav-badge">EM BREVE</span>
+    <!-- ══ AGREGADORES ══ -->
+    <div class="nav-label" style="margin-top:8px">Parceiros</div>
+    <div class="nav-item" onclick="switchTab('agregadores',this)">
+      <span class="nav-icon">🔗</span>Agregadores
     </div>
 
-    <div class="nav-label" style="margin-top:8px">Clientes</div>
-    <div class="nav-item" onclick="switchTab('clientes',this)"><span class="nav-icon">🔥</span>Clientes<span class="nav-badge">NOVO</span></div>
+    <!-- ══ CHAMADOS ══ -->
+    <div class="nav-label" style="margin-top:8px">Chamados</div>
+    <div class="nav-item nav-parent" onclick="toggleNavGroup('cham-group')">
+      <span class="nav-icon">📋</span>Chamados
+      <span class="nav-chevron" id="cham-chevron">›</span>
+    </div>
+    <div class="nav-group" id="cham-group">
+      <div class="nav-sub" onclick="switchTab('cham-expirados',this)"><span class="nav-sub-dot">◉</span>Expirados</div>
+      <div class="nav-sub" onclick="switchTab('cham-inadimplencia',this)"><span class="nav-sub-dot">◉</span>Inadimplência</div>
+      <div class="nav-sub" onclick="switchTab('cham-oportunidades',this)"><span class="nav-sub-dot">◉</span>Oportunidades</div>
+    </div>
 
   </nav>
   <div class="sidebar-footer" style="display:flex;align-items:center;justify-content:space-between;gap:8px">
@@ -1070,8 +1078,8 @@
     <div class="tab-pane" id="tab-fin-faturamento">
       <div class="section-header">
         <div>
-          <div class="section-title">📈 Faturamento Geral</div>
-          <div class="section-sub" id="fat-sub">Carregando dados do Google Sheets…</div>
+          <div class="section-title">📈 Receita</div>
+          <div class="section-sub" id="fat-sub">Receita oficial — EVO · WellHub · TotalPass via Google Sheets</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <button class="btn btn-secondary" onclick="loadFaturamento(true)">🔄 Atualizar</button>
@@ -1664,15 +1672,67 @@
     <!-- ════ ABA: FIN-LUCRO ════ -->
     <div class="tab-pane" id="tab-fin-lucro">
       <div class="section-header">
-        <div><div class="section-title">📈 Lucro & Margem</div><div class="section-sub">Rentabilidade real — não apenas faturamento</div></div>
-        <span class="badge badge-amber">Em construção</span>
+        <div>
+          <div class="section-title">📊 Lucro</div>
+          <div class="section-sub" id="lucro-sub">Receita − Despesas — carregando…</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-secondary" onclick="renderLucro()">🔄 Atualizar</button>
+          <span class="badge badge-green" id="lucro-badge" style="display:none">● Calculado</span>
+        </div>
       </div>
-      <div class="fin-placeholder-wrap">
-        <div class="fin-ph-icon">📈</div>
-        <div class="fin-ph-title">Lucro & Margem</div>
-        <div class="fin-ph-desc">Rentabilidade real — não apenas faturamento</div>
+
+      <!-- KPIs Lucro -->
+      <div class="cards-grid" id="lucro-kpis" style="display:none">
+        <div class="kpi-card green">
+          <div class="kpi-icon">📈</div><div class="kpi-label">Receita Total</div>
+          <div class="kpi-value" id="lucro-receita">—</div>
+          <div class="kpi-delta" id="lucro-receita-sub"></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)" id="lucro-prog-r"></div></div>
+        </div>
+        <div class="kpi-card red">
+          <div class="kpi-icon">📉</div><div class="kpi-label">Despesas Totais</div>
+          <div class="kpi-value" id="lucro-despesas">—</div>
+          <div class="kpi-delta" id="lucro-despesas-sub"></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:0%;background:linear-gradient(90deg,#ef4444,#dc2626)" id="lucro-prog-d"></div></div>
+        </div>
+        <div class="kpi-card" id="lucro-result-card">
+          <div class="kpi-icon">💡</div><div class="kpi-label">Lucro Operacional</div>
+          <div class="kpi-value" id="lucro-resultado">—</div>
+          <div class="kpi-delta" id="lucro-resultado-sub"></div>
+          <div class="progress-bar"><div class="progress-fill" id="lucro-prog-l" style="width:0%"></div></div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-icon">📊</div><div class="kpi-label">Margem Líquida</div>
+          <div class="kpi-value" id="lucro-margem">—</div>
+          <div class="kpi-delta" id="lucro-margem-sub"></div>
+        </div>
+      </div>
+
+      <!-- Gráfico comparativo -->
+      <div class="chart-grid" id="lucro-charts" style="display:none">
+        <div class="panel" style="grid-column:1/-1">
+          <div class="panel-header"><span class="panel-title">📊 Receita vs Despesas vs Lucro por Mês</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:280px"><canvas id="chart-lucro-comp"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- Tabela por mês -->
+      <div class="panel" id="lucro-table-panel" style="display:none">
+        <div class="panel-header"><span class="panel-title">📋 Resultado Mensal</span></div>
+        <div class="panel-body" id="lucro-table-wrap"></div>
+      </div>
+
+      <!-- Empty/aviso -->
+      <div id="lucro-empty" class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">💡</div>
+        <div class="fin-ph-title">Lucro Operacional</div>
+        <div class="fin-ph-desc">O cálculo de Lucro requer que os dados de Receita (Faturamento Geral) e Despesas estejam carregados. Acesse as duas abas primeiro e depois retorne aqui.</div>
         <div class="feature-chips" style="justify-content:center;margin-top:16px">
-          <span class="chip">💰 Lucro bruto e líquido</span><span class="chip">📊 Margem bruta e líquida %</span><span class="chip">🌊 Waterfall receita → despesas → lucro</span><span class="chip">📉 EBITDA simplificado</span><span class="chip">🎯 Ponto de equilíbrio mensal</span><span class="chip">⚠️ Alerta: margem abaixo de 15%</span>
+          <span class="chip">📈 Receita via Google Sheets</span>
+          <span class="chip">📉 Despesas via Google Sheets</span>
+          <span class="chip">💡 Lucro = Receita − Despesas</span>
+          <span class="chip">📊 Margem Líquida %</span>
         </div>
       </div>
     </div>
@@ -1694,15 +1754,22 @@
     <!-- ════ ABA: FIN-PAGAMENTOS ════ -->
     <div class="tab-pane" id="tab-fin-pagamentos">
       <div class="section-header">
-        <div><div class="section-title">💳 Formas de Pagamento</div><div class="section-sub">Como os alunos pagam e onde está o risco</div></div>
-        <span class="badge badge-amber">Em construção</span>
+        <div>
+          <div class="section-title">💳 Formas de Pagamento</div>
+          <div class="section-sub">Distribuição de pagamentos — BD_Recebimento</div>
+        </div>
+        <span class="badge badge-amber">Em breve · BD_Recebimento</span>
       </div>
       <div class="fin-placeholder-wrap">
         <div class="fin-ph-icon">💳</div>
         <div class="fin-ph-title">Formas de Pagamento</div>
-        <div class="fin-ph-desc">Como os alunos pagam e onde está o risco</div>
+        <div class="fin-ph-desc">Esta aba será alimentada pela aba <strong>BD_Recebimento</strong> do Google Sheets, que ainda está em estruturação. Assim que os dados estiverem disponíveis, serão exibidos: distribuição por forma de pagamento, evolução mensal e comparativo por parceiro.</div>
         <div class="feature-chips" style="justify-content:center;margin-top:16px">
-          <span class="chip">💳 % por forma: PIX, cartão, boleto, agregadores</span><span class="chip">📊 Concentração por canal</span><span class="chip">⏱️ Prazo médio de recebimento</span><span class="chip">🔄 Churn involuntário (cartão vencido)</span><span class="chip">⚠️ Alerta: +50% em canal único</span><span class="chip">📈 Tendência PIX vs cartão</span>
+          <span class="chip">💳 Cartão de Crédito</span>
+          <span class="chip">📱 PIX</span>
+          <span class="chip">💵 Dinheiro</span>
+          <span class="chip">🏦 Débito</span>
+          <span class="chip">📊 Evolução mensal</span>
         </div>
       </div>
     </div>
@@ -1752,31 +1819,67 @@
       </div>
     </div>
     <!-- ════ ABA: CLIENTES ════ -->
-    <div class="tab-pane" id="tab-clientes">
+    <!-- ════ CHAMADOS ════ -->
+    <div class="tab-pane" id="tab-cham-expirados">
       <div class="section-header">
-        <div><div class="section-title">Clientes 🔥</div><div class="section-sub">Análise de base de clientes, churn e retenção</div></div>
-        <span class="badge badge-amber">Em desenvolvimento</span>
+        <div>
+          <div class="section-title">⏰ Expirados</div>
+          <div class="section-sub">Contratos vencidos — Mensais, Trimestrais e Anuais</div>
+        </div>
+        <span class="badge badge-red">Aguardando dados</span>
       </div>
-      <div class="placeholder-area">
-        <div class="placeholder-icon">👥</div>
-        <div class="placeholder-title">Módulo de Clientes</div>
-        <div class="placeholder-desc">Este módulo está em construção e trará análises detalhadas sobre a base de clientes, churn, aquisição e retenção.</div>
-        <div class="feature-chips">
-          <span class="chip">📈 Evolução da base</span><span class="chip">🔄 Taxa de churn</span>
-          <span class="chip">🎯 LTV (Lifetime Value)</span><span class="chip">🆕 Novos cadastros</span>
-          <span class="chip">⚠️ Risco de cancelamento</span><span class="chip">📅 Aniversariantes do mês</span>
-          <span class="chip">📊 Segmentação por plano</span><span class="chip">🔗 Clientes por agregador</span>
+      <div class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">⏰</div>
+        <div class="fin-ph-title">Contratos Expirados</div>
+        <div class="fin-ph-desc">Lista de alunos com contratos vencidos, segmentados por plano. Requer integração com a base de dados do EVO para exibir: nome, plano, data de expiração e último acesso.</div>
+        <div class="feature-chips" style="justify-content:center;margin-top:16px">
+          <span class="chip">📅 Mensais</span>
+          <span class="chip">📅 Trimestrais</span>
+          <span class="chip">📅 Anuais</span>
+          <span class="chip">📲 Ação: recontato</span>
         </div>
       </div>
-      <div class="cards-grid">
-        <div class="kpi-card" style="opacity:.4;pointer-events:none"><div class="kpi-icon">👤</div><div class="kpi-label">Clientes Ativos</div><div class="kpi-value">—</div></div>
-        <div class="kpi-card" style="opacity:.4;pointer-events:none"><div class="kpi-icon">🆕</div><div class="kpi-label">Novos (mês)</div><div class="kpi-value">—</div></div>
-        <div class="kpi-card red" style="opacity:.4;pointer-events:none"><div class="kpi-icon">🚪</div><div class="kpi-label">Churn (mês)</div><div class="kpi-value">—</div></div>
-        <div class="kpi-card amber" style="opacity:.4;pointer-events:none"><div class="kpi-icon">💡</div><div class="kpi-label">Taxa de Retenção</div><div class="kpi-value">—</div></div>
+    </div>
+
+    <div class="tab-pane" id="tab-cham-inadimplencia">
+      <div class="section-header">
+        <div>
+          <div class="section-title">⚠️ Inadimplência</div>
+          <div class="section-sub">Ativos e expirados com pendência financeira</div>
+        </div>
+        <span class="badge badge-red">Aguardando dados</span>
       </div>
-      <div class="finance-row">
-        <div class="placeholder-area" style="padding:36px 20px"><div class="placeholder-icon" style="font-size:32px">📊</div><div class="placeholder-title" style="font-size:15px">Evolução da Base</div><div class="placeholder-desc" style="font-size:12px">Gráfico de linha com entrada/saída mensal</div></div>
-        <div class="placeholder-area" style="padding:36px 20px"><div class="placeholder-icon" style="font-size:32px">🍩</div><div class="placeholder-title" style="font-size:15px">Segmentação por Plano</div><div class="placeholder-desc" style="font-size:12px">Distribuição de clientes por tipo de plano</div></div>
+      <div class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">⚠️</div>
+        <div class="fin-ph-title">Inadimplência</div>
+        <div class="fin-ph-desc">Alunos com pagamentos em atraso — contratos ativos ou expirados. Requer integração com o EVO para exibir: nome, valor em aberto, dias de atraso e histórico de pagamento.</div>
+        <div class="feature-chips" style="justify-content:center;margin-top:16px">
+          <span class="chip">🔴 Ativos inadimplentes</span>
+          <span class="chip">🔴 Expirados com débito</span>
+          <span class="chip">📊 Valor total em aberto</span>
+          <span class="chip">📲 Ação: cobrança</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane" id="tab-cham-oportunidades">
+      <div class="section-header">
+        <div>
+          <div class="section-title">🎯 Oportunidades</div>
+          <div class="section-sub">Cadastros experimentais e incompletos no site</div>
+        </div>
+        <span class="badge badge-amber">Aguardando dados</span>
+      </div>
+      <div class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">🎯</div>
+        <div class="fin-ph-title">Oportunidades</div>
+        <div class="fin-ph-desc">Leads que iniciaram um cadastro experimental ou não completaram a contratação. Requer integração com o formulário do site para exibir: nome, data do cadastro, plano de interesse e status.</div>
+        <div class="feature-chips" style="justify-content:center;margin-top:16px">
+          <span class="chip">🧪 Experimentais</span>
+          <span class="chip">📝 Cadastro incompleto</span>
+          <span class="chip">📲 Ação: conversão</span>
+          <span class="chip">📊 Taxa de conversão</span>
+        </div>
       </div>
     </div>
 
@@ -1786,18 +1889,17 @@
 
 <!-- ═══ BOTTOM NAV (mobile portrait) ═══ -->
 <nav class="bottom-nav" id="bottom-nav">
-  <div class="bn-item active" onclick="switchTab('vendas',this)" data-tab="vendas">
+  <div class="bn-item active" onclick="switchTab('fin-vendas',this)" data-tab="vendas">
     <span class="bn-icon">📊</span><span>Vendas</span>
   </div>
-  <div class="bn-item" onclick="switchTab('agregadores',this)" data-tab="agregadores">
-    <span class="bn-icon">🔗</span><span>Agregador</span>
-  </div>
-  <div class="bn-item" onclick="switchTab('fin-visao',this)" data-tab="financeiro">
+  <div class="bn-item" onclick="switchTab('fin-faturamento',this)" data-tab="financeiro">
     <span class="bn-icon">💰</span><span>Financeiro</span>
   </div>
-  <div class="bn-item" onclick="switchTab('clientes',this)" data-tab="clientes">
-    <span class="bn-icon">🔥</span><span>Clientes</span>
-    <span class="bn-badge">N</span>
+  <div class="bn-item" onclick="switchTab('agregadores',this)" data-tab="agregadores">
+    <span class="bn-icon">🔗</span><span>Parceiros</span>
+  </div>
+  <div class="bn-item" onclick="switchTab('cham-expirados',this)" data-tab="chamados">
+    <span class="bn-icon">📋</span><span>Chamados</span>
   </div>
 </nav>
 
@@ -1990,25 +2092,23 @@ function toast(msg, icon='✅') {
 //  NAVEGAÇÃO
 // ╚══════════════════════════════════════════════════════════╝
 const tabMeta = {
-  vendas:         { title:'Vendas',              sub:'Análise de vendas e desempenho comercial' },
-  agregadores:    { title:'Agregadores',          sub:'TotalPass · Gympass · Wellhub — via Google Sheets' },
-  'fin-visao':    { title:'Visão Geral',          sub:'Saúde financeira da unidade em tempo real', fin:true },
-  'fin-receita':  { title:'Receita',              sub:'Origem, composição e evolução da receita', fin:true },
-  'fin-despesas': { title:'Despesas',             sub:'Despesas reais via Google Sheets', fin:true },
-  'fin-lucro':    { title:'Lucro & Margem',       sub:'Rentabilidade real -- não apenas faturamento', fin:true },
-  'fin-caixa':    { title:'Fluxo de Caixa',       sub:'Projeção de entradas e saídas', fin:true },
-  'fin-pagamentos':{ title:'Formas de Pagamento', sub:'Como os alunos pagam e onde está o risco', fin:true },
-  'fin-vendas':    { title:'Vendas por Colaborador', sub:'Ranking de vendas, produtos e formas de pagamento por recepcionista', fin:true },
-  'fin-detalhes':  { title:'Vendas Detalhadas',       sub:'Raio-X por categoria, plano e comparativo entre colaboradores', fin:true },
-  'fin-faturamento':{ title:'Faturamento Geral',      sub:'Faturamento oficial via Google Sheets — Base_de_Dados', fin:true },
-  retencao:       { title:'Retenção & Churn',     sub:'Quantos alunos ficam e por que saem' },
-  inadimplencia:  { title:'Inadimplência',        sub:'Receita esperada que não entrou' },
-  indicadores:    { title:'Indicadores',          sub:'Métricas estratégicas de longo prazo' },
-  clientes:       { title:'Clientes 🔥',          sub:'Base de clientes, retenção e churn' },
+  'fin-vendas':         { title:'Vendas por Colaborador', sub:'Ranking de vendas e desempenho por recepcionista' },
+  'fin-detalhes':       { title:'Vendas Detalhadas',       sub:'Raio-X por categoria, plano e colaborador' },
+  'fin-faturamento':    { title:'Receita',                 sub:'Faturamento oficial — EVO · WellHub · TotalPass' },
+  'fin-despesas':       { title:'Despesas',                sub:'Lançamentos reais via Google Sheets' },
+  'fin-lucro':          { title:'Lucro',                   sub:'Receita − Despesas — resultado operacional' },
+  'fin-pagamentos':     { title:'Formas de Pagamento',     sub:'Distribuição de pagamentos — BD_Recebimento' },
+  'agregadores':        { title:'Agregadores',             sub:'TotalPass · WellHub — métricas por parceiro' },
+  'cham-expirados':     { title:'Expirados',               sub:'Mensais, Trimestrais e Anuais vencidos' },
+  'cham-inadimplencia': { title:'Inadimplência',           sub:'Ativos e expirados com pendência financeira' },
+  'cham-oportunidades': { title:'Oportunidades',           sub:'Cadastros experimentais e incompletos no site' },
 };
 
 // Grupo financeiro aberto por padrão ao clicar em qualquer sub-aba financeira
-const FIN_TABS = ['fin-visao','fin-receita','fin-vendas','fin-detalhes','fin-faturamento','fin-despesas','fin-lucro','fin-caixa','fin-pagamentos'];
+const VND_TABS   = ['fin-vendas','fin-detalhes'];
+const FIN_TABS   = ['fin-visao','fin-faturamento','fin-despesas','fin-lucro','fin-caixa','fin-pagamentos'];
+const AGR_TABS   = ['agregadores'];
+const CHAM_TABS  = ['cham-expirados','cham-inadimplencia','cham-oportunidades'];
 
 function switchTab(tab, el) {
   // Limpa seleção
@@ -2031,39 +2131,45 @@ function switchTab(tab, el) {
     if (el.classList.contains('nav-item')) el.classList.add('active');
   }
 
-  // Lógica do filtro de período e grupo financeiro
+  // Lógica de grupos da sidebar + filtro de período
   const pf = document.getElementById('period-filter');
-  if (FIN_TABS.includes(tab)) {
-    // Abrir grupo financeiro na sidebar
-    const grp  = document.getElementById('fin-group');
-    const chev = document.getElementById('fin-chevron');
-    if (grp)  grp.classList.add('open');
-    if (chev) chev.classList.add('open');
-    // Mostrar filtro só em Despesas
-    if (tab === 'fin-despesas') {
-      pf.classList.add('show');
-      if (!finLoaded) loadFinanceiro(false);
-    } else if (tab === 'fin-faturamento') {
-      pf.classList.remove('show');
-      if (!fatLoaded) loadFaturamento(false);
-    } else {
-      pf.classList.remove('show');
-    }
-  } else {
-    pf.classList.remove('show');
-    if (tab === 'agregadores' && !aggLoaded) loadAgregadores(false);
-  }
+  if (pf) pf.classList.remove('show');
 
+  // Fechar todos os grupos e reabrir o relevante
+  ['vnd-group','fin-group','cham-group'].forEach(id => {
+    const g=document.getElementById(id), c=document.getElementById(id.replace('group','chevron'));
+    if(g) g.classList.remove('open');
+    if(c) c.classList.remove('open');
+  });
+
+  if (VND_TABS.includes(tab)) {
+    const g=document.getElementById('vnd-group'), c=document.getElementById('vnd-chevron');
+    if(g) g.classList.add('open'); if(c) c.classList.add('open');
+
+  } else if (FIN_TABS.includes(tab)) {
+    const g=document.getElementById('fin-group'), c=document.getElementById('fin-chevron');
+    if(g) g.classList.add('open'); if(c) c.classList.add('open');
+    if(tab==='fin-despesas'){ if(pf) pf.classList.add('show'); if(!finLoaded) loadFinanceiro(false); }
+    if(tab==='fin-faturamento' && !fatLoaded) loadFaturamento(false);
+    if(tab==='fin-lucro') renderLucro();
+
+  } else if (AGR_TABS.includes(tab)) {
+    if(!aggLoaded) loadAgregadores(false);
+
+  } else if (CHAM_TABS.includes(tab)) {
+    const g=document.getElementById('cham-group'), c=document.getElementById('cham-chevron');
+    if(g) g.classList.add('open'); if(c) c.classList.add('open');
+  }
   syncBottomNav(tab);
   closeModal(null);
 }
 
 function syncBottomNav(tab) {
-  const bnMap = {
-    vendas:'vendas', agregadores:'agregadores', clientes:'clientes',
-  };
-  FIN_TABS.forEach(t => { bnMap[t] = 'financeiro'; });
-  ['retencao','inadimplencia','indicadores'].forEach(t => { bnMap[t] = 'financeiro'; });
+  const bnMap = {};
+  VND_TABS.forEach(t   => { bnMap[t] = 'vendas'; });
+  FIN_TABS.forEach(t   => { bnMap[t] = 'financeiro'; });
+  AGR_TABS.forEach(t   => { bnMap[t] = 'agregadores'; });
+  CHAM_TABS.forEach(t  => { bnMap[t] = 'chamados'; });
   const target = bnMap[tab] || tab;
   document.querySelectorAll('.bn-item').forEach(n => {
     n.classList.toggle('active', n.dataset.tab === target);
@@ -2073,14 +2179,10 @@ function syncBottomNav(tab) {
 function toggleNavGroup(groupId) {
   const group   = document.getElementById(groupId);
   const chevron = document.getElementById(groupId.replace('group','chevron'));
-  const isOpen  = group.classList.contains('open');
+  if (!group) return;
+  const isOpen = group.classList.contains('open');
   group.classList.toggle('open', !isOpen);
   if (chevron) chevron.classList.toggle('open', !isOpen);
-  // Ao abrir o grupo financeiro, navega para Visão Geral
-  if (!isOpen && groupId === 'fin-group') {
-    const first = group.querySelector('.nav-sub');
-    if (first) switchTab('fin-visao', first);
-  }
 }
 
 // ╔══════════════════════════════════════════════════════════╗
@@ -2848,11 +2950,13 @@ const DIAS_SEMANA   = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','
 const CORES_COLAB   = ['#1e6fe8','#22c55e','#f59e0b','#7c3aed','#ef4444','#0ea5e9','#f97316','#ec4899','#14b8a6','#6b7280','#84cc16','#a855f7','#fb923c','#06b6d4','#e11d48'];
 
 function normPgto(fp) {
-  const f = String(fp||'').toLowerCase();
-  if (f.includes('crédito')||f.includes('credito')||f.includes('online')||f.includes('transação')) return 'Crédito';
-  if (f.includes('débito')||f.includes('debito'))   return 'Débito';
-  if (f.includes('pix')||f.includes('transfer')||f.includes('depósito')) return 'PIX/Transf.';
+  // Recebe pgtoEfetivo — já com a DESCRIÇÃO substituída quando era "Transação On-line"
+  const f = String(fp || '').toLowerCase();
+  if (f.includes('crédito') || f.includes('credito')) return 'Crédito';
+  if (f.includes('débito')  || f.includes('debito'))  return 'Débito';
+  if (f.includes('pix') || f.includes('transfer') || f.includes('depósito')) return 'PIX/Transf.';
   if (f.includes('dinheiro')) return 'Dinheiro';
+  if (f === 'transação on-line' || f.includes('online')) return 'Crédito'; // fallback
   return 'Outros';
 }
 
@@ -2881,76 +2985,235 @@ function getSemanaLabel(dt) {
   };
 }
 
+
+// ╔══════════════════════════════════════════════════════════╗
+//  DICIONÁRIO DE PREÇOS BASE — atribuição sem rateio simples
+//  Adicione produtos aqui conforme necessário (chave = "Produto-Nome")
+// ╚══════════════════════════════════════════════════════════╝
+const precosBase = {
+  "Produto-Baby Look Azul Marinho M": 79.90,
+  "Produto-Baby Look Rosa M": 79.90,
+  "Produto-Barrinha Bold": 15.00,
+  "Produto-Barrinha Creatine bar": 15.00,
+  "Produto-Barrinha Joy Canela": 6.00,
+  "Produto-Barrinha Joy Clássico": 6.00,
+  "Produto-Barrinha Nutrata Brigadeiro": 15.00,
+  "Produto-Barrinha Nutrata Morango e Chanthly": 15.00,
+  "Produto-Barrinha Nutrata Mouse de Maracujá": 15.00,
+  "Produto-Barrinha Nutrata Torta de limão": 15.00,
+  "Produto-Barrinha Nutry Banana ": 5.00,
+  "Produto-Barrinha Ovomaltine": 7.00,
+  "Produto-C4 sache": 12.00,
+  "Produto-Camiseta Azul Claro G": 79.90,
+  "Produto-Camiseta Azul Claro M": 79.90,
+  "Produto-Camiseta Azul Claro P": 79.90,
+  "Produto-Camiseta Azul Marinho G": 79.90,
+  "Produto-Camiseta Azul Marinho M": 79.90,
+  "Produto-Camiseta Azul Marinho P": 79.90,
+  "Produto-Camiseta Manga comprida Sky Fit": 99.90,
+  "Produto-Camiseta Personal G": 89.90,
+  "Produto-Camiseta Personal M": 89.90,
+  "Produto-Camiseta Personal P": 89.90,
+  "Produto-Camiseta Rosa G": 79.90,
+  "Produto-Camiseta Rosa M": 79.90,
+  "Produto-Chiclete Mentos": 3.00,
+  "Produto-Chocowheyfer +Mu": 12.00,
+  "Produto-Chocowheyfer +Mu BAUNILHA": 13.00,
+  "Produto-Chocowheyfer +Mu COOKIE AND CREAM": 13.00,
+  "Produto-Chá Mate Leão Limão": 8.00,
+  "Produto-Chá Mate Leão Original": 8.00,
+  "Produto-Chá Pessego": 7.00,
+  "Produto-Chá verde": 8.00,
+  "Produto-Coca-Cola Zero Lata": 7.00,
+  "Produto-Combo Anabólico": 59.90,
+  "Produto-Combo TestoMix": 32.90,
+  "Produto-Combo Trembolizado": 27.90,
+  "Produto-Cookie Unidade": 14.90,
+  "Produto-Coqueteleira Azul e vermelha": 25.00,
+  "Produto-Coqueteleira Rosa e verde": 25.00,
+  "Produto-Coqueteleira Verde e preta": 25.00,
+  "Produto-Coqueteleira Vermelha e preta": 25.00,
+  "Produto-Elástico de Cabelo": 1.00,
+  "Produto-Energel": 15.00,
+  "Produto-Garrafinha Sky": 15.00,
+  "Produto-Gatorade ": 10.00,
+  "Produto-Gatorade Berry Blue ": 10.00,
+  "Produto-Gatorade Laranja": 10.00,
+  "Produto-Gatorade Limão": 10.00,
+  "Produto-Gatorade Morango": 10.00,
+  "Produto-Gatorade Tangerina": 10.00,
+  "Produto-Gatorade Uva": 10.00,
+  "Produto-Guaraviton ": 7.00,
+  "Produto-H2O Limoneto": 7.00,
+  "Produto-Itts Berry 473ML": 12.00,
+  "Produto-Itts Berrys 269ML": 10.00,
+  "Produto-Itts Berrys 473ML": 15.00,
+  "Produto-Itts Cereja com Laranja 269ML": 10.00,
+  "Produto-Itts Cereja com laranja 473ML": 12.00,
+  "Produto-Itts Creatina 473ML": 15.00,
+  "Produto-Itts Framboesa com limão 269ML": 10.00,
+  "Produto-Itts Maça verde 269ML": 10.00,
+  "Produto-Itts Maça verde 473ML": 15.00,
+  "Produto-Itts Melancia 269ML": 10.00,
+  "Produto-Itts Melancia 473ML": 12.00,
+  "Produto-Itts Morango com hortelã 269ML": 10.00,
+  "Produto-Itts Morango com hortelã 473ML": 15.00,
+  "Produto-Itts Original  269ML": 10.00,
+  "Produto-Itts Tropical 269ML": 10.00,
+  "Produto-Panic Maça Verde": 12.00,
+  "Produto-Panic de Manga e Laranja": 12.00,
+  "Produto-Refrigerante Coca-Cola Zero": 7.00,
+  "Produto-Refrigerante Coca-cola": 3.00,
+  "Produto-Refrigerante Guaraná": 3.00,
+  "Produto-Regata Sky Fit": 79.90,
+  "Produto-Suco Natural One Laranja": 6.00,
+  "Produto-Suco Natural One Uva": 6.00,
+  "Produto-Whey Piracanjuba Chocolate": 10.00,
+  "Produto-Whey Piracanjuba Morango": 10.00,
+  "Produto-Água c/ gás ": 6.00,
+  "Produto-Água c/ gás": 6.00,
+  "Produto-Água de coco": 4.00,
+  "Produto-Água s/ gás": 5.00,
+};
+
 function parseCaixaRow(row) {
-  const tipo=String(row['TIPO']||'').trim();
-  const excl=String(row['VENDA EXCLUÍDA']||'').trim();
-  const canc=String(row['RECEBIMENTO CANCELADO']||'').trim();
-  if (!['Recebimento','Recebimento retroativo'].includes(tipo)) return null;
-  if (excl==='Sim') return null;
-  if (canc==='Sim') return null;
+  // ── Filtro 1: apenas Recebimento (não retroativo) ─────────────────────
+  const tipo = String(row['TIPO'] || '').trim();
+  if (tipo !== 'Recebimento') return null;
 
-  const colab=String(row['COLABORADOR']||'').trim();
-  const dt=parseCaixaData(row['DATA DA VENDA']);
-  const dataStr=dt?dt.toISOString().slice(0,10):'';
-  const mesKey=dt?`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`:'';
-  const mesLabel=dt?dt.toLocaleDateString('pt-BR',{month:'long',year:'numeric'}):'';
-  const diaSemana=dt?dt.getDay():null;
-  const hora=dt?dt.getHours():null;
-  const {key:semanaKey,label:semanaLabel}=getSemanaLabel(dt);
+  // ── Filtro 2: descartar cancelados (VENDA EXCLUÍDA é ignorado) ────────
+  const canc = String(row['RECEBIMENTO CANCELADO'] || '').trim();
+  if (canc === 'Sim') return null;
 
-  const vendaRaw=String(row['VENDA']||'').trim();
-  const dashIdx=vendaRaw.indexOf('-');
-  const item=dashIdx>=0?vendaRaw.slice(0,dashIdx).trim():vendaRaw;
-  // Dentro do resto após o '-', cortar antes do próximo "/Categoria-"
-  // para não contaminar desc com itens de vendas multi-item
-  const _resto=dashIdx>=0?vendaRaw.slice(dashIdx+1):'';
-  const _multi=/\/(Produto|Serviço|Contrato|Loja)-/.exec(_resto);
-  const desc=_multi?_resto.slice(0,_multi.index).trim():_resto.trim();
+  // ── Colaborador: branco/nulo → "Sistema / Online" ─────────────────────
+  const colabRaw  = String(row['COLABORADOR'] || '').trim();
+  const colabBase = colabRaw || 'Sistema / Online';
 
-  const valor=parseFloat(String(row['VALOR']||'0').replace(/\./g,'').replace(',','.'))||0;
-  const pgto=String(row['FORMAS DE PAGAMENTO']||'').trim();
-  const pgtoNorm=normPgto(pgto);
+  // ── Data oficial: DATA DA VENDA ────────────────────────────────────────
+  const dt       = parseCaixaData(row['DATA DA VENDA']);
+  const dataStr  = dt ? dt.toISOString().slice(0, 10) : '';
+  const mesKey   = dt ? `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}` : '';
+  const mesLabel = dt ? dt.toLocaleDateString('pt-BR', { month:'long', year:'numeric' }) : '';
+  const diaSemana = dt ? dt.getDay()    : null;
+  const hora      = dt ? dt.getHours()  : null;
+  const { key:semanaKey, label:semanaLabel } = getSemanaLabel(dt);
 
-  let turno='Outros';
-  let colabFinal = colab;
-  if (hora!==null) {
-    if (hora>=5&&hora<11) turno='Manhã (05–11h)';
-    else if (hora>=11&&hora<18) turno='Tarde (11–18h)';
-    else if (hora>=18&&hora<23) turno='Noite (18–23h)';
+  // ── Turno + tratamento 00h (renovação automática) ──────────────────────
+  let turno     = 'Outros';
+  let colabFinal = colabBase;
+  if (hora !== null) {
+    if      (hora >= 5  && hora < 11) turno = 'Manhã (05–11h)';
+    else if (hora >= 11 && hora < 18) turno = 'Tarde (11–18h)';
+    else if (hora >= 18 && hora < 23) turno = 'Noite (18–23h)';
   }
-  // Renovações automáticas: DATA DA VENDA às 00:00 = cobrança recorrente/online
-  if (hora===0) {
+  if (hora === 0) {
     colabFinal = 'Sistema Evo / Automático';
-    turno = 'Automático (00h)';
+    turno      = 'Automático (00h)';
   }
 
-  // idVenda para contar transações únicas (ticket médio correto)
-  const idVenda = String(row['ID DA VENDA']||'').trim();
+  // ── Pagamento: Transação On-line → ler DESCRIÇÃO ────────────────────────
+  const pgtoRaw = String(row['FORMAS DE PAGAMENTO'] || '').trim();
+  const desc_pg = String(row['DESCRIÇÃO'] || '').trim();
+  const pgtoEfetivo = (pgtoRaw === 'Transação On-line' && desc_pg && desc_pg !== '-')
+    ? desc_pg    // ex: "Cartão de Crédito 1/1", "Cartão de Crédito 8/12"
+    : pgtoRaw;
+  const pgtoNorm = normPgto(pgtoEfetivo);
 
-  return {colab:colabFinal,colabOriginal:colab,dt,dataStr,mesKey,mesLabel,diaSemana,hora,turno,semanaKey,semanaLabel,item,desc,valor,pgto,pgtoNorm,tipo,qty:1,idVenda};
+  // ── Valor total da linha ───────────────────────────────────────────────
+  const valorTotal = parseFloat(
+    String(row['VALOR'] || '0').replace(/\./g, '').replace(',', '.')
+  ) || 0;
+
+  // ── ID da venda e raw da coluna VENDA ─────────────────────────────────
+  const idVenda  = String(row['ID DA VENDA'] || '').trim();
+  const vendaRaw = String(row['VENDA']       || '').trim();
+
+  // ── Desmembramento inteligente com regex ──────────────────────────────
+  // Não quebrar em "/" de nomes (ex: "Água c/ gás"), só em "/Produto-", "/Contrato-", "/Serviço-"
+  const partes = vendaRaw.split(/\/(?=(?:Produto|Contrato|Servi[çc]o|Loja)-)/);
+
+  // ── Atribuição de valor sem rateio simples ────────────────────────────
+  // 1) Somar preços dos itens presentes no dicionário
+  let somaFixos = 0;
+  let naoFixos  = [];
+  partes.forEach(p => {
+    const chave = p.trim();
+    if (precosBase[chave] !== undefined) {
+      somaFixos += precosBase[chave];
+    } else {
+      naoFixos.push(chave);
+    }
+  });
+  // 2) Resto (valorTotal - somaFixos) dividido igualmente entre os não-fixos
+  const restoUnitario = naoFixos.length > 0
+    ? Math.max(0, valorTotal - somaFixos) / naoFixos.length
+    : 0;
+
+  // ── Montar um registro por item ────────────────────────────────────────
+  const registros = partes.map(p => {
+    const chave   = p.trim();
+    const dashIdx = chave.indexOf('-');
+    const item    = dashIdx >= 0 ? chave.slice(0, dashIdx).trim()    : chave;
+    const descItem= dashIdx >= 0 ? chave.slice(dashIdx + 1).trim()   : chave;
+    const valorItem = precosBase[chave] !== undefined
+      ? precosBase[chave]
+      : restoUnitario;
+
+    return {
+      colab:         colabFinal,
+      colabOriginal: colabRaw,
+      dt, dataStr, mesKey, mesLabel,
+      diaSemana, hora, turno,
+      semanaKey, semanaLabel,
+      item,          // "Produto", "Contrato", "Serviço", etc.
+      desc:          descItem,
+      valor:         valorItem,
+      valorOriginal: valorTotal,
+      pgto:          pgtoEfetivo,
+      pgtoNorm,
+      tipo,
+      qty:           1,
+      idVenda,
+      nItens:        partes.length,
+    };
+  });
+
+  // Retornar array de registros (pode ser 1 ou N para multi-item)
+  return registros;
 }
+
 
 function handleCaixaUpload(evt) {
   const file = evt.target.files[0]; if (!file) return;
   toast('Lendo arquivo…', '⏳');
 
   function processarLinhas(raw) {
-    const linhas = raw.map(parseCaixaRow).filter(Boolean)
-                      .filter(r => !IGNORE_COLABS.has(r.colab));
+    // parseCaixaRow agora retorna array de registros (1..N por linha de multi-item)
+    const linhas = raw
+      .flatMap(row => parseCaixaRow(row) || [])   // achatar arrays de multi-item
+      .filter(r => !IGNORE_COLABS.has(r.colab));  // remover colabs ignorados
+
     if (!linhas.length) {
       toast('Nenhum recebimento válido — verifique o arquivo', '⚠️'); return;
     }
+
     caixaRows          = linhas;
     vndStore.contratos = linhas.filter(r => r.item === 'Contrato');
     vndStore.produtos  = linhas.filter(r => r.item !== 'Contrato');
-    document.getElementById('vnd-badge-c').textContent   = '● ' + linhas.length + ' registros';
+
+    // Contagem de vendas únicas (IDs distintos) para exibição
+    const idsUnicos = new Set(linhas.map(r => r.idVenda).filter(Boolean)).size;
+
+    document.getElementById('vnd-badge-c').textContent   = `● ${linhas.length} itens · ${idsUnicos} vendas`;
     document.getElementById('vnd-badge-c').style.display = 'inline-block';
     const btnPdf = document.getElementById('vnd-btn-pdf');
     if (btnPdf) btnPdf.style.display = 'inline-flex';
-    document.getElementById('vnd-sub').textContent = file.name + ' · ' + linhas.length + ' recebimentos válidos';
+    document.getElementById('vnd-sub').textContent =
+      `${file.name} · ${linhas.length} itens · ${idsUnicos} vendas únicas`;
+
     popularFiltros();
     renderVendas();
-    toast(linhas.length + ' recebimentos carregados', '🏆');
+    toast(`${idsUnicos} vendas carregadas (${linhas.length} itens)`, '🏆');
   }
 
   const reader = new FileReader();
@@ -3516,7 +3779,7 @@ function renderFaturamento(rows) {
   const MESES_ORD = ['janeiro','fevereiro','março','abril','maio','junho',
                      'julho','agosto','setembro','outubro','novembro','dezembro'];
   const SISTEMAS  = ['EVO','WellHub','TotalPass'];
-  const COR_SIS   = { EVO:'#1e6fe8', WellHub:'#f59e0b', TotalPass:'#22c55e' };
+  const COR_SIS   = { EVO:'#7c3aed', WellHub:'#ec4899', TotalPass:'#22c55e' };
 
   const validos = rows.filter(r => (parseFloat(r['Valor']) || 0) > 0);
   if (!validos.length) {
@@ -3734,291 +3997,159 @@ function exportarRelatorio(aba) {
 //  EXPORTAR PDF — ABA FATURAMENTO GERAL
 // ╚══════════════════════════════════════════════════════════╝
 async function exportarFaturamentoPDF() {
-  // Verificar dependências
   if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
-    toast('Carregando bibliotecas de PDF…', '⏳');
-    await new Promise(r => setTimeout(r, 1500));
-    if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
-      toast('Erro: bibliotecas não carregadas. Recarregue a página.', '❌');
-      return;
-    }
+    toast('Bibliotecas PDF não carregadas. Recarregue a página.', '❌'); return;
   }
-
   toast('Gerando PDF…', '⏳');
-
   try {
     const { jsPDF } = jspdf;
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const W   = pdf.internal.pageSize.getWidth();   // 210mm
-    const H   = pdf.internal.pageSize.getHeight();  // 297mm
-    const MAR = 12; // margem lateral mm
-    const CW  = W - MAR * 2; // largura útil
-    let cursorY = MAR;
+    const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const W=210, H=297, MAR=14, CW=W-MAR*2;
+    let Y = MAR;
 
-    // ── Paleta ──────────────────────────────────────────────
-    const VERDE  = [34, 197, 94];
-    const AZUL   = [30, 111, 232];
-    const ESCURO = [15, 28, 45];
-    const CINZA  = [139, 163, 177];
-    const BORDA  = [226, 234, 240];
+    const VERDE=[34,197,94], ROXO=[124,58,237], ESCURO=[15,28,45], CINZA=[139,163,177], BORDA=[226,234,240];
 
-    // ── Helper: adicionar nova página se necessário ──────────
-    function checkPage(needed) {
-      if (cursorY + needed > H - MAR) {
-        pdf.addPage();
-        cursorY = MAR;
-      }
-    }
+    function ck(n){ if(Y+n>H-MAR){ pdf.addPage(); Y=MAR; } }
 
-    // ── Helper: capturar elemento como imagem PNG ────────────
-    async function captureEl(el, opts = {}) {
-      const canvas = await html2canvas(el, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: document.body.classList.contains('dark') ? '#1a2535' : '#ffffff',
-        logging: false,
-        ...opts
-      });
-      return canvas.toDataURL('image/png');
-    }
-
-    // ══════════════════════════════════════════════════════
-    // CABEÇALHO
-    // ══════════════════════════════════════════════════════
-    pdf.setFillColor(...AZUL);
-    pdf.roundedRect(MAR, cursorY, CW, 20, 3, 3, 'F');
-    pdf.setTextColor(255, 255, 255);
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(13);
-    pdf.text('SkyFit Guarujá — Faturamento Geral', MAR + 5, cursorY + 8);
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(8);
+    // ── Cabeçalho ────────────────────────────────────────────────────────
+    pdf.setFillColor(...ROXO);
+    pdf.roundedRect(MAR,Y,CW,18,3,3,'F');
+    pdf.setTextColor(255,255,255);
+    pdf.setFont('helvetica','bold'); pdf.setFontSize(12);
+    pdf.text('SkyFit Guarujá — Receita', MAR+5, Y+7);
+    pdf.setFont('helvetica','normal'); pdf.setFontSize(7.5);
     const now = new Date();
-    const dtStr = now.toLocaleDateString('pt-BR', { day:'2-digit', month:'long', year:'numeric' });
-    pdf.text(`Gerado em ${dtStr}`, MAR + 5, cursorY + 15);
-    pdf.setTextColor(...ESCURO);
-    cursorY += 26;
+    pdf.text(`Gerado em ${now.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'})}`, MAR+5, Y+14);
+    pdf.setTextColor(...ESCURO); Y+=24;
 
-    // ══════════════════════════════════════════════════════
-    // KPIs — ler valores dos elementos DOM
-    // ══════════════════════════════════════════════════════
-    const kpiData = [
-      { label: 'Faturamento Total',  val: document.getElementById('fat-total')?.textContent    || '—', cor: VERDE },
-      { label: 'Períodos',           val: document.getElementById('fat-periodos')?.textContent || '—', cor: AZUL  },
-      { label: 'Melhor Mês',         val: document.getElementById('fat-melhor')?.textContent   || '—', cor: AZUL  },
-      { label: 'Média Mensal',       val: document.getElementById('fat-media')?.textContent    || '—', cor: AZUL  },
-    ];
-    const kpiSubData = [
-      document.getElementById('fat-total-sub')?.textContent  || '',
-      document.getElementById('fat-periodos-sub')?.textContent || '',
-      document.getElementById('fat-melhor-val')?.textContent  || '',
-      document.getElementById('fat-media-sub')?.textContent   || '',
-    ];
-
-    checkPage(32);
-    const kpiW = CW / 4 - 2;
-    kpiData.forEach((k, i) => {
-      const x = MAR + i * (kpiW + 2.7);
-      // Card background
-      pdf.setFillColor(245, 248, 252);
-      pdf.roundedRect(x, cursorY, kpiW, 26, 2, 2, 'F');
-      pdf.setDrawColor(...BORDA);
-      pdf.roundedRect(x, cursorY, kpiW, 26, 2, 2, 'S');
-      // Borda colorida topo
-      pdf.setFillColor(...k.cor);
-      pdf.roundedRect(x, cursorY, kpiW, 1.5, 0.5, 0.5, 'F');
-      // Label
-      pdf.setTextColor(...CINZA);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(6.5);
-      pdf.text(k.label.toUpperCase(), x + 3, cursorY + 7);
-      // Valor
-      pdf.setTextColor(...k.cor);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(k.val.length > 12 ? 8 : 10);
-      pdf.text(k.val, x + 3, cursorY + 15);
-      // Sub
-      pdf.setTextColor(...CINZA);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(6);
-      if (kpiSubData[i]) pdf.text(kpiSubData[i].slice(0,30), x + 3, cursorY + 22);
-    });
-    cursorY += 32;
-
-    // ══════════════════════════════════════════════════════
-    // GRÁFICO 1: Evolução (barras empilhadas — largura total)
-    // ══════════════════════════════════════════════════════
-    const canvasEvol = document.getElementById('chart-fat-evolucao');
-    if (canvasEvol) {
-      checkPage(80);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(9);
-      pdf.setTextColor(...ESCURO);
-      pdf.text('Evolução do Faturamento por Sistema', MAR, cursorY + 5);
-      cursorY += 8;
-      const imgEvol = await captureEl(canvasEvol.parentElement);
-      const cH = canvasEvol.parentElement.offsetHeight;
-      const ratio = cH / canvasEvol.parentElement.offsetWidth;
-      const imgH = CW * ratio;
-      checkPage(imgH + 4);
-      pdf.addImage(imgEvol, 'PNG', MAR, cursorY, CW, Math.min(imgH, 70));
-      cursorY += Math.min(imgH, 70) + 6;
+    // ── KPIs ──────────────────────────────────────────────────────────────
+    const kpiEl = document.getElementById('fat-kpis');
+    if (kpiEl && kpiEl.style.display !== 'none') {
+      ck(36);
+      const img = await capturePdfEl(kpiEl);
+      const kH  = pdfAddImg(pdf, img, MAR, Y, CW, 34);
+      Y += kH + 5;
     }
 
-    // ══════════════════════════════════════════════════════
-    // GRÁFICOS 2 e 3 lado a lado: doughnut + linha
-    // ══════════════════════════════════════════════════════
-    const canvasCat  = document.getElementById('chart-fat-cat');
-    const canvasBar  = document.getElementById('chart-fat-barras');
-    if (canvasCat && canvasBar) {
-      checkPage(72);
-      const halfW = (CW - 4) / 2;
+    // ── Gráfico evolução (largura total) ──────────────────────────────────
+    const cEvol = document.getElementById('chart-fat-evolucao');
+    if (cEvol) {
+      ck(68);
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5); pdf.setTextColor(...ESCURO);
+      pdf.text('Evolução do Faturamento por Sistema', MAR, Y+4); Y+=7;
+      const img = await capturePdfEl(cEvol.closest('.chart-wrap') || cEvol.parentElement);
+      const iH  = pdfAddImg(pdf, img, MAR, Y, CW, 62);
+      Y += iH + 6;
+    }
 
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(9);
-      pdf.setTextColor(...ESCURO);
-      pdf.text('Composição por Sistema', MAR, cursorY + 5);
-      pdf.text('Tendência Mensal', MAR + halfW + 4, cursorY + 5);
-      cursorY += 8;
-
-      const [imgCat, imgBar] = await Promise.all([
-        captureEl(canvasCat.parentElement),
-        captureEl(canvasBar.parentElement),
+    // ── Doughnut + Barras (lado a lado) ───────────────────────────────────
+    const cCat  = document.getElementById('chart-fat-cat');
+    const cBar  = document.getElementById('chart-fat-barras');
+    if (cCat && cBar) {
+      ck(64);
+      const HW = (CW-4)/2;
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(8); pdf.setTextColor(...ESCURO);
+      pdf.text('Composição por Sistema', MAR, Y+4);
+      pdf.text('Tendência Mensal', MAR+HW+4, Y+4); Y+=7;
+      const [i1,i2] = await Promise.all([
+        capturePdfEl(cCat.closest('.chart-wrap') || cCat.parentElement),
+        capturePdfEl(cBar.closest('.chart-wrap') || cBar.parentElement),
       ]);
-
-      const gH = 58;
-      pdf.addImage(imgCat, 'PNG', MAR,             cursorY, halfW, gH);
-      pdf.addImage(imgBar, 'PNG', MAR + halfW + 4, cursorY, halfW, gH);
-      cursorY += gH + 8;
+      const h1 = pdfAddImg(pdf, i1, MAR, Y, HW, 55);
+      const h2 = pdfAddImg(pdf, i2, MAR+HW+4, Y, HW, 55);
+      Y += Math.max(h1,h2) + 6;
     }
 
-    // ══════════════════════════════════════════════════════
-    // TABELA — ler do DOM (fat-table-wrap)
-    // ══════════════════════════════════════════════════════
-    const tableEl = document.getElementById('fat-table-wrap');
-    if (tableEl) {
-      checkPage(12);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(9);
-      pdf.setTextColor(...ESCURO);
-      pdf.text('Tabela de Faturamento — Mês × Sistema', MAR, cursorY + 5);
-      cursorY += 9;
-
-      // Capturar tabela como imagem (mais fiel)
-      const imgTable = await captureEl(tableEl, { backgroundColor: '#ffffff' });
-      const tEl = tableEl.querySelector('table');
-      const tRatio = tEl ? tEl.offsetHeight / tEl.offsetWidth : 0.4;
-      const tImgH  = Math.min(CW * tRatio, H - cursorY - MAR - 20);
-
-      checkPage(tImgH + 4);
-      pdf.addImage(imgTable, 'PNG', MAR, cursorY, CW, tImgH);
-      cursorY += tImgH + 6;
+    // ── Tabela ─────────────────────────────────────────────────────────────
+    const tblEl = document.getElementById('fat-table-wrap');
+    if (tblEl) {
+      ck(16);
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5); pdf.setTextColor(...ESCURO);
+      pdf.text('Tabela de Receita — Mês × Sistema', MAR, Y+4); Y+=7;
+      const img = await capturePdfEl(tblEl, { backgroundColor:'#ffffff' });
+      const iH  = pdfAddImg(pdf, img, MAR, Y, CW, H-Y-MAR-12);
+      Y += iH + 6;
     }
 
-    // ══════════════════════════════════════════════════════
-    // RODAPÉ em todas as páginas
-    // ══════════════════════════════════════════════════════
-    const totalPages = pdf.internal.getNumberOfPages();
-    for (let p = 1; p <= totalPages; p++) {
+    // ── Rodapé ────────────────────────────────────────────────────────────
+    const np = pdf.internal.getNumberOfPages();
+    for(let p=1;p<=np;p++){
       pdf.setPage(p);
-      pdf.setDrawColor(...BORDA);
-      pdf.line(MAR, H - 10, W - MAR, H - 10);
-      pdf.setTextColor(...CINZA);
-      pdf.setFont('helvetica', 'normal');
-      pdf.setFontSize(7);
-      pdf.text('SkyFit Guarujá — Dashboard de Gestão', MAR, H - 6);
-      pdf.text(`Página ${p} de ${totalPages}`, W - MAR, H - 6, { align: 'right' });
+      pdf.setDrawColor(...BORDA); pdf.line(MAR,H-10,W-MAR,H-10);
+      pdf.setTextColor(...CINZA); pdf.setFont('helvetica','normal'); pdf.setFontSize(6.5);
+      pdf.text('SkyFit Guarujá — Dashboard de Gestão', MAR, H-6);
+      pdf.text(`Página ${p} de ${np}`, W-MAR, H-6, {align:'right'});
     }
 
-    // ══════════════════════════════════════════════════════
-    // SALVAR — nome dinâmico com data
-    // ══════════════════════════════════════════════════════
-    const dd   = String(now.getDate()).padStart(2,'0');
-    const mm   = String(now.getMonth()+1).padStart(2,'0');
-    const aaaa = now.getFullYear();
-    pdf.save(`Faturamento_Geral_SkyFit_${dd}_${mm}_${aaaa}.pdf`);
-    toast('PDF gerado com sucesso!', '✅');
-
-  } catch(err) {
-    console.error(err);
-    toast('Erro ao gerar PDF: ' + err.message, '❌');
-  }
+    const dd=String(now.getDate()).padStart(2,'0'), mm=String(now.getMonth()+1).padStart(2,'0');
+    pdf.save(`Receita_SkyFit_${dd}_${mm}_${now.getFullYear()}.pdf`);
+    toast('PDF gerado!', '✅');
+  } catch(err){ console.error(err); toast('Erro PDF: '+err.message,'❌'); }
 }
 
 
 // ╔══════════════════════════════════════════════════════════╗
-//  ABA: AGREGADORES — Google Sheets (aba Agregadores)
+//  ABA: AGREGADORES — Google Sheets
 // ╚══════════════════════════════════════════════════════════╝
 const APPS_SCRIPT_AGG_URL = APPS_SCRIPT_URL + '?sheet=Agregadores';
 const MESES_NOME = ['janeiro','fevereiro','março','abril','maio','junho',
                     'julho','agosto','setembro','outubro','novembro','dezembro'];
 
 const COR_AGG = {
-  TotalPass: '#22c55e',
-  Gympass:   '#f59e0b',
-  Wellhub:   '#f59e0b',
-  default:   ['#1e6fe8','#f59e0b','#22c55e','#7c3aed','#ef4444','#0ea5e9'],
+  // TotalPass — Verde
+  'TotalPass':   '#22c55e',
+  'totalpass':   '#22c55e',
+  'TOTALPASS':   '#22c55e',
+  // WellHub — Rosa (todas as grafias possíveis)
+  'WellHub':     '#ec4899',
+  'Wellhub':     '#ec4899',
+  'wellhub':     '#ec4899',
+  'WELLHUB':     '#ec4899',
+  // Gympass (rebrandeado como Wellhub) — Rosa
+  'Gympass':     '#ec4899',
+  'gympass':     '#ec4899',
+  'GYMPASS':     '#ec4899',
+  // EVO — Roxo
+  'EVO':         '#7c3aed',
+  'Evo':         '#7c3aed',
+  'evo':         '#7c3aed',
+  default:       ['#22c55e','#ec4899','#7c3aed','#1e6fe8','#f59e0b','#0ea5e9'],
 };
+
 function corAgr(nome, idx) {
-  return COR_AGG[nome] || COR_AGG.default[idx % COR_AGG.default.length];
+  if (!nome) return COR_AGG.default[idx % COR_AGG.default.length];
+  // Lookup direto
+  if (COR_AGG[nome]) return COR_AGG[nome];
+  // Fallback: comparação case-insensitive
+  const lower = nome.toLowerCase();
+  if (lower.includes('totalpass')) return '#22c55e';
+  if (lower.includes('wellhub') || lower.includes('gympass')) return '#ec4899';
+  if (lower.includes('evo')) return '#7c3aed';
+  return COR_AGG.default[idx % COR_AGG.default.length];
 }
 
-// ── Carregar dados do Apps Script ──────────────────────────────────────────
-async function loadAgregadores(force) {
-  document.getElementById('agg-sub').textContent = 'Conectando…';
-  try {
-    const resp = await fetch(APPS_SCRIPT_AGG_URL);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const json = await resp.json();
-    const rows = json.rows || [];
-    if (!rows.length) throw new Error('Aba Agregadores sem dados');
-
-    aggData   = rows;
-    aggLoaded = true;
-
-    document.getElementById('agg-badge').style.display = 'inline-block';
-    document.getElementById('agg-empty').style.display = 'none';
-
-    popularFiltrosAgg();
-    renderAgregadores();
-
-    if (force) toast(`Agregadores: ${rows.length} registros`, '🔗');
-  } catch(err) {
-    console.error('[Agregadores]', err);
-    document.getElementById('agg-sub').textContent = 'Erro: ' + err.message;
-    document.getElementById('agg-empty').querySelector('.fin-ph-desc').textContent =
-      'Erro ao carregar — verifique se a aba "Agregadores" existe no Google Sheets. ' + err.message;
-    toast('Erro Agregadores: ' + err.message, '❌');
-  }
-}
-
-// ── Popular selects de filtro ──────────────────────────────────────────────
 function popularFiltrosAgg() {
   const anos = [...new Set(aggData.map(r => String(r['Ano']||'')).filter(Boolean))].sort();
-  const meses= [...new Set(aggData.map(r => String(r['Mês']||'').toLowerCase()).filter(Boolean))]
-               .sort((a,b) => MESES_NOME.indexOf(a) - MESES_NOME.indexOf(b));
-  const agrs = [...new Set(aggData.map(r => String(r['Agregador']||'')).filter(Boolean))].sort();
+  const meses = [...new Set(aggData.map(r => String(r['Mês']||'').toLowerCase()).filter(Boolean))]
+                .sort((a,b) => MESES_NOME.indexOf(a) - MESES_NOME.indexOf(b));
+  const agrs  = [...new Set(aggData.map(r => String(r['Agregador']||'')).filter(Boolean))].sort();
 
   const selAno = document.getElementById('agg-sel-ano');
-  selAno.innerHTML = '<option value="">Todos</option>' + anos.map(a=>`<option>${a}</option>`).join('');
+  if (selAno) selAno.innerHTML = '<option value="">Todos</option>'
+    + anos.map(a => `<option>${a}</option>`).join('');
 
   const selMes = document.getElementById('agg-sel-mes');
-  selMes.innerHTML = '<option value="">Todos</option>' + meses.map(m=>`<option>${m.charAt(0).toUpperCase()+m.slice(1)}</option>`).join('');
+  if (selMes) selMes.innerHTML = '<option value="">Todos</option>'
+    + meses.map(m => `<option>${m.charAt(0).toUpperCase()+m.slice(1)}</option>`).join('');
 
   const selAgr = document.getElementById('agg-sel-agr');
-  selAgr.innerHTML = '<option value="">Todos</option>' + agrs.map(a=>`<option>${a}</option>`).join('');
+  if (selAgr) selAgr.innerHTML = '<option value="">Todos</option>'
+    + agrs.map(a => `<option>${a}</option>`).join('');
 
-  document.getElementById('agg-filtros').style.display = 'block';
+  const filtrosEl = document.getElementById('agg-filtros');
+  if (filtrosEl) filtrosEl.style.display = 'block';
 }
 
-function resetAggFiltros() {
-  ['agg-sel-ano','agg-sel-mes','agg-sel-agr'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  renderAgregadores();
-}
-
-// ── Filtrar dados ──────────────────────────────────────────────────────────
 function getAggFiltered() {
   let dados = [...aggData];
   const ano = document.getElementById('agg-sel-ano')?.value;
@@ -4030,24 +4161,61 @@ function getAggFiltered() {
   return dados;
 }
 
-// ── Render principal ───────────────────────────────────────────────────────
+function resetAggFiltros() {
+  ['agg-sel-ano','agg-sel-mes','agg-sel-agr'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  renderAgregadores();
+}
+
+async function loadAgregadores(force) {
+  const subEl = document.getElementById('agg-sub');
+  if (subEl) subEl.textContent = 'Conectando…';
+  try {
+    const resp = await fetch(APPS_SCRIPT_AGG_URL);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const json = await resp.json();
+    const rows = json.rows || [];
+    if (!rows.length) throw new Error('Aba Agregadores sem dados');
+
+    aggData   = rows;
+    aggLoaded = true;
+
+    const badgeEl = document.getElementById('agg-badge');
+    const emptyEl = document.getElementById('agg-empty');
+    if (badgeEl) badgeEl.style.display = 'inline-block';
+    if (emptyEl) emptyEl.style.display = 'none';
+
+    popularFiltrosAgg();
+    renderAgregadores();
+    if (force) toast(`Agregadores: ${rows.length} registros`, '🔗');
+  } catch(err) {
+    console.error('[Agregadores]', err);
+    if (subEl) subEl.textContent = 'Erro: ' + err.message;
+    toast('Erro Agregadores: ' + err.message, '❌');
+  }
+}
+
 function renderAgregadores() {
   const dados = getAggFiltered();
   if (!dados.length) return;
 
-  const n  = r => parseFloat(String(r).replace(',','.')) || 0;
-  const fatTotal  = dados.reduce((s,r)=>s+n(r['Faturamento']),0);
-  const checkins  = dados.reduce((s,r)=>s+n(r['Check-ins']),0);
-  const usuarios  = dados.reduce((s,r)=>s+n(r['Usuários Únicos']),0);
+  const n = v => parseFloat(String(v||'0').replace(',','.')) || 0;
+  const fatTotal = dados.reduce((s,r) => s + n(r['Faturamento']), 0);
+  const checkins = dados.reduce((s,r) => s + n(r['Check-ins']), 0);
+  const usuarios = dados.reduce((s,r) => s + n(r['Usuários Únicos']), 0);
 
-  const vmv  = checkins  ? fatTotal/checkins  : 0;  // Valor médio por visita
-  const tmm  = usuarios  ? fatTotal/usuarios  : 0;  // Ticket médio mensal
-  const freq = usuarios  ? checkins/usuarios  : 0;  // Frequência média
+  const vmv  = checkins  ? fatTotal / checkins  : 0;
+  const tmm  = usuarios  ? fatTotal / usuarios  : 0;
+  const freq = usuarios  ? checkins / usuarios  : 0;
 
-  // Calcular MoM: comparar último mês vs penúltimo (nos dados filtrados, agrupados por mês)
+  // MoM — variação do faturamento no último mês vs anterior
   const mesMap = {};
   dados.forEach(r => {
-    const key = `${r['Ano']}-${String(MESES_NOME.indexOf(String(r['Mês']||'').toLowerCase())+1).padStart(2,'0')}`;
+    const mi  = MESES_NOME.indexOf(String(r['Mês']||'').toLowerCase());
+    if (mi < 0 || !r['Ano']) return;
+    const key = `${r['Ano']}-${String(mi+1).padStart(2,'0')}`;
     mesMap[key] = (mesMap[key]||0) + n(r['Faturamento']);
   });
   const mesesOrd = Object.keys(mesMap).sort();
@@ -4055,111 +4223,126 @@ function renderAgregadores() {
   if (mesesOrd.length >= 2) {
     const ult = mesMap[mesesOrd[mesesOrd.length-1]];
     const ant = mesMap[mesesOrd[mesesOrd.length-2]];
-    mom = ant ? ((ult-ant)/ant*100) : null;
+    mom = ant ? (ult - ant) / ant * 100 : null;
   }
 
-  // ── KPIs ──────────────────────────────────────────────────────────────
-  document.getElementById('agg-kpis').style.display       = 'grid';
-  document.getElementById('agg-charts-1').style.display   = 'grid';
-  document.getElementById('agg-charts-2').style.display   = 'grid';
-  document.getElementById('agg-charts-3').style.display   = 'grid';
-  document.getElementById('agg-resumo-panel').style.display = 'block';
-  document.getElementById('agg-table-panel').style.display  = 'block';
-  document.getElementById('agg-btn-pdf').style.display      = 'inline-flex';
-  document.getElementById('agg-sub').textContent = `${aggData.length} registros · ${[...new Set(dados.map(r=>r['Agregador']))].join(' · ')}`;
+  // Mostrar painéis
+  ['agg-kpis','agg-charts-1','agg-charts-2','agg-charts-3',
+   'agg-resumo-panel','agg-table-panel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id.includes('kpis') ? 'grid' : 'grid';
+  });
+  ['agg-kpis','agg-resumo-panel','agg-table-panel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id==='agg-kpis' ? 'grid' : 'block';
+  });
+  ['agg-charts-1','agg-charts-2','agg-charts-3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'grid';
+  });
+
+  const pdfBtn = document.getElementById('agg-btn-pdf');
+  if (pdfBtn) pdfBtn.style.display = 'inline-flex';
+  if (document.getElementById('agg-sub'))
+    document.getElementById('agg-sub').textContent =
+      `${aggData.length} registros · ${[...new Set(dados.map(r=>r['Agregador']))].join(' · ')}`;
 
   const setKPI = (id, val, sub) => {
-    document.getElementById(id).textContent = val;
-    if (sub !== undefined) document.getElementById(id+'-sub').innerHTML =
-      `<span style="color:var(--text-mid);font-size:12px">${sub}</span>`;
+    const el = document.getElementById(id); if (el) el.textContent = val;
+    const sel = document.getElementById(id+'-sub');
+    if (sel && sub !== undefined)
+      sel.innerHTML = `<span style="color:var(--text-mid);font-size:12px">${sub}</span>`;
   };
   setKPI('agg-fat',      fmtBRL(fatTotal), `${dados.length} registros`);
-  document.getElementById('agg-fat-prog').style.width = '80%';
-  setKPI('agg-vmv',      fmtBRL(vmv),  `fat ÷ check-ins`);
-  setKPI('agg-tmm',      fmtBRL(tmm),  `fat ÷ usuários únicos`);
-  setKPI('agg-freq',     freq.toFixed(1)+'×', `check-ins ÷ usuários`);
-  setKPI('agg-users',    Math.round(usuarios).toLocaleString('pt-BR'), `usuários únicos`);
-  setKPI('agg-checkins', Math.round(checkins).toLocaleString('pt-BR'), `check-ins`);
+  const prog = document.getElementById('agg-fat-prog');
+  if (prog) prog.style.width = '80%';
+  setKPI('agg-vmv',      fmtBRL(vmv),  'fat ÷ check-ins');
+  setKPI('agg-tmm',      fmtBRL(tmm),  'fat ÷ usuários únicos');
+  setKPI('agg-freq',     freq.toFixed(1)+'×', 'check-ins ÷ usuários');
+  setKPI('agg-users',    Math.round(usuarios).toLocaleString('pt-BR'), 'usuários únicos');
+  setKPI('agg-checkins', Math.round(checkins).toLocaleString('pt-BR'), 'check-ins');
 
-  const momCard = document.getElementById('agg-mom-card');
   if (mom !== null) {
     const sinal = mom >= 0 ? '▲' : '▼';
     const cor   = mom >= 0 ? 'var(--green)' : 'var(--red)';
-    document.getElementById('agg-mom').textContent = `${sinal} ${Math.abs(mom).toFixed(1)}%`;
-    document.getElementById('agg-mom').style.color = cor;
-    setKPI('agg-mom', `${sinal} ${Math.abs(mom).toFixed(1)}%`,
-      `vs mês anterior`);
-    document.getElementById('agg-mom').style.color = cor;
-    momCard.style.display = 'block';
+    const momEl = document.getElementById('agg-mom');
+    if (momEl) { momEl.textContent = `${sinal} ${Math.abs(mom).toFixed(1)}%`; momEl.style.color = cor; }
+    const momSub = document.getElementById('agg-mom-sub');
+    if (momSub) momSub.innerHTML = `<span style="color:${cor};font-size:12px">vs mês anterior</span>`;
+    const momCard = document.getElementById('agg-mom-card');
+    if (momCard) momCard.style.display = 'block';
   } else {
-    momCard.style.display = 'none';
+    const momCard = document.getElementById('agg-mom-card');
+    if (momCard) momCard.style.display = 'none';
   }
 
   // ── Gráficos ──────────────────────────────────────────────────────────
-  // Agrupar por mês × agregador para séries
-  const agrs    = [...new Set(dados.map(r=>r['Agregador']))].sort();
-  const labels  = mesesOrd.map(k => {
-    const [a,m] = k.split('-');
-    const mn = MESES_NOME[parseInt(m)-1] || m;
-    return mn.slice(0,3).charAt(0).toUpperCase()+mn.slice(1,3)+'/'+a.slice(2);
+  const agrs   = [...new Set(dados.map(r => r['Agregador']))].sort();
+  const labels = mesesOrd.map(k => {
+    const [a, mi] = k.split('-');
+    const nome = MESES_NOME[parseInt(mi)-1] || mi;
+    return nome.slice(0,3).charAt(0).toUpperCase() + nome.slice(1,3) + '/' + a.slice(2);
   });
 
-  // Dataset por agregador
-  const makeDataset = (col) => agrs.map((agr,i) => ({
-    label: agr,
-    data: mesesOrd.map(k => {
-      const [a,mi] = k.split('-');
-      return dados.filter(r => String(r['Ano'])===a &&
-        MESES_NOME.indexOf(String(r['Mês']||'').toLowerCase())+1 === parseInt(mi) &&
-        r['Agregador'] === agr
-      ).reduce((s,r) => s + (parseFloat(String(r[col]).replace(',','.'))||0), 0);
-    }),
-    borderColor: corAgr(agr,i),
-    backgroundColor: corAgr(agr,i)+'33',
-    tension: 0.35, fill: false, pointRadius: 4,
-    borderWidth: 2, pointBackgroundColor: corAgr(agr,i),
-  }));
+  const fatPorAgr = agrs.map(agr =>
+    dados.filter(r => r['Agregador']===agr).reduce((s,r)=>s+n(r['Faturamento']),0)
+  );
 
-  const chartOpts = (yFmt) => ({
-    responsive: true, maintainAspectRatio: false,
-    plugins: {
-      legend: { position:'top', labels:{font:{family:'DM Sans',size:11},padding:10} },
-      tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${yFmt(ctx.raw)}` } }
+  function seriesFor(col) {
+    return agrs.map((agr, i) => ({
+      label: agr,
+      data: mesesOrd.map(k => {
+        const [a, mi] = k.split('-');
+        return dados.filter(r => String(r['Ano'])===a &&
+          MESES_NOME.indexOf(String(r['Mês']||'').toLowerCase())+1 === parseInt(mi) &&
+          r['Agregador'] === agr
+        ).reduce((s,r)=>s+n(r[col]),0);
+      }),
+      borderColor: corAgr(agr,i), backgroundColor: corAgr(agr,i)+'33',
+      tension:.35, fill:false, pointRadius:4, borderWidth:2, pointBackgroundColor:corAgr(agr,i),
+    }));
+  }
+
+  const chartOpts = yFmt => ({
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{position:'top',labels:{font:{family:'DM Sans',size:11},padding:10}},
+      tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${yFmt(ctx.raw)}`}},
     },
-    scales: {
-      y: { grid:{color:'rgba(0,0,0,.04)'}, ticks:{font:{family:'DM Mono',size:10}, callback: yFmt} },
-      x: { grid:{display:false}, ticks:{font:{family:'DM Sans',size:10},maxRotation:40} }
+    scales:{
+      y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'DM Mono',size:10},callback:yFmt}},
+      x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},maxRotation:40}},
     }
   });
 
-  // Faturamento
-  if (chartAggFat) chartAggFat.destroy();
-  chartAggFat = new Chart(document.getElementById('chart-agg-fat'), {
-    type:'line', data:{labels, datasets:makeDataset('Faturamento')},
+  const destroyAndCreate = (ref, id, config) => {
+    if (ref) ref.destroy();
+    const canvas = document.getElementById(id);
+    return canvas ? new Chart(canvas, config) : null;
+  };
+
+  window.chartAggFat = destroyAndCreate(window.chartAggFat, 'chart-agg-fat', {
+    type:'line', data:{labels, datasets:seriesFor('Faturamento')},
     options: chartOpts(v => fmtBRL(v))
   });
 
-  // Check-ins — barras
   const dsCheckins = agrs.map((agr,i) => ({
     label: agr,
     data: mesesOrd.map(k => {
       const [a,mi]=k.split('-');
       return dados.filter(r=>String(r['Ano'])===a&&
         MESES_NOME.indexOf(String(r['Mês']||'').toLowerCase())+1===parseInt(mi)&&r['Agregador']===agr
-      ).reduce((s,r)=>s+(parseFloat(String(r['Check-ins']).replace(',','.'))||0),0);
+      ).reduce((s,r)=>s+n(r['Check-ins']),0);
     }),
     backgroundColor: corAgr(agr,i)+'cc', borderRadius:4,
   }));
-  if (chartAggCheckins) chartAggCheckins.destroy();
-  chartAggCheckins = new Chart(document.getElementById('chart-agg-checkins'),{
+  window.chartAggCheckins = destroyAndCreate(window.chartAggCheckins, 'chart-agg-checkins', {
     type:'bar', data:{labels, datasets:dsCheckins},
-    options: {
-      responsive:true, maintainAspectRatio:false,
+    options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{position:'top',labels:{font:{family:'DM Sans',size:11},padding:10}},
                tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${Math.round(ctx.raw)} check-ins`}}},
       scales:{x:{stacked:true,grid:{display:false},ticks:{font:{family:'DM Sans',size:10},maxRotation:40}},
-              y:{stacked:true,grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'DM Mono',size:10}}}}
-    }
+              y:{stacked:true,grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'DM Mono',size:10}}}}}
   });
 
   // Valor médio por visita
@@ -4169,118 +4352,106 @@ function renderAgregadores() {
       const [a,mi]=k.split('-');
       const sub=dados.filter(r=>String(r['Ano'])===a&&
         MESES_NOME.indexOf(String(r['Mês']||'').toLowerCase())+1===parseInt(mi)&&r['Agregador']===agr);
-      const f=sub.reduce((s,r)=>s+(parseFloat(String(r['Faturamento']).replace(',','.'))||0),0);
-      const c=sub.reduce((s,r)=>s+(parseFloat(String(r['Check-ins']).replace(',','.'))||0),0);
+      const f=sub.reduce((s,r)=>s+n(r['Faturamento']),0);
+      const c=sub.reduce((s,r)=>s+n(r['Check-ins']),0);
       return c ? f/c : 0;
     }),
     borderColor:corAgr(agr,i), backgroundColor:corAgr(agr,i)+'22',
-    tension:0.35, fill:false, pointRadius:4, borderWidth:2,
-    pointBackgroundColor:corAgr(agr,i),
+    tension:.35, fill:false, pointRadius:4, borderWidth:2, pointBackgroundColor:corAgr(agr,i),
   }));
-  if (chartAggVmv) chartAggVmv.destroy();
-  chartAggVmv = new Chart(document.getElementById('chart-agg-vmv'),{
+  window.chartAggVmv = destroyAndCreate(window.chartAggVmv, 'chart-agg-vmv', {
     type:'line', data:{labels, datasets:dsVmv},
     options: chartOpts(v => fmtBRL(v))
   });
 
-  // Doughnut participação
-  const fatPorAgr = agrs.map(agr =>
-    dados.filter(r=>r['Agregador']===agr).reduce((s,r)=>s+(parseFloat(String(r['Faturamento']).replace(',','.'))||0),0)
-  );
-  if (chartAggPie) chartAggPie.destroy();
-  chartAggPie = new Chart(document.getElementById('chart-agg-pie'),{
+  window.chartAggPie = destroyAndCreate(window.chartAggPie, 'chart-agg-pie', {
     type:'doughnut',
-    data:{labels:agrs, datasets:[{data:fatPorAgr, backgroundColor:agrs.map((a,i)=>corAgr(a,i)),
-      borderWidth:2, borderColor:'#fff', hoverOffset:6}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{
-      legend:{position:'right',labels:{font:{family:'DM Sans',size:11},padding:10}},
-      tooltip:{callbacks:{label:ctx=>{const pct=(fatTotal?ctx.raw/fatTotal*100:0).toFixed(1);return ` ${fmtBRL(ctx.raw)} (${pct}%)`;}}},
-    },cutout:'60%'}
+    data:{labels:agrs, datasets:[{data:fatPorAgr,
+      backgroundColor:agrs.map((a,i)=>corAgr(a,i)), borderWidth:2, borderColor:'#fff', hoverOffset:6}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{legend:{position:'right',labels:{font:{family:'DM Sans',size:11},padding:10}},
+        tooltip:{callbacks:{label:ctx=>{const pct=(fatTotal?ctx.raw/fatTotal*100:0).toFixed(1);
+          return ` ${fmtBRL(ctx.raw)} (${pct}%)`;}}}}},
   });
 
-  // Ticket médio mensal por agregador
   const dsTicket = agrs.map((agr,i) => ({
     label:agr,
     data: mesesOrd.map(k => {
       const [a,mi]=k.split('-');
       const sub=dados.filter(r=>String(r['Ano'])===a&&
         MESES_NOME.indexOf(String(r['Mês']||'').toLowerCase())+1===parseInt(mi)&&r['Agregador']===agr);
-      const f=sub.reduce((s,r)=>s+(parseFloat(String(r['Faturamento']).replace(',','.'))||0),0);
-      const u=sub.reduce((s,r)=>s+(parseFloat(String(r['Usuários Únicos']).replace(',','.'))||0),0);
+      const f=sub.reduce((s,r)=>s+n(r['Faturamento']),0);
+      const u=sub.reduce((s,r)=>s+n(r['Usuários Únicos']),0);
       return u ? f/u : 0;
     }),
     borderColor:corAgr(agr,i), backgroundColor:corAgr(agr,i)+'22',
-    tension:0.35, fill:false, pointRadius:4, borderWidth:2, pointBackgroundColor:corAgr(agr,i),
+    tension:.35, fill:false, pointRadius:4, borderWidth:2, pointBackgroundColor:corAgr(agr,i),
   }));
-  if (chartAggTicket) chartAggTicket.destroy();
-  chartAggTicket = new Chart(document.getElementById('chart-agg-ticket'),{
+  window.chartAggTicket = destroyAndCreate(window.chartAggTicket, 'chart-agg-ticket', {
     type:'line', data:{labels, datasets:dsTicket},
     options: chartOpts(v => fmtBRL(v))
   });
 
-  // ── Resumo estratégico automático ─────────────────────────────────────
-  const melhorMes  = mesesOrd.reduce((a,b)=>mesMap[a]>mesMap[b]?a:b);
-  const [mA,mM]    = melhorMes.split('-');
-  const nomeMelhor = (MESES_NOME[parseInt(mM)-1]||mM).charAt(0).toUpperCase()+(MESES_NOME[parseInt(mM)-1]||mM).slice(1);
-  const maiorAgr   = agrs.reduce((a,b)=>fatPorAgr[agrs.indexOf(a)]>fatPorAgr[agrs.indexOf(b)]?a:b, agrs[0]);
-  const pctMaior   = fatTotal ? (fatPorAgr[agrs.indexOf(maiorAgr)]/fatTotal*100).toFixed(1) : 0;
+  // ── Resumo estratégico ────────────────────────────────────────────────
+  const melhorKey = mesesOrd.reduce((a,b) => mesMap[a]>mesMap[b]?a:b);
+  const [mA,mMI]  = melhorKey.split('-');
+  const nomeMelhor = MESES_NOME[parseInt(mMI)-1] || mMI;
+  const nomeMelhorFmt = nomeMelhor.charAt(0).toUpperCase() + nomeMelhor.slice(1);
+  const maiorAgr  = agrs.reduce((a,b) =>
+    fatPorAgr[agrs.indexOf(a)] > fatPorAgr[agrs.indexOf(b)] ? a : b, agrs[0]);
+  const pctMaior  = fatTotal ? (fatPorAgr[agrs.indexOf(maiorAgr)] / fatTotal * 100).toFixed(1) : 0;
 
-  document.getElementById('agg-resumo-body').innerHTML = `
+  const resumoEl = document.getElementById('agg-resumo-body');
+  if (resumoEl) resumoEl.innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
       <div style="background:var(--bg);border-radius:10px;padding:14px 16px">
-        <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:6px">📅 Mês de Maior Rentabilidade</div>
-        <div style="font-size:16px;font-weight:800;color:var(--green)">${nomeMelhor}/${mA}</div>
-        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">${fmtBRL(mesMap[melhorMes])} faturados</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:6px">📅 Maior Rentabilidade</div>
+        <div style="font-size:16px;font-weight:800;color:var(--green)">${nomeMelhorFmt}/${mA}</div>
+        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">${fmtBRL(mesMap[melhorKey])}</div>
       </div>
       <div style="background:var(--bg);border-radius:10px;padding:14px 16px">
         <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:6px">🏆 Maior Agregador</div>
-        <div style="font-size:16px;font-weight:800;color:var(--accent)">${maiorAgr}</div>
-        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">${pctMaior}% do faturamento total</div>
+        <div style="font-size:16px;font-weight:800;color:#7c3aed">${maiorAgr}</div>
+        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">${pctMaior}% do total</div>
       </div>
       <div style="background:var(--bg);border-radius:10px;padding:14px 16px">
         <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:6px">🏃 Frequência Média</div>
         <div style="font-size:16px;font-weight:800;color:var(--amber)">${freq.toFixed(2)}×</div>
-        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">check-ins por usuário no período</div>
+        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">check-ins por usuário</div>
       </div>
       <div style="background:var(--bg);border-radius:10px;padding:14px 16px">
-        <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:6px">💰 Valor Médio / Visita</div>
+        <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:6px">💰 Valor / Visita</div>
         <div style="font-size:16px;font-weight:800;color:var(--text-dark)">${fmtBRL(vmv)}</div>
-        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">receita por check-in registrado</div>
+        <div style="font-size:13px;color:var(--text-mid);margin-top:2px">receita por check-in</div>
       </div>
     </div>`;
 
-  // ── Tabela detalhada ───────────────────────────────────────────────────
+  // ── Tabela ────────────────────────────────────────────────────────────
   const thead = `<tr><th>Ano</th><th>Mês</th><th>Agregador</th>
-    <th style="text-align:right">Faturamento</th>
-    <th style="text-align:right">Check-ins</th>
-    <th style="text-align:right">Usuários Únicos</th>
-    <th style="text-align:right">R$/visita</th>
-    <th style="text-align:right">Ticket Mensal</th>
-    <th style="text-align:right">Freq.</th></tr>`;
-
+    <th style="text-align:right">Faturamento</th><th style="text-align:right">Check-ins</th>
+    <th style="text-align:right">Usuários</th><th style="text-align:right">R$/visita</th>
+    <th style="text-align:right">Ticket</th><th style="text-align:right">Freq.</th></tr>`;
   const tbody = dados.map(r => {
-    const f=parseFloat(String(r['Faturamento']).replace(',','.'))||0;
-    const c=parseFloat(String(r['Check-ins']).replace(',','.'))||0;
-    const u=parseFloat(String(r['Usuários Únicos']).replace(',','.'))||0;
+    const f=n(r['Faturamento']), c=n(r['Check-ins']), u=n(r['Usuários Únicos']);
     return `<tr>
-      <td style="padding:9px 12px;font-size:12px">${r['Ano']}</td>
-      <td style="padding:9px 12px;font-size:12px">${r['Mês']}</td>
-      <td style="padding:9px 12px"><span class="badge badge-blue" style="font-size:11px">${r['Agregador']}</span></td>
-      <td style="padding:9px 12px;font-family:var(--mono);font-weight:700;color:var(--green);text-align:right">${fmtBRL(f)}</td>
-      <td style="padding:9px 12px;font-family:var(--mono);text-align:right">${Math.round(c).toLocaleString('pt-BR')}</td>
-      <td style="padding:9px 12px;font-family:var(--mono);text-align:right">${Math.round(u).toLocaleString('pt-BR')}</td>
-      <td style="padding:9px 12px;font-family:var(--mono);text-align:right">${fmtBRL(c?f/c:0)}</td>
-      <td style="padding:9px 12px;font-family:var(--mono);text-align:right">${fmtBRL(u?f/u:0)}</td>
-      <td style="padding:9px 12px;font-family:var(--mono);text-align:right">${(u?c/u:0).toFixed(2)}×</td>
+      <td style="padding:8px 12px;font-size:12px">${r['Ano']}</td>
+      <td style="padding:8px 12px;font-size:12px">${r['Mês']}</td>
+      <td style="padding:8px 12px"><span class="badge badge-blue" style="font-size:11px">${r['Agregador']}</span></td>
+      <td style="padding:8px 12px;font-family:var(--mono);color:var(--green);text-align:right;font-weight:700">${fmtBRL(f)}</td>
+      <td style="padding:8px 12px;font-family:var(--mono);text-align:right">${Math.round(c).toLocaleString('pt-BR')}</td>
+      <td style="padding:8px 12px;font-family:var(--mono);text-align:right">${Math.round(u).toLocaleString('pt-BR')}</td>
+      <td style="padding:8px 12px;font-family:var(--mono);text-align:right">${fmtBRL(c?f/c:0)}</td>
+      <td style="padding:8px 12px;font-family:var(--mono);text-align:right">${fmtBRL(u?f/u:0)}</td>
+      <td style="padding:8px 12px;font-family:var(--mono);text-align:right">${(u?c/u:0).toFixed(2)}×</td>
     </tr>`;
   }).join('');
-
-  document.getElementById('agg-table-badge').textContent = `${dados.length} registros`;
-  document.getElementById('agg-table-wrap').innerHTML =
+  const tblBadge = document.getElementById('agg-table-badge');
+  if (tblBadge) tblBadge.textContent = `${dados.length} registros`;
+  const tblWrap = document.getElementById('agg-table-wrap');
+  if (tblWrap) tblWrap.innerHTML =
     `<div class="table-wrapper"><table><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
 }
 
-// ── Exportar PDF da aba Agregadores ──────────────────────────────────────
 async function exportarAgregadoresPDF() {
   if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
     toast('Bibliotecas PDF não carregadas. Recarregue a página.', '❌'); return;
@@ -4296,9 +4467,7 @@ async function exportarAgregadoresPDF() {
     const VERDE=[34,197,94], AZUL=[30,111,232], ESCURO=[15,28,45], CINZA=[139,163,177], BORDA=[226,234,240];
 
     function checkPage(needed) { if(Y+needed>H-MAR){ pdf.addPage(); Y=MAR; } }
-    async function cap(el, bg) {
-      return (await html2canvas(el,{scale:2,useCORS:true,backgroundColor:bg||'#ffffff',logging:false})).toDataURL('image/png');
-    }
+    // capturePdfEl e pdfAddImg agora são globais (helper)
 
     // Cabeçalho
     pdf.setFillColor(...AZUL);
@@ -4322,10 +4491,10 @@ async function exportarAgregadoresPDF() {
       checkPage(40);
       pdf.setFont('helvetica','bold'); pdf.setFontSize(9); pdf.setTextColor(...ESCURO);
       pdf.text('Indicadores Estratégicos', MAR, Y+5); Y+=8;
-      const imgKpi = await cap(kpiEl);
+      const imgKpi = await capturePdfEl(kpiEl);
       const kH = Math.min(CW * (kpiEl.offsetHeight/kpiEl.offsetWidth), 45);
       checkPage(kH+4);
-      pdf.addImage(imgKpi,'PNG',MAR,Y,CW,kH); Y+=kH+6;
+      pdfAddImg(pdf, imgKpi, MAR,Y,CW,kH); Y+=kH+6;
     }
 
     // Gráfico evolução faturamento (largura total)
@@ -4334,7 +4503,7 @@ async function exportarAgregadoresPDF() {
       checkPage(72);
       pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
       pdf.text('Evolução do Faturamento', MAR, Y+5); Y+=8;
-      const img=await cap(cFat.parentElement);
+      const img=await capturePdfEl(cFat.parentElement);
       const gH=Math.min(CW*(cFat.parentElement.offsetHeight/cFat.parentElement.offsetWidth),65);
       pdf.addImage(img,'PNG',MAR,Y,CW,gH); Y+=gH+6;
     }
@@ -4348,10 +4517,10 @@ async function exportarAgregadoresPDF() {
       pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
       pdf.text('Check-ins por Mês', MAR, Y+5);
       pdf.text('Valor Médio / Visita', MAR+hw+4, Y+5); Y+=8;
-      const [i1,i2]=await Promise.all([cap(cCi.parentElement),cap(cVmv.parentElement)]);
+      const [i1,i2]=await Promise.all([capturePdfEl(cCi.parentElement),capturePdfEl(cVmv.parentElement)]);
       const gH=55;
-      pdf.addImage(i1,'PNG',MAR,Y,hw,gH);
-      pdf.addImage(i2,'PNG',MAR+hw+4,Y,hw,gH); Y+=gH+6;
+      pdfAddImg(pdf, i1, MAR,Y,hw,gH);
+      pdfAddImg(pdf, i2, MAR+hw+4,Y,hw,gH); Y+=gH+6;
     }
 
     // Participação + Ticket médio (lado a lado)
@@ -4363,10 +4532,10 @@ async function exportarAgregadoresPDF() {
       pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
       pdf.text('Participação por Agregador', MAR, Y+5);
       pdf.text('Ticket Médio Mensal', MAR+hw+4, Y+5); Y+=8;
-      const [i1,i2]=await Promise.all([cap(cPie.parentElement),cap(cTk.parentElement)]);
+      const [i1,i2]=await Promise.all([capturePdfEl(cPie.parentElement),capturePdfEl(cTk.parentElement)]);
       const gH=55;
-      pdf.addImage(i1,'PNG',MAR,Y,hw,gH);
-      pdf.addImage(i2,'PNG',MAR+hw+4,Y,hw,gH); Y+=gH+6;
+      pdfAddImg(pdf, i1, MAR,Y,hw,gH);
+      pdfAddImg(pdf, i2, MAR+hw+4,Y,hw,gH); Y+=gH+6;
     }
 
     // Resumo estratégico como imagem
@@ -4375,9 +4544,9 @@ async function exportarAgregadoresPDF() {
       checkPage(50);
       pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
       pdf.text('Resumo Estratégico', MAR, Y+5); Y+=8;
-      const imgR=await cap(rEl,'#f0f4f9');
+      const imgR=await capturePdfEl(rEl, {backgroundColor:'#f0f4f9'});
       const rH=Math.min(CW*(rEl.offsetHeight/rEl.offsetWidth),55);
-      pdf.addImage(imgR,'PNG',MAR,Y,CW,rH); Y+=rH+6;
+      pdfAddImg(pdf, imgR, MAR,Y,CW,rH); Y+=rH+6;
     }
 
     // Rodapé
@@ -4398,6 +4567,177 @@ async function exportarAgregadoresPDF() {
     console.error(err);
     toast('Erro ao gerar PDF: '+err.message,'❌');
   }
+}
+
+
+// ╔══════════════════════════════════════════════════════════╗
+//  ABA: LUCRO — Receita − Despesas (dinâmico)
+// ╚══════════════════════════════════════════════════════════╝
+let chartLucroComp = null;
+
+function renderLucro() {
+  // Verificar se os dois datasets estão carregados
+  const temReceita  = fatLoaded && fatData.length > 0;
+  const temDespesas = finLoaded && allRows && allRows.length > 0;
+
+  const empty = document.getElementById('lucro-empty');
+  const kpis  = document.getElementById('lucro-kpis');
+  const chts  = document.getElementById('lucro-charts');
+  const tbl   = document.getElementById('lucro-table-panel');
+
+  if (!temReceita || !temDespesas) {
+    if (empty) empty.style.display = 'flex';
+    if (kpis)  kpis.style.display  = 'none';
+    if (chts)  chts.style.display  = 'none';
+    if (tbl)   tbl.style.display   = 'none';
+    const msg = !temReceita && !temDespesas
+      ? 'Carregue Receita e Despesas primeiro'
+      : !temReceita ? 'Carregue a aba Receita primeiro'
+      : 'Carregue a aba Despesas primeiro';
+    document.getElementById('lucro-sub').textContent = msg;
+    return;
+  }
+
+  const MESES_ORD = ['janeiro','fevereiro','março','abril','maio','junho',
+                     'julho','agosto','setembro','outubro','novembro','dezembro'];
+  const n = v => parseFloat(String(v||'0').replace(',','.')) || 0;
+
+  // ── Receita por mês (de fatData — Base_de_Dados) ──────────────────────
+  const recMesMap = {};
+  fatData.forEach(r => {
+    const mesIdx = MESES_ORD.indexOf(String(r['Mês']||'').toLowerCase());
+    if (mesIdx < 0 || !r['Ano']) return;
+    const key = `${r['Ano']}-${String(mesIdx+1).padStart(2,'0')}`;
+    recMesMap[key] = (recMesMap[key]||0) + n(r['Faturamento']||r['Valor']||0);
+  });
+
+  // ── Despesas por mês (de allRows — Base_Despesas) ─────────────────────
+  const C = { DATA:0, ANO:1, MES:2, CAT:3, SUB:4, DESC:5, VAL:6 };
+  const despMesMap = {};
+  allRows.forEach(r => {
+    const d = parseSheetDate(r[C.DATA]); if (!d) return;
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    despMesMap[key] = (despMesMap[key]||0) + parseVal(r[C.VAL]);
+  });
+
+  // ── União dos meses ────────────────────────────────────────────────────
+  const allKeys = [...new Set([...Object.keys(recMesMap), ...Object.keys(despMesMap)])].sort();
+  const meses   = allKeys.map(k => {
+    const [a,m] = k.split('-');
+    const nome  = MESES_ORD[parseInt(m)-1]||m;
+    return {
+      key, label: `${nome.slice(0,3).charAt(0).toUpperCase()+nome.slice(1,3)}/${a.slice(2)}`,
+      rec:  recMesMap[k]||0,
+      desp: despMesMap[k]||0,
+      lucro: (recMesMap[k]||0) - (despMesMap[k]||0),
+    };
+  });
+
+  const totalRec  = meses.reduce((s,m)=>s+m.rec, 0);
+  const totalDesp = meses.reduce((s,m)=>s+m.desp, 0);
+  const totalLucro= totalRec - totalDesp;
+  const margem    = totalRec ? (totalLucro/totalRec*100) : 0;
+
+  // ── KPIs ──────────────────────────────────────────────────────────────
+  if (empty) empty.style.display = 'none';
+  if (kpis)  kpis.style.display  = 'grid';
+  if (chts)  chts.style.display  = 'grid';
+  if (tbl)   tbl.style.display   = 'block';
+
+  document.getElementById('lucro-badge').style.display     = 'inline-block';
+  document.getElementById('lucro-sub').textContent         = `${meses.length} meses · ${allRows.length} lançamentos de despesa`;
+  document.getElementById('lucro-receita').textContent     = fmtBRL(totalRec);
+  document.getElementById('lucro-receita-sub').innerHTML   = `<span style="color:var(--text-mid);font-size:12px">${meses.length} meses com receita</span>`;
+  document.getElementById('lucro-prog-r').style.width      = '80%';
+  document.getElementById('lucro-despesas').textContent    = fmtBRL(totalDesp);
+  document.getElementById('lucro-despesas-sub').innerHTML  = `<span style="color:var(--text-mid);font-size:12px">${allRows.length} lançamentos</span>`;
+  document.getElementById('lucro-prog-d').style.width      = totalRec ? `${Math.min((totalDesp/totalRec)*100,100).toFixed(0)}%` : '0%';
+  document.getElementById('lucro-resultado').textContent   = fmtBRL(totalLucro);
+  document.getElementById('lucro-resultado').style.color   = totalLucro >= 0 ? 'var(--green)' : 'var(--red)';
+  document.getElementById('lucro-resultado-sub').innerHTML = `<span style="font-size:12px;color:${totalLucro>=0?'var(--green)':'var(--red)'}">${totalLucro>=0?'▲ Positivo':'▼ Negativo'}</span>`;
+  document.getElementById('lucro-prog-l').style.cssText    = `width:${Math.abs(margem).toFixed(0)}%;background:${totalLucro>=0?'linear-gradient(90deg,#22c55e,#16a34a)':'linear-gradient(90deg,#ef4444,#dc2626)'}`;
+  document.getElementById('lucro-margem').textContent      = `${margem.toFixed(1)}%`;
+  document.getElementById('lucro-margem-sub').innerHTML    = `<span style="color:var(--text-mid);font-size:12px">margem líquida</span>`;
+  document.getElementById('lucro-result-card').style.background = totalLucro >= 0 ? '' : 'rgba(239,68,68,.06)';
+
+  // ── Gráfico comparativo ────────────────────────────────────────────────
+  if (chartLucroComp) chartLucroComp.destroy();
+  chartLucroComp = new Chart(document.getElementById('chart-lucro-comp'), {
+    type: 'bar',
+    data: {
+      labels: meses.map(m=>m.label),
+      datasets: [
+        { label:'Receita',  data:meses.map(m=>m.rec),  backgroundColor:'#22c55e99', borderRadius:4 },
+        { label:'Despesas', data:meses.map(m=>m.desp), backgroundColor:'#ef444499', borderRadius:4 },
+        { label:'Lucro',
+          data: meses.map(m=>m.lucro),
+          type: 'line',
+          borderColor: '#7c3aed', backgroundColor:'rgba(124,58,237,.1)',
+          tension:.3, fill:true, pointRadius:4, pointBackgroundColor:'#7c3aed',
+          borderWidth:2, yAxisID:'y',
+        },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'top',labels:{font:{family:'DM Sans',size:11},padding:12}},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtBRL(ctx.raw)}`}},
+      },
+      scales:{
+        y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'DM Mono',size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}},
+        x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10},maxRotation:40}},
+      }
+    }
+  });
+
+  // ── Tabela mensal ──────────────────────────────────────────────────────
+  const thead = `<tr><th>Período</th><th style="text-align:right">Receita</th><th style="text-align:right">Despesas</th><th style="text-align:right">Lucro</th><th style="text-align:right">Margem</th></tr>`;
+  const tbody = meses.map(m => {
+    const mar = m.rec ? (m.lucro/m.rec*100).toFixed(1) : '—';
+    const cor = m.lucro >= 0 ? 'var(--green)' : 'var(--red)';
+    return `<tr>
+      <td style="padding:9px 14px;font-weight:600">${m.label}</td>
+      <td style="padding:9px 14px;font-family:var(--mono);color:var(--green);text-align:right">${fmtBRL(m.rec)}</td>
+      <td style="padding:9px 14px;font-family:var(--mono);color:var(--red);text-align:right">${fmtBRL(m.desp)}</td>
+      <td style="padding:9px 14px;font-family:var(--mono);font-weight:800;color:${cor};text-align:right">${fmtBRL(m.lucro)}</td>
+      <td style="padding:9px 14px;font-family:var(--mono);color:${cor};text-align:right">${typeof mar==='string'&&mar!=='—'?mar+'%':mar}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('lucro-table-wrap').innerHTML =
+    `<div class="table-wrapper"><table><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+}
+
+
+// ╔══════════════════════════════════════════════════════════╗
+//  HELPER PDF — captura elemento preservando aspecto
+// ╚══════════════════════════════════════════════════════════╝
+async function capturePdfEl(el, opts = {}) {
+  if (!el) return null;
+  const canvas = await html2canvas(el, {
+    scale: 2,                        // resolução 2× para nitidez
+    useCORS: true,
+    backgroundColor: document.body.classList.contains('dark') ? '#1a2535' : '#ffffff',
+    logging: false,
+    removeContainer: true,
+    ...opts,
+  });
+  return {
+    dataUrl: canvas.toDataURL('image/png', 0.92),
+    w: canvas.width,   // pixels @2×
+    h: canvas.height,  // pixels @2×
+    ratio: canvas.height / canvas.width,
+  };
+}
+
+// Insere imagem no PDF preservando proporção correta (sem "amassar")
+function pdfAddImg(pdf, imgObj, x, y, maxW, maxH) {
+  if (!imgObj) return 0;
+  let w = maxW;
+  let h = w * imgObj.ratio;
+  if (maxH && h > maxH) { h = maxH; w = h / imgObj.ratio; }
+  pdf.addImage(imgObj.dataUrl, 'PNG', x, y, w, h);
+  return h; // retorna altura usada
 }
 
 const REFRESH_INTERVAL_MS = 60 * 60 * 1000;
