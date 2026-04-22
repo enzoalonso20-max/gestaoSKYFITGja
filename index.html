@@ -1120,13 +1120,39 @@
           <div class="panel-body"><div class="chart-wrap" style="height:280px"><canvas id="chart-fat-evolucao"></canvas></div></div>
         </div>
       </div>
+
+      <!-- Panel de variação MoM — visível na tela e no PDF -->
+      <div class="panel" id="fat-mom-panel" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">📊 Variação Mensal (MoM) — Faturamento Total</span>
+        </div>
+        <div class="panel-body">
+          <div id="fat-mom-badges" style="display:flex;flex-wrap:wrap;gap:10px;padding:4px 0"></div>
+        </div>
+      </div>
+
       <div class="chart-grid" id="fat-charts-2" style="display:none">
         <div class="panel">
           <div class="panel-header"><span class="panel-title">🍩 Composição por Categoria</span></div>
           <div class="panel-body"><div class="chart-wrap"><canvas id="chart-fat-cat"></canvas></div></div>
         </div>
         <div class="panel">
-          <div class="panel-header"><span class="panel-title">📊 Comparativo Mensal (Barras)</span></div>
+          <div class="panel-header">
+            <span class="panel-title">📊 Comparativo Mensal (Barras)</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="pf-btn active" id="fat-bar-btn-todos"
+                onclick="setFatBarFiltro('Todos')">Todos</button>
+              <button class="pf-btn" id="fat-bar-btn-EVO"
+                onclick="setFatBarFiltro('EVO')"
+                style="border-color:#7c3aed;color:#7c3aed">EVO</button>
+              <button class="pf-btn" id="fat-bar-btn-TotalPass"
+                onclick="setFatBarFiltro('TotalPass')"
+                style="border-color:#22c55e;color:#22c55e">TotalPass</button>
+              <button class="pf-btn" id="fat-bar-btn-WellHub"
+                onclick="setFatBarFiltro('WellHub')"
+                style="border-color:#ec4899;color:#ec4899">WellHub</button>
+            </div>
+          </div>
           <div class="panel-body"><div class="chart-wrap"><canvas id="chart-fat-barras"></canvas></div></div>
         </div>
       </div>
@@ -1166,8 +1192,40 @@
         </div>
       </div>
 
+      <!-- Filtros Despesas: Ano (select) + Mês (setas) -->
+      <div id="desp-filtros-bar" style="display:flex;align-items:center;gap:12px;
+                  flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;
+                  background:var(--bg-card);border-radius:12px;border:1px solid var(--border)">
+        <!-- Select de Ano -->
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px">Ano</label>
+          <select id="desp-sel-ano" onchange="despAnoMudou()"
+            style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;
+                   font-family:var(--font);font-size:13px;background:var(--bg-card);
+                   color:var(--text-dark);outline:none;min-width:90px">
+            <option value="">Todos</option>
+          </select>
+        </div>
+        <!-- Navegação de Mês com setas -->
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.5px">Mês</label>
+          <div style="display:flex;align-items:center;gap:4px">
+            <button class="pf-btn" onclick="despNavMes(-1)" id="desp-btn-prev">◀</button>
+            <div id="desp-mes-label" style="min-width:130px;text-align:center;font-size:13px;
+                 font-weight:600;color:var(--text-dark);padding:6px 10px;
+                 background:var(--bg);border:1px solid var(--border);border-radius:8px">
+              Todos
+            </div>
+            <button class="pf-btn" onclick="despNavMes(1)" id="desp-btn-next">▶</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary" style="align-self:flex-end" onclick="resetDespFiltros()">↺ Todos</button>
+        <span id="desp-filtro-label" style="font-size:11px;color:var(--text-light);
+              align-self:flex-end;padding-bottom:6px;font-family:var(--mono)"></span>
+      </div>
+
       <!-- Informação do período aplicado -->
-      <div class="period-info" id="period-info">
+      <div class="period-info" id="period-info" style="display:none">
         <span>📅 Período selecionado:</span>
         <strong id="period-info-text">—</strong>
         <span id="period-info-count" style="color:var(--text-light)"></span>
@@ -2359,6 +2417,9 @@ async function loadFinanceiro(force) {
     allRows   = rows;
     finLoaded = true;
 
+    // Popular selects de Mês e Ano da aba Despesas
+    popularDespFiltros(rows);
+
     document.getElementById('fin-sub').textContent   = `Dados reais -- aba ${SHEET_TAB} · ${rows.length} registros`;
     document.getElementById('fin-badge').innerHTML   = '● Google Sheets';
     document.getElementById('fin-badge').className   = 'badge badge-green';
@@ -2400,15 +2461,159 @@ async function loadFinanceiro(force) {
 // ╚══════════════════════════════════════════════════════════╝
 const PALETTE = ['#1e6fe8','#0ea5e9','#22c55e','#f59e0b','#7c3aed','#ef4444','#f97316','#ec4899','#14b8a6','#6b7280'];
 
+
+// ╔══════════════════════════════════════════════════════════╗
+//  FILTROS DE DESPESAS — Ano (select) + Mês (setas ← →)
+// ╚══════════════════════════════════════════════════════════╝
+const MESES_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+                  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+let despMesesDisp  = []; // lista de {anoNum, mesIdx, label} disponíveis nos dados
+let despMesCursor  = -1; // índice atual em despMesesDisp (-1 = Todos)
+
+function popularDespFiltros(rows) {
+  const anos = [...new Set(rows.map(r => String(r[1]||'').trim()).filter(Boolean))].sort();
+
+  // Montar lista de meses disponíveis ordenada
+  const mesesSet = new Set();
+  rows.forEach(r => {
+    const ano = String(r[1]||'').trim();
+    const mes = String(r[2]||'').trim();
+    const mi  = MESES_PT.findIndex(m => m.toLowerCase() === mes.toLowerCase());
+    if (ano && mi >= 0) mesesSet.add(`${ano}-${String(mi).padStart(2,'0')}`);
+  });
+
+  despMesesDisp = [...mesesSet].sort().map(k => {
+    const [a, mi] = k.split('-');
+    return { anoNum: parseInt(a), mesIdx: parseInt(mi), label: `${MESES_PT[parseInt(mi)]} ${a}` };
+  });
+
+  // Preencher select de Ano
+  const selAno = document.getElementById('desp-sel-ano');
+  if (selAno) {
+    selAno.innerHTML = '<option value="">Todos</option>'
+      + anos.map(a => `<option value="${a}">${a}</option>`).join('');
+    // Selecionar ano mais recente por padrão
+    if (anos.length) selAno.value = anos[anos.length-1];
+  }
+
+  // Posicionar cursor no último mês do ano selecionado
+  despMesCursor = despMesesDisp.length - 1;
+  atualizarDespMesLabel();
+  renderFinanceiro(allRows);
+}
+
+function atualizarDespMesLabel() {
+  const label = document.getElementById('desp-mes-label');
+  if (!label) return;
+  if (despMesCursor < 0) {
+    label.textContent = 'Todos';
+  } else {
+    label.textContent = despMesesDisp[despMesCursor]?.label || 'Todos';
+  }
+  // Habilitar/desabilitar setas
+  const prev = document.getElementById('desp-btn-prev');
+  const next = document.getElementById('desp-btn-next');
+  if (prev) prev.style.opacity = despMesCursor <= 0 ? '0.3' : '1';
+  if (next) next.style.opacity = despMesCursor >= despMesesDisp.length-1 ? '0.3' : '1';
+}
+
+function despNavMes(dir) {
+  // Filtrar despMesesDisp pelo ano selecionado
+  const ano = document.getElementById('desp-sel-ano')?.value?.trim();
+  const lista = ano
+    ? despMesesDisp.filter(m => String(m.anoNum) === ano)
+    : despMesesDisp;
+
+  if (!lista.length) return;
+
+  // Encontrar posição atual na lista filtrada
+  const cur = despMesesDisp[despMesCursor];
+  let posAtual = cur ? lista.findIndex(m => m.anoNum===cur.anoNum && m.mesIdx===cur.mesIdx) : lista.length-1;
+
+  posAtual = Math.max(0, Math.min(lista.length-1, posAtual + dir));
+  const chosen = lista[posAtual];
+  despMesCursor = despMesesDisp.findIndex(m => m.anoNum===chosen.anoNum && m.mesIdx===chosen.mesIdx);
+
+  atualizarDespMesLabel();
+  renderFinanceiro(allRows);
+}
+
+function despAnoMudou() {
+  // Ao mudar o ano, ir para o último mês disponível desse ano
+  const ano = document.getElementById('desp-sel-ano')?.value?.trim();
+  if (!ano) {
+    despMesCursor = -1;
+  } else {
+    const lista = despMesesDisp.filter(m => String(m.anoNum) === ano);
+    const last  = lista[lista.length-1];
+    despMesCursor = last
+      ? despMesesDisp.findIndex(m => m.anoNum===last.anoNum && m.mesIdx===last.mesIdx)
+      : -1;
+  }
+  atualizarDespMesLabel();
+  renderFinanceiro(allRows);
+}
+
+function resetDespFiltros() {
+  const sa = document.getElementById('desp-sel-ano');
+  if (sa) sa.value = '';
+  despMesCursor = -1;
+  atualizarDespMesLabel();
+  renderFinanceiro(allRows);
+}
+
+function getDespesasRange() {
+  const ano = document.getElementById('desp-sel-ano')?.value?.trim();
+  const cur = despMesCursor >= 0 ? despMesesDisp[despMesCursor] : null;
+
+  if (!cur && !ano) return { from:null, to:null };
+
+  const anoNum = cur ? cur.anoNum : (ano ? parseInt(ano) : null);
+  const mesIdx = cur ? cur.mesIdx : -1;
+
+  if (anoNum && mesIdx >= 0) {
+    return {
+      from: new Date(anoNum, mesIdx, 1, 0,0,0,0),
+      to:   new Date(anoNum, mesIdx+1, 0, 23,59,59,999),
+    };
+  }
+  if (anoNum) {
+    return {
+      from: new Date(anoNum, 0, 1, 0,0,0,0),
+      to:   new Date(anoNum, 11, 31, 23,59,59,999),
+    };
+  }
+  return { from:null, to:null };
+}
+
 function renderFinanceiro(rows) {
-  const { from, to } = getPeriodRange();
+  // Usar filtros próprios de Mês/Ano da aba Despesas (em vez do period-filter global)
+  const { from, to, mesFilter } = getDespesasRange();
+  const ano = document.getElementById('desp-sel-ano')?.value?.trim();
+  const mes = document.getElementById('desp-sel-mes')?.value?.trim().toLowerCase();
+
+  // Atualizar label de filtro aplicado
+  const labelEl = document.getElementById('desp-filtro-label');
+  if (labelEl) {
+    const partes = [];
+    if (ano) partes.push(ano);
+    if (mes) partes.push(mes.charAt(0).toUpperCase() + mes.slice(1));
+    labelEl.textContent = partes.length ? `📅 ${partes.join(' · ')}` : '📅 Todo o período';
+  }
 
   // ── filtrar por período ──
   const filtered = rows.filter(r => {
-    const d = parseSheetDate(r[C.DATA]);
+    const d   = parseSheetDate(r[C.DATA]);
     if (!d) return false;
-    if (from && d < from) return false;
-    if (to   && d > to)   return false;
+    // Filtro por mês específico (qualquer ano) via campo mesFilter
+    if (mesFilter) {
+      const mNome = MESES_PT[d.getMonth()].toLowerCase();
+      if (mNome !== mesFilter) return false;
+    } else {
+      if (from && d < from) return false;
+      if (to   && d > to)   return false;
+    }
     return true;
   });
 
@@ -3773,6 +3978,89 @@ async function loadFaturamento(force) {
   }
 }
 
+
+// ╔══════════════════════════════════════════════════════════╗
+//  GRÁFICO BARRAS RECEITA — filtro Todos / EVO / TotalPass / WellHub
+// ╚══════════════════════════════════════════════════════════╝
+let fatBarFiltro = 'Todos'; // estado global do filtro
+
+function setFatBarFiltro(sistema) {
+  fatBarFiltro = sistema;
+  // Atualizar botões ativos
+  ['Todos','EVO','TotalPass','WellHub'].forEach(s => {
+    const btn = document.getElementById('fat-bar-btn-' + s);
+    if (btn) btn.classList.toggle('active', s === sistema);
+  });
+  // Re-renderizar com o filtro
+  if (window._fatMeses) renderFatBarras(window._fatMeses, window._fatCORSIS, window._fatSISTEMAS);
+}
+
+function renderFatBarras(meses, COR_SIS, SISTEMAS) {
+  if (chartFatBar) chartFatBar.destroy();
+  const canvas = document.getElementById('chart-fat-barras');
+  if (!canvas) return;
+
+  // Montar datasets conforme filtro
+  let datasets;
+  if (fatBarFiltro === 'Todos') {
+    // Linha total + linhas por sistema (stacked visual)
+    datasets = [
+      {
+        label: 'Total',
+        data:  meses.map(([, m]) => m.total),
+        borderColor: '#1e6fe8', backgroundColor: 'rgba(30,111,232,.08)',
+        tension: .35, fill: true, pointRadius: 5,
+        pointBackgroundColor: '#1e6fe8', borderWidth: 2, type: 'line',
+      },
+      ...SISTEMAS.map(s => ({
+        label: s,
+        data:  meses.map(([, m]) => m[s] || 0),
+        backgroundColor: COR_SIS[s] + 'cc',
+        borderRadius: 4, type: 'bar',
+      }))
+    ];
+  } else {
+    // Sistema específico: barra + linha de tendência
+    const cor = COR_SIS[fatBarFiltro] || '#1e6fe8';
+    const vals = meses.map(([, m]) => m[fatBarFiltro] || 0);
+    datasets = [
+      {
+        label: fatBarFiltro,
+        data:  vals,
+        backgroundColor: cor + 'cc',
+        borderRadius: 4, type: 'bar',
+      },
+      {
+        label: 'Tendência',
+        data:  vals,
+        borderColor: cor, backgroundColor: 'transparent',
+        tension: .4, fill: false, pointRadius: 4,
+        pointBackgroundColor: cor, borderWidth: 2, type: 'line',
+        borderDash: [4, 3],
+      }
+    ];
+  }
+
+  chartFatBar = new Chart(canvas, {
+    type: 'bar',
+    data: { labels: meses.map(([, m]) => m.label), datasets },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top', labels: { font: { family:'DM Sans', size:11 }, padding:10 } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtBRL(ctx.raw)}` } }
+      },
+      scales: {
+        x: { stacked: fatBarFiltro==='Todos', grid:{display:false},
+             ticks:{font:{family:'DM Sans',size:11},maxRotation:35} },
+        y: { stacked: false, grid:{color:'rgba(0,0,0,.04)'},
+             ticks:{font:{family:'DM Mono',size:10},
+                    callback: v => 'R$'+Math.round(v/1000)+'k'} }
+      }
+    }
+  });
+}
+
 function renderFaturamento(rows) {
   // Estrutura: Data | Ano | Mês | Sistema (EVO/WellHub/TotalPass) | Valor
   // Filtrar apenas meses com valor > 0
@@ -3832,6 +4120,7 @@ function renderFaturamento(rows) {
   document.getElementById('fat-charts').style.display   = 'grid';
   document.getElementById('fat-charts-2').style.display = 'grid';
   document.getElementById('fat-empty').style.display    = 'none';
+  document.getElementById('fat-mom-panel').style.display = 'block';
 
   // ── Gráfico evolução — barras empilhadas por sistema ──
   if (chartFatEvol) chartFatEvol.destroy();
@@ -3859,6 +4148,36 @@ function renderFaturamento(rows) {
       }
     }
   });
+
+  // ── Variação MoM — badges visíveis na tela e no PDF ──────────────────
+  (function renderMoM() {
+    const momPanel  = document.getElementById('fat-mom-panel');
+    const momBadges = document.getElementById('fat-mom-badges');
+    if (!momPanel || !momBadges || meses.length < 2) {
+      if (momPanel) momPanel.style.display = 'none'; return;
+    }
+    momPanel.style.display = 'block';
+    momBadges.innerHTML = meses.map(([key, m], i) => {
+      const prev = i > 0 ? meses[i-1][1].total : null;
+      const pct  = prev && prev > 0 ? ((m.total - prev) / prev * 100) : null;
+      const sinal = pct === null ? '' : pct >= 0 ? '▲' : '▼';
+      const cor   = pct === null ? '#6b7280'
+                  : pct >= 0    ? '#16a34a' : '#dc2626';
+      const fundo = pct === null ? '#f3f4f6'
+                  : pct >= 0    ? '#dcfce7' : '#fee2e2';
+      const pctTxt = pct === null ? '—'
+                   : `${sinal} ${Math.abs(pct).toFixed(1)}%`;
+      return `<div style="display:flex;flex-direction:column;align-items:center;
+        background:${fundo};border-radius:10px;padding:10px 14px;min-width:100px;
+        border:1px solid ${cor}22">
+        <span style="font-size:11px;color:#6b7280;font-weight:600;margin-bottom:4px">
+          ${m.label}
+        </span>
+        <span style="font-size:15px;font-weight:800;color:${cor}">${pctTxt}</span>
+        <span style="font-size:10px;color:#6b7280;margin-top:2px">${fmtBRL(m.total)}</span>
+      </div>`;
+    }).join('');
+  })();
 
   // ── Gráfico doughnut por sistema (total acumulado) ──
   if (chartFatCat) chartFatCat.destroy();
@@ -3888,32 +4207,11 @@ function renderFaturamento(rows) {
   });
 
   // ── Gráfico linha — faturamento total por mês ──
-  if (chartFatBar) chartFatBar.destroy();
-  chartFatBar = new Chart(document.getElementById('chart-fat-barras'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label: 'Total Mensal',
-        data:  meses.map(([, m]) => m.total),
-        borderColor: '#1e6fe8', backgroundColor: 'rgba(30,111,232,.1)',
-        tension: .35, fill: true, pointRadius: 5,
-        pointBackgroundColor: '#1e6fe8', borderWidth: 2,
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: ctx => ' ' + fmtBRL(ctx.raw) } }
-      },
-      scales: {
-        y: { grid: { color: 'rgba(0,0,0,.04)' },
-             ticks: { font: { family: 'DM Mono', size: 10 }, callback: v => 'R$' + Math.round(v / 1000) + 'k' } },
-        x: { grid: { display: false }, ticks: { font: { family: 'DM Sans', size: 11 }, maxRotation: 35 } }
-      }
-    }
-  });
+  // Guardar meses para uso no filtro de sistema
+  window._fatMeses   = meses;
+  window._fatCORSIS  = COR_SIS;
+  window._fatSISTEMAS= SISTEMAS;
+  renderFatBarras(meses, COR_SIS, SISTEMAS);;
 
   // ── Tabela: mês × sistema com totais ──
   document.getElementById('fat-table-panel').style.display = 'block';
@@ -4078,12 +4376,14 @@ async function exportarFaturamentoPDF() {
       pdf.setDrawColor(...BORDA); pdf.line(MAR,H-10,W-MAR,H-10);
       pdf.setTextColor(...CINZA); pdf.setFont('helvetica','normal'); pdf.setFontSize(6.5);
       pdf.text('SkyFit Guarujá — Dashboard de Gestão', MAR, H-6);
-      pdf.text(`Página ${p} de ${np}`, W-MAR, H-6, {align:'right'});
+      pdf.text(String(`Página ${p} de ${np}`), W-MAR, H-6, {align:'right'});
     }
 
     const dd=String(now.getDate()).padStart(2,'0'), mm=String(now.getMonth()+1).padStart(2,'0');
-    pdf.save(`Receita_SkyFit_${dd}_${mm}_${now.getFullYear()}.pdf`);
-    toast('PDF gerado!', '✅');
+    // Abrir preview em nova aba antes de baixar
+    const blobUrl = pdf.output('bloburl');
+    window.open(blobUrl, '_blank');
+    toast('PDF aberto em nova aba para visualização!','✅');
   } catch(err){ console.error(err); toast('Erro PDF: '+err.message,'❌'); }
 }
 
@@ -4492,9 +4792,11 @@ async function exportarAgregadoresPDF() {
       pdf.setFont('helvetica','bold'); pdf.setFontSize(9); pdf.setTextColor(...ESCURO);
       pdf.text('Indicadores Estratégicos', MAR, Y+5); Y+=8;
       const imgKpi = await capturePdfEl(kpiEl);
-      const kH = Math.min(CW * (kpiEl.offsetHeight/kpiEl.offsetWidth), 45);
-      checkPage(kH+4);
-      pdfAddImg(pdf, imgKpi, MAR,Y,CW,kH); Y+=kH+6;
+      if (imgKpi) {
+        // usar ratio interno — nunca NaN
+        const kH = pdfAddImg(pdf, imgKpi, MAR, Y, CW, 44);
+        Y += kH + 6;
+      }
     }
 
     // Gráfico evolução faturamento (largura total)
@@ -4504,8 +4806,9 @@ async function exportarAgregadoresPDF() {
       pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
       pdf.text('Evolução do Faturamento', MAR, Y+5); Y+=8;
       const img=await capturePdfEl(cFat.parentElement);
-      const gH=Math.min(CW*(cFat.parentElement.offsetHeight/cFat.parentElement.offsetWidth),65);
-      pdf.addImage(img,'PNG',MAR,Y,CW,gH); Y+=gH+6;
+      // usar ratio interno — sem offsetWidth/Height
+      const gH = pdfAddImg(pdf, img, MAR, Y, CW, 65);
+      Y += gH + 6;
     }
 
     // Check-ins + Valor médio por visita (lado a lado)
@@ -4545,8 +4848,9 @@ async function exportarAgregadoresPDF() {
       pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
       pdf.text('Resumo Estratégico', MAR, Y+5); Y+=8;
       const imgR=await capturePdfEl(rEl, {backgroundColor:'#f0f4f9'});
-      const rH=Math.min(CW*(rEl.offsetHeight/rEl.offsetWidth),55);
-      pdfAddImg(pdf, imgR, MAR,Y,CW,rH); Y+=rH+6;
+      // usar ratio interno — sem offsetWidth/Height
+      const rH = pdfAddImg(pdf, imgR, MAR, Y, CW, 55);
+      Y += rH + 6;
     }
 
     // Rodapé
@@ -4556,13 +4860,15 @@ async function exportarAgregadoresPDF() {
       pdf.setDrawColor(...BORDA); pdf.line(MAR,H-10,W-MAR,H-10);
       pdf.setTextColor(...CINZA); pdf.setFont('helvetica','normal'); pdf.setFontSize(7);
       pdf.text('SkyFit Guarujá — Dashboard de Gestão',MAR,H-6);
-      pdf.text(`Página ${p} de ${np}`,W-MAR,H-6,{align:'right'});
+      pdf.text(String(`Página ${p} de ${np}`),W-MAR,H-6,{align:'right'});
     }
 
     const dd=String(now.getDate()).padStart(2,'0');
     const mm=String(now.getMonth()+1).padStart(2,'0');
-    pdf.save(`Agregadores_SkyFit_${dd}_${mm}_${now.getFullYear()}.pdf`);
-    toast('PDF gerado com sucesso!','✅');
+    // Preview em nova aba antes de baixar
+    const blobUrl = pdf.output('bloburl');
+    window.open(blobUrl, '_blank');
+    toast('PDF aberto em nova aba — use Ctrl+S para salvar!','✅');
   } catch(err) {
     console.error(err);
     toast('Erro ao gerar PDF: '+err.message,'❌');
