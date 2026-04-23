@@ -1133,7 +1133,25 @@
 
       <div class="chart-grid" id="fat-charts-2" style="display:none">
         <div class="panel">
-          <div class="panel-header"><span class="panel-title">🍩 Composição por Categoria</span></div>
+          <div class="panel-header">
+            <span class="panel-title">🍩 Composição por Categoria</span>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+              <button class="pf-btn active" id="fat-cat-btn-todos"
+                onclick="setFatCatFiltro('todos')">Todos</button>
+              <button class="pf-btn" id="fat-cat-btn-ano"
+                onclick="setFatCatFiltro('ano')">Ano</button>
+              <select id="fat-cat-sel-ano" style="display:none;padding:4px 8px;
+                border:1px solid var(--border);border-radius:6px;font-size:12px;
+                background:var(--bg-card);color:var(--text-dark);outline:none"
+                onchange="renderFatCat()"></select>
+              <button class="pf-btn" id="fat-cat-btn-mes"
+                onclick="setFatCatFiltro('mes')">Mês</button>
+              <select id="fat-cat-sel-mes" style="display:none;padding:4px 8px;
+                border:1px solid var(--border);border-radius:6px;font-size:12px;
+                background:var(--bg-card);color:var(--text-dark);outline:none"
+                onchange="renderFatCat()"></select>
+            </div>
+          </div>
           <div class="panel-body"><div class="chart-wrap"><canvas id="chart-fat-cat"></canvas></div></div>
         </div>
         <div class="panel">
@@ -1224,12 +1242,7 @@
               align-self:flex-end;padding-bottom:6px;font-family:var(--mono)"></span>
       </div>
 
-      <!-- Informação do período aplicado -->
-      <div class="period-info" id="period-info" style="display:none">
-        <span>📅 Período selecionado:</span>
-        <strong id="period-info-text">—</strong>
-        <span id="period-info-count" style="color:var(--text-light)"></span>
-      </div>
+
 
       <!-- KPIs Financeiro -->
       <div class="cards-grid">
@@ -2618,8 +2631,8 @@ function renderFinanceiro(rows) {
   });
 
   // ── atualizar label de período ──
-  document.getElementById('period-info-text').textContent  = periodLabelText();
-  document.getElementById('period-info-count').textContent =
+  // period-info-text removido — usar desp-filtro-label
+  const _tmp_count =
     filtered.length
       ? `· ${filtered.length} lançamento${filtered.length !== 1 ? 's' : ''}`
       : '· nenhum resultado no período';
@@ -3979,6 +3992,104 @@ async function loadFaturamento(force) {
 }
 
 
+
+// ╔══════════════════════════════════════════════════════════╗
+//  DOUGHNUT COMPOSIÇÃO — filtro Todos / Ano / Mês
+// ╚══════════════════════════════════════════════════════════╝
+let fatCatFiltroModo = 'todos'; // 'todos' | 'ano' | 'mes'
+
+function popularFatCatFiltros(validos) {
+  const MESES_ORD_LC = ['janeiro','fevereiro','março','abril','maio','junho',
+                        'julho','agosto','setembro','outubro','novembro','dezembro'];
+  const anos  = [...new Set(validos.map(r => String(r['Ano']||'').trim()).filter(Boolean))].sort();
+  const meses = [...new Set(validos.map(r => String(r['Mês']||'').trim().toLowerCase()).filter(Boolean))]
+    .sort((a,b) => MESES_ORD_LC.indexOf(a) - MESES_ORD_LC.indexOf(b));
+
+  const selAno = document.getElementById('fat-cat-sel-ano');
+  const selMes = document.getElementById('fat-cat-sel-mes');
+  if (selAno) {
+    selAno.innerHTML = anos.map(a => `<option value="${a}">${a}</option>`).join('');
+    if (anos.length) selAno.value = anos[anos.length-1];
+  }
+  if (selMes) {
+    selMes.innerHTML = meses.map(m => {
+      const cap = m.charAt(0).toUpperCase()+m.slice(1);
+      return `<option value="${m}">${cap}</option>`;
+    }).join('');
+    if (meses.length) selMes.value = meses[meses.length-1];
+  }
+}
+
+function setFatCatFiltro(modo) {
+  fatCatFiltroModo = modo;
+  // Botões
+  ['todos','ano','mes'].forEach(m => {
+    const btn = document.getElementById('fat-cat-btn-'+m);
+    if (btn) btn.classList.toggle('active', m === modo);
+  });
+  // Selects visíveis conforme modo
+  const selAno = document.getElementById('fat-cat-sel-ano');
+  const selMes = document.getElementById('fat-cat-sel-mes');
+  if (selAno) selAno.style.display = modo==='ano' ? 'inline-block' : 'none';
+  if (selMes) selMes.style.display = modo==='mes' ? 'inline-block' : 'none';
+  renderFatCat();
+}
+
+function renderFatCat() {
+  if (!window._fatCatValidos) return;
+  const validos  = window._fatCatValidos;
+  const COR_SIS  = window._fatCatCORSIS;
+  const SISTEMAS = window._fatCatSIS;
+
+  // Filtrar conforme modo
+  let filtrados = validos;
+  if (fatCatFiltroModo === 'ano') {
+    const ano = document.getElementById('fat-cat-sel-ano')?.value;
+    if (ano) filtrados = validos.filter(r => String(r['Ano']||'').trim() === ano);
+  } else if (fatCatFiltroModo === 'mes') {
+    const mes = document.getElementById('fat-cat-sel-mes')?.value?.toLowerCase();
+    if (mes) filtrados = validos.filter(r => String(r['Mês']||'').trim().toLowerCase() === mes);
+  }
+
+  // Recalcular totais
+  const totSis = {};
+  SISTEMAS.forEach(s => { totSis[s] = 0; });
+  filtrados.forEach(r => {
+    const s = String(r['Sistema']||'').trim();
+    if (totSis[s] !== undefined) totSis[s] += parseFloat(r['Valor']||0)||0;
+  });
+  const totalFiltrado = Object.values(totSis).reduce((s,v)=>s+v, 0);
+
+  // Renderizar doughnut
+  if (chartFatCat) chartFatCat.destroy();
+  const canvas = document.getElementById('chart-fat-cat');
+  if (!canvas) return;
+  chartFatCat = new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: SISTEMAS,
+      datasets: [{
+        data: SISTEMAS.map(s => totSis[s]),
+        backgroundColor: SISTEMAS.map(s => COR_SIS[s]),
+        borderWidth: 2, borderColor: '#fff', hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { font:{family:'DM Sans',size:12}, padding:12 } },
+        tooltip: { callbacks: {
+          label: ctx => {
+            const pct = totalFiltrado ? ((ctx.raw/totalFiltrado)*100).toFixed(1) : 0;
+            return ` ${fmtBRL(ctx.raw)} (${pct}%)`;
+          }
+        }}
+      },
+      cutout: '60%'
+    }
+  });
+}
+
 // ╔══════════════════════════════════════════════════════════╗
 //  GRÁFICO BARRAS RECEITA — filtro Todos / EVO / TotalPass / WellHub
 // ╚══════════════════════════════════════════════════════════╝
@@ -4180,31 +4291,13 @@ function renderFaturamento(rows) {
   })();
 
   // ── Gráfico doughnut por sistema (total acumulado) ──
-  if (chartFatCat) chartFatCat.destroy();
-  chartFatCat = new Chart(document.getElementById('chart-fat-cat'), {
-    type: 'doughnut',
-    data: {
-      labels: SISTEMAS,
-      datasets: [{
-        data: SISTEMAS.map(s => totSis[s]),
-        backgroundColor: SISTEMAS.map(s => COR_SIS[s]),
-        borderWidth: 2, borderColor: '#fff', hoverOffset: 6
-      }]
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position: 'right', labels: { font: { family: 'DM Sans', size: 12 }, padding: 12 } },
-        tooltip: { callbacks: {
-          label: ctx => {
-            const pct = totalGeral ? ((ctx.raw / totalGeral) * 100).toFixed(1) : 0;
-            return ` ${fmtBRL(ctx.raw)} (${pct}%)`;
-          }
-        }}
-      },
-      cutout: '60%'
-    }
-  });
+  // Guardar dados para filtros do doughnut
+  window._fatCatMesMap  = mesMap;
+  window._fatCatCORSIS  = COR_SIS;
+  window._fatCatSIS     = SISTEMAS;
+  window._fatCatValidos = validos;
+  popularFatCatFiltros(validos);
+  renderFatCat();
 
   // ── Gráfico linha — faturamento total por mês ──
   // Guardar meses para uso no filtro de sistema
@@ -4851,6 +4944,101 @@ async function exportarAgregadoresPDF() {
       // usar ratio interno — sem offsetWidth/Height
       const rH = pdfAddImg(pdf, imgR, MAR, Y, CW, 55);
       Y += rH + 6;
+    }
+
+    // ── Dados Detalhados (tabela) ────────────────────────────────────────
+    const tblEl = document.getElementById('agg-table-wrap');
+    if (tblEl) {
+      // Nova página para a tabela
+      pdf.addPage();
+      let Yt = MAR;
+
+      // Sub-cabeçalho
+      pdf.setFillColor(...AZUL);
+      pdf.roundedRect(MAR, Yt, CW, 10, 2, 2, 'F');
+      pdf.setTextColor(255,255,255);
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(9);
+      pdf.text('Dados Detalhados por Período e Agregador', MAR+4, Yt+6.5);
+      pdf.setTextColor(...ESCURO);
+      Yt += 14;
+
+      // Ler dados filtrados e montar tabela programaticamente
+      const dados = getAggFiltered();
+      const n = v => parseFloat(String(v||'0').replace(',','.')) || 0;
+      const COLUNAS = ['Ano','Mês','Agregador','Faturamento','Check-ins','Usuários Únicos'];
+      const COL_W   = [16, 24, 30, 32, 26, 30]; // mm
+      const ROW_H   = 8;
+
+      // Cabeçalho da tabela
+      pdf.setFillColor(240, 244, 252);
+      pdf.rect(MAR, Yt, CW, ROW_H, 'F');
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(7.5);
+      pdf.setTextColor(...ESCURO);
+      let xc = MAR + 2;
+      COLUNAS.forEach((col, i) => {
+        pdf.text(col, xc, Yt + 5.5);
+        xc += COL_W[i];
+      });
+      Yt += ROW_H;
+
+      // Linhas de dados
+      pdf.setFont('helvetica','normal'); pdf.setFontSize(7);
+      dados.forEach((r, idx) => {
+        if (Yt + ROW_H > pdf.internal.pageSize.getHeight() - MAR - 10) {
+          pdf.addPage(); Yt = MAR;
+        }
+        if (idx % 2 === 1) {
+          pdf.setFillColor(248, 250, 253);
+          pdf.rect(MAR, Yt, CW, ROW_H, 'F');
+        }
+        const fat = n(r['Faturamento']), ci = n(r['Check-ins']), us = n(r['Usuários Únicos']);
+        const vals = [
+          String(r['Ano']||''),
+          String(r['Mês']||''),
+          String(r['Agregador']||''),
+          fmtBRL(fat),
+          String(Math.round(ci)),
+          String(Math.round(us)),
+        ];
+        xc = MAR + 2;
+        vals.forEach((v, i) => {
+          // Cor por agregador na coluna Agregador
+          if (i === 2) {
+            const cor = corAgr(v, 0);
+            const rgb = cor.startsWith('#') ? [
+              parseInt(cor.slice(1,3),16),
+              parseInt(cor.slice(3,5),16),
+              parseInt(cor.slice(5,7),16)
+            ] : ESCURO;
+            pdf.setTextColor(...rgb);
+          } else if (i === 3) {
+            pdf.setTextColor(22, 163, 74); // verde para faturamento
+          } else {
+            pdf.setTextColor(...ESCURO);
+          }
+          pdf.text(v, xc, Yt + 5.5);
+          xc += COL_W[i];
+        });
+        // Linha separadora
+        pdf.setDrawColor(...BORDA);
+        pdf.line(MAR, Yt + ROW_H, W - MAR, Yt + ROW_H);
+        Yt += ROW_H;
+      });
+
+      // Totais
+      const totFat = dados.reduce((s,r)=>s+n(r['Faturamento']),0);
+      const totCi  = dados.reduce((s,r)=>s+n(r['Check-ins']),0);
+      const totUs  = dados.reduce((s,r)=>s+n(r['Usuários Únicos']),0);
+      if (Yt + ROW_H > pdf.internal.pageSize.getHeight() - MAR - 10) {
+        pdf.addPage(); Yt = MAR;
+      }
+      pdf.setFillColor(230, 240, 255);
+      pdf.rect(MAR, Yt, CW, ROW_H, 'F');
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(7.5);
+      pdf.setTextColor(...ESCURO);
+      const totVals = ['','TOTAL','',fmtBRL(totFat),String(Math.round(totCi)),String(Math.round(totUs))];
+      xc = MAR + 2;
+      totVals.forEach((v, i) => { pdf.text(v, xc, Yt + 5.5); xc += COL_W[i]; });
     }
 
     // Rodapé
