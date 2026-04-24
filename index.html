@@ -6,6 +6,7 @@
 <title>SkyFit Guarujá — Painel de Gestão</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
@@ -159,6 +160,17 @@
   .main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
   /* ── TOPBAR ── */
+  #mob-ham {
+    display: none; /* oculto no desktop */
+    align-items: center; justify-content: center;
+    width: 36px; height: 36px; border: none; background: none;
+    cursor: pointer; border-radius: 8px; flex-shrink: 0;
+    color: var(--text-dark); font-size: 20px;
+    transition: background .15s;
+  }
+  #mob-ham:hover { background: var(--bg); }
+  .mob-overlay { display: none; }
+
   .topbar {
     background: var(--bg-card); border-bottom: 1px solid var(--border);
     padding: 0 24px; height: 60px; flex-shrink: 0;
@@ -418,11 +430,29 @@
      MOBILE — PORTRAIT (≤ 768px)
      Sidebar vira bottom-nav fixa
   ══════════════════════════════════════════ */
-  @media (max-width:768px) and (orientation:portrait) {
+  @media (max-width:768px) {
     :root { --sidebar-w: 0px; --bottom-nav-h: 64px; }
 
-    /* Esconde sidebar lateral */
-    .sidebar { display: none; }
+    /* Sidebar deslizante — oculta por padrão */
+    .sidebar {
+      position: fixed; left: 0; top: 0; z-index: 300;
+      width: 260px; height: 100vh;
+      transform: translateX(-100%);
+      transition: transform .28s ease;
+      overflow-y: auto;
+      box-shadow: 4px 0 24px rgba(0,0,0,.25);
+    }
+    .sidebar.mob-open { transform: translateX(0); }
+
+    /* Overlay escuro atrás da sidebar */
+    .mob-overlay {
+      display: none; position: fixed; inset: 0; z-index: 299;
+      background: rgba(0,0,0,.45);
+    }
+    .mob-overlay.mob-open { display: block; }
+
+    /* Botão hambúrguer na topbar */
+    #mob-ham { display: flex; }
 
     /* Main ocupa tela toda */
     .main { margin-left: 0; }
@@ -770,6 +800,7 @@
 </style>
 </head>
 <body>
+<div class="mob-overlay" id="mob-overlay" onclick="toggleSidebar()"></div>
 <div class="app">
 
 <!-- ═══════════════ SIDEBAR ═══════════════ -->
@@ -839,6 +870,7 @@
 
   <!-- TOPBAR -->
   <header class="topbar">
+    <button id="mob-ham" onclick="toggleSidebar()" aria-label="Menu">☰</button>
     <div class="topbar-left">
       <div class="topbar-title" id="topbar-title">Vendas</div>
       <div class="topbar-meta"  id="topbar-meta">Análise de vendas e desempenho comercial</div>
@@ -1156,22 +1188,10 @@
         </div>
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">📊 Comparativo Mensal (Barras)</span>
-            <div style="display:flex;gap:6px;flex-wrap:wrap">
-              <button class="pf-btn active" id="fat-bar-btn-todos"
-                onclick="setFatBarFiltro('Todos')">Todos</button>
-              <button class="pf-btn" id="fat-bar-btn-EVO"
-                onclick="setFatBarFiltro('EVO')"
-                style="border-color:#7c3aed;color:#7c3aed">EVO</button>
-              <button class="pf-btn" id="fat-bar-btn-TotalPass"
-                onclick="setFatBarFiltro('TotalPass')"
-                style="border-color:#22c55e;color:#22c55e">TotalPass</button>
-              <button class="pf-btn" id="fat-bar-btn-WellHub"
-                onclick="setFatBarFiltro('WellHub')"
-                style="border-color:#ec4899;color:#ec4899">WellHub</button>
-            </div>
+            <span class="panel-title">📊 Média Mensal de Faturamento</span>
+            <span style="font-size:11px;color:var(--text-light);font-family:var(--mono)" id="fat-media-note"></span>
           </div>
-          <div class="panel-body"><div class="chart-wrap"><canvas id="chart-fat-barras"></canvas></div></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:180px"><canvas id="chart-fat-media-mensal"></canvas></div></div>
         </div>
       </div>
 
@@ -2010,6 +2030,10 @@
 </div>
 
 <script>
+// Cores institucionais globais — usadas em todos os gráficos
+const SISTEMAS_GLOBAL = ['EVO','WellHub','TotalPass'];
+const COR_SIS_GLOBAL  = { EVO:'#7c3aed', WellHub:'#ec4899', TotalPass:'#22c55e' };
+
 // ╔══════════════════════════════════════════════════════════╗
 //  CONFIGURAÇÃO FIXA
 // ╚══════════════════════════════════════════════════════════╝
@@ -2181,6 +2205,23 @@ const FIN_TABS   = ['fin-visao','fin-faturamento','fin-despesas','fin-lucro','fi
 const AGR_TABS   = ['agregadores'];
 const CHAM_TABS  = ['cham-expirados','cham-inadimplencia','cham-oportunidades'];
 
+
+// ── Mobile: sidebar hambúrguer ──────────────────────────────────────────────
+function toggleSidebar() {
+  const sb  = document.querySelector('.sidebar');
+  const ov  = document.getElementById('mob-overlay');
+  const open = sb.classList.toggle('mob-open');
+  if (ov) ov.classList.toggle('mob-open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+function closeSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const ov = document.getElementById('mob-overlay');
+  if (sb) sb.classList.remove('mob-open');
+  if (ov) ov.classList.remove('mob-open');
+  document.body.style.overflow = '';
+}
+
 function switchTab(tab, el) {
   // Limpa seleção
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
@@ -2220,7 +2261,7 @@ function switchTab(tab, el) {
   } else if (FIN_TABS.includes(tab)) {
     const g=document.getElementById('fin-group'), c=document.getElementById('fin-chevron');
     if(g) g.classList.add('open'); if(c) c.classList.add('open');
-    if(tab==='fin-despesas'){ if(pf) pf.classList.add('show'); if(!finLoaded) loadFinanceiro(false); }
+    if(tab==='fin-despesas'){ if(!finLoaded) loadFinanceiro(false); }
     if(tab==='fin-faturamento' && !fatLoaded) loadFaturamento(false);
     if(tab==='fin-lucro') renderLucro();
 
@@ -2233,6 +2274,7 @@ function switchTab(tab, el) {
   }
   syncBottomNav(tab);
   closeModal(null);
+  closeSidebar(); // fecha menu no mobile
 }
 
 function syncBottomNav(tab) {
@@ -2604,7 +2646,8 @@ function renderFinanceiro(rows) {
   // Usar filtros próprios de Mês/Ano da aba Despesas (em vez do period-filter global)
   const { from, to, mesFilter } = getDespesasRange();
   const ano = document.getElementById('desp-sel-ano')?.value?.trim();
-  const mes = document.getElementById('desp-sel-mes')?.value?.trim().toLowerCase();
+  // desp-sel-mes removido — filtro de mês agora é via despMesCursor (setas)
+  const mes = null; // não usado
 
   // Atualizar label de filtro aplicado
   const labelEl = document.getElementById('desp-filtro-label');
@@ -3946,7 +3989,6 @@ let fatData       = [];
 let fatLoaded     = false;
 let chartFatEvol  = null;
 let chartFatCat   = null;
-let chartFatBar   = null;
 
 // Agregadores — declarações globais (aqui para evitar TDZ no switchTab)
 let aggData    = [];
@@ -4093,82 +4135,67 @@ function renderFatCat() {
 // ╔══════════════════════════════════════════════════════════╗
 //  GRÁFICO BARRAS RECEITA — filtro Todos / EVO / TotalPass / WellHub
 // ╚══════════════════════════════════════════════════════════╝
-let fatBarFiltro = 'Todos'; // estado global do filtro
+// Gráfico: Média Mensal de Faturamento por Categoria
+let chartFatMediaMensal = null;
 
-function setFatBarFiltro(sistema) {
-  fatBarFiltro = sistema;
-  // Atualizar botões ativos
-  ['Todos','EVO','TotalPass','WellHub'].forEach(s => {
-    const btn = document.getElementById('fat-bar-btn-' + s);
-    if (btn) btn.classList.toggle('active', s === sistema);
-  });
-  // Re-renderizar com o filtro
-  if (window._fatMeses) renderFatBarras(window._fatMeses, window._fatCORSIS, window._fatSISTEMAS);
-}
-
-function renderFatBarras(meses, COR_SIS, SISTEMAS) {
-  if (chartFatBar) chartFatBar.destroy();
-  const canvas = document.getElementById('chart-fat-barras');
+function renderFatMediaMensal(meses, totSis, COR_SIS, SISTEMAS) {
+  if (chartFatMediaMensal) chartFatMediaMensal.destroy();
+  const canvas = document.getElementById('chart-fat-media-mensal');
   if (!canvas) return;
 
-  // Montar datasets conforme filtro
-  let datasets;
-  if (fatBarFiltro === 'Todos') {
-    // Linha total + linhas por sistema (stacked visual)
-    datasets = [
-      {
-        label: 'Total',
-        data:  meses.map(([, m]) => m.total),
-        borderColor: '#1e6fe8', backgroundColor: 'rgba(30,111,232,.08)',
-        tension: .35, fill: true, pointRadius: 5,
-        pointBackgroundColor: '#1e6fe8', borderWidth: 2, type: 'line',
-      },
-      ...SISTEMAS.map(s => ({
-        label: s,
-        data:  meses.map(([, m]) => m[s] || 0),
-        backgroundColor: COR_SIS[s] + 'cc',
-        borderRadius: 4, type: 'bar',
-      }))
-    ];
-  } else {
-    // Sistema específico: barra + linha de tendência
-    const cor = COR_SIS[fatBarFiltro] || '#1e6fe8';
-    const vals = meses.map(([, m]) => m[fatBarFiltro] || 0);
-    datasets = [
-      {
-        label: fatBarFiltro,
-        data:  vals,
-        backgroundColor: cor + 'cc',
-        borderRadius: 4, type: 'bar',
-      },
-      {
-        label: 'Tendência',
-        data:  vals,
-        borderColor: cor, backgroundColor: 'transparent',
-        tension: .4, fill: false, pointRadius: 4,
-        pointBackgroundColor: cor, borderWidth: 2, type: 'line',
-        borderDash: [4, 3],
-      }
-    ];
-  }
+  const _COR  = { EVO:'#7c3aed', WellHub:'#ec4899', TotalPass:'#22c55e' };
+  const nMeses = meses.length || 1;
 
-  chartFatBar = new Chart(canvas, {
+  // Calcular média mensal: total da categoria / número de meses distintos
+  const labels = SISTEMAS;
+  const medias = SISTEMAS.map(s => parseFloat(((totSis[s] || 0) / nMeses).toFixed(2)));
+
+  // Nota informativa
+  const noteEl = document.getElementById('fat-media-note');
+  if (noteEl) noteEl.textContent = `${nMeses} ${nMeses===1?'mês':'meses'} no período`;
+
+  chartFatMediaMensal = new Chart(canvas, {
     type: 'bar',
-    data: { labels: meses.map(([, m]) => m.label), datasets },
+    data: {
+      labels,
+      datasets: [{
+        label: 'Média Mensal',
+        data:  medias,
+        backgroundColor: SISTEMAS.map(s => (_COR[s] || '#6b7280') + 'cc'),
+        borderColor:     SISTEMAS.map(s => (_COR[s] || '#6b7280')),
+        borderWidth: 1,
+        borderRadius: 6,
+      }]
+    },
     options: {
+      indexAxis: 'y',   // barras horizontais
       responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'top', labels: { font: { family:'DM Sans', size:11 }, padding:10 } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtBRL(ctx.raw)}` } }
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: ctx => ` Média: ${fmtBRL(ctx.raw)}` }
+        },
+        datalabels: {
+          anchor: 'end', align: 'right',
+          font: { family: 'DM Mono', size: 11, weight: '700' },
+          color: ctx => _COR[SISTEMAS[ctx.dataIndex]] || '#374151',
+          formatter: v => fmtBRL(v),
+          padding: { left: 6 }
+        }
       },
       scales: {
-        x: { stacked: fatBarFiltro==='Todos', grid:{display:false},
-             ticks:{font:{family:'DM Sans',size:11},maxRotation:35} },
-        y: { stacked: false, grid:{color:'rgba(0,0,0,.04)'},
-             ticks:{font:{family:'DM Mono',size:10},
-                    callback: v => 'R$'+Math.round(v/1000)+'k'} }
+        x: {
+          grid: { color: 'rgba(0,0,0,.04)' },
+          ticks: { font: { family: 'DM Mono', size: 10 },
+                   callback: v => 'R$' + Math.round(v / 1000) + 'k' }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { family: 'DM Sans', size: 12, weight: '600' } }
+        }
       }
-    }
+    },
+    plugins: [ChartDataLabels]
   });
 }
 
@@ -4180,7 +4207,16 @@ function renderFaturamento(rows) {
   const SISTEMAS  = ['EVO','WellHub','TotalPass'];
   const COR_SIS   = { EVO:'#7c3aed', WellHub:'#ec4899', TotalPass:'#22c55e' };
 
-  const validos = rows.filter(r => (parseFloat(r['Valor']) || 0) > 0);
+  // Converter valor: aceita número nativo OU string BR ('1.234,56') OU string EN ('1234.56')
+  const _pv = v => {
+    if (typeof v === 'number') return v;
+    const s = String(v || '0').trim();
+    // Formato BR: tem vírgula como decimal → remover pontos e trocar vírgula
+    if (s.includes(',')) return parseFloat(s.replace(/\./g, '').replace(',', '.')) || 0;
+    // Formato EN ou número puro
+    return parseFloat(s) || 0;
+  };
+  const validos = rows.filter(r => (_pv(r['Faturamento'] ?? r['Valor'])) > 0);
   if (!validos.length) {
     document.getElementById('fat-sub').textContent =
       'Dados carregados mas sem valores ainda — aguardando preenchimento da planilha';
@@ -4189,14 +4225,24 @@ function renderFaturamento(rows) {
 
   // Agrupar por chave Ano-Mês
   const mesMap = {};
+  // Normalizar nome do sistema (case-insensitive) para garantir cores corretas
+  function normSistema(s) {
+    const sl = String(s||'').toLowerCase().trim();
+    if (sl === 'evo' || sl.includes('evo'))           return 'EVO';
+    if (sl.includes('wellhub') || sl.includes('gympass')) return 'WellHub';
+    if (sl.includes('totalpass'))                     return 'TotalPass';
+    return String(s||'').trim(); // mantém original se não reconhecido
+  }
+
   validos.forEach(r => {
     const mesIdx = MESES_ORD.indexOf(String(r['Mês']).toLowerCase());
     const key    = `${r['Ano']}-${String(mesIdx + 1).padStart(2, '0')}`;
     const label  = `${String(r['Mês']).charAt(0).toUpperCase() + String(r['Mês']).slice(1)} ${r['Ano']}`;
     if (!mesMap[key]) mesMap[key] = { label, EVO: 0, WellHub: 0, TotalPass: 0, total: 0 };
-    const val = parseFloat(r['Valor']) || 0;
-    mesMap[key][r['Sistema']] = val;
-    mesMap[key].total += val;
+    const val     = _pv(r['Faturamento'] ?? r['Valor']);
+    const sistema = normSistema(r['Sistema']); // normaliza antes de atribuir
+    mesMap[key][sistema] = (mesMap[key][sistema] || 0) + val; // acumula, não substitui
+    mesMap[key].total   += val;
   });
 
   const meses  = Object.entries(mesMap).sort((a, b) => a[0].localeCompare(b[0]));
@@ -4244,20 +4290,39 @@ function renderFaturamento(rows) {
         data:  meses.map(([, m]) => m[s] || 0),
         backgroundColor: COR_SIS[s] + 'cc',
         borderRadius: 4,
+        // datalabels: mostrar apenas no último sistema (topo da barra)
+        datalabels: { display: s === SISTEMAS[SISTEMAS.length - 1] ? 'auto' : false }
       }))
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { position: 'top', labels: { font: { family: 'DM Sans', size: 12 }, padding: 14 } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtBRL(ctx.raw)}` } }
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtBRL(ctx.raw)}` } },
+        datalabels: {
+          anchor: 'end', align: 'top',
+          font: { family: 'DM Sans', size: 10, weight: '700' },
+          color: '#374151',
+          formatter: function(value, ctx) {
+            // Calcular variação % do total deste mês vs anterior
+            const i = ctx.dataIndex;
+            if (i === 0) return '';
+            const totAtual  = SISTEMAS.reduce((s, sys) => s + (ctx.chart.data.datasets.find(d=>d.label===sys)?.data[i] || 0), 0);
+            const totAnterior = SISTEMAS.reduce((s, sys) => s + (ctx.chart.data.datasets.find(d=>d.label===sys)?.data[i-1] || 0), 0);
+            if (!totAnterior) return '';
+            const pct = ((totAtual - totAnterior) / totAnterior * 100).toFixed(1);
+            return (pct >= 0 ? '▲' : '▼') + Math.abs(pct) + '%';
+          },
+          padding: { bottom: 2 }
+        }
       },
       scales: {
         x: { stacked: true, grid: { display: false }, ticks: { font: { family: 'DM Sans', size: 11 }, maxRotation: 35 } },
         y: { stacked: true, grid: { color: 'rgba(0,0,0,.04)' },
              ticks: { font: { family: 'DM Mono', size: 10 }, callback: v => 'R$' + Math.round(v / 1000) + 'k' } }
       }
-    }
+    },
+    plugins: [ChartDataLabels]
   });
 
   // ── Variação MoM — badges visíveis na tela e no PDF ──────────────────
@@ -4300,11 +4365,8 @@ function renderFaturamento(rows) {
   renderFatCat();
 
   // ── Gráfico linha — faturamento total por mês ──
-  // Guardar meses para uso no filtro de sistema
-  window._fatMeses   = meses;
-  window._fatCORSIS  = COR_SIS;
-  window._fatSISTEMAS= SISTEMAS;
-  renderFatBarras(meses, COR_SIS, SISTEMAS);;
+  // Gráfico: média mensal por categoria
+  renderFatMediaMensal(meses, totSis, COR_SIS, SISTEMAS);
 
   // ── Tabela: mês × sistema com totais ──
   document.getElementById('fat-table-panel').style.display = 'block';
@@ -4435,13 +4497,13 @@ async function exportarFaturamentoPDF() {
 
     // ── Doughnut + Barras (lado a lado) ───────────────────────────────────
     const cCat  = document.getElementById('chart-fat-cat');
-    const cBar  = document.getElementById('chart-fat-barras');
+    const cBar  = document.getElementById('chart-fat-media-mensal');
     if (cCat && cBar) {
       ck(64);
       const HW = (CW-4)/2;
       pdf.setFont('helvetica','bold'); pdf.setFontSize(8); pdf.setTextColor(...ESCURO);
       pdf.text('Composição por Sistema', MAR, Y+4);
-      pdf.text('Tendência Mensal', MAR+HW+4, Y+4); Y+=7;
+      pdf.text('Média Mensal / Categoria', MAR+HW+4, Y+4); Y+=7;
       const [i1,i2] = await Promise.all([
         capturePdfEl(cCat.closest('.chart-wrap') || cCat.parentElement),
         capturePdfEl(cBar.closest('.chart-wrap') || cBar.parentElement),
