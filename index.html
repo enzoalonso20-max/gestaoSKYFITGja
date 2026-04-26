@@ -1845,10 +1845,12 @@
     </div>
     <!-- ════ ABA: FIN-PAGAMENTOS ════ -->
     <div class="tab-pane" id="tab-fin-pagamentos">
+
+      <!-- Header -->
       <div class="section-header">
         <div>
-          <div class="section-title">💳 Formas de Pagamento</div>
-          <div class="section-sub" id="pag-sub">Carregando dados do Google Sheets…</div>
+          <div class="section-title">💳 Formas de Recebimento</div>
+          <div class="section-sub" id="pag-sub">Carregando dados do Google Sheets — BD_Recebimento…</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <button class="btn btn-secondary" onclick="loadPagamentos(true)">🔄 Atualizar</button>
@@ -1857,116 +1859,107 @@
       </div>
 
       <!-- Filtros -->
-      <div class="panel" id="pag-filtros" style="display:none;margin-bottom:16px">
-        <div class="panel-body" style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end">
-          <div style="display:flex;flex-direction:column;gap:5px">
-            <label class="filter-label">Ano</label>
-            <select id="pag-sel-ano" onchange="renderPagamentos()"
-              style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none;min-width:90px">
-              <option value="">Todos</option>
-            </select>
+      <div id="pag-filtros" style="display:none;margin-bottom:16px">
+        <div class="panel">
+          <div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label class="filter-label">Ano</label>
+              <div style="display:flex;gap:4px" id="pag-anos-btns"></div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label class="filter-label">Mês</label>
+              <div style="display:flex;gap:4px;flex-wrap:wrap" id="pag-meses-btns"></div>
+            </div>
+
+            <button class="btn btn-secondary" style="align-self:flex-end" onclick="pagResetFiltros()">↺ Todos</button>
           </div>
-          <div style="display:flex;flex-direction:column;gap:5px">
-            <label class="filter-label">Mês</label>
-            <select id="pag-sel-mes" onchange="renderPagamentos()"
-              style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none;min-width:130px">
-              <option value="">Todos</option>
-            </select>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:5px">
-            <label class="filter-label">Categoria</label>
-            <select id="pag-sel-cat" onchange="renderPagamentos()"
-              style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none;min-width:130px">
-              <option value="">Todas</option>
-            </select>
-          </div>
-          <button class="btn btn-secondary" onclick="pagResetFiltros()">↺ Limpar</button>
         </div>
       </div>
 
       <!-- KPIs -->
       <div class="cards-grid" id="pag-kpis" style="display:none">
+
         <div class="kpi-card green">
           <div class="kpi-icon">💰</div>
-          <div class="kpi-label">Total Recebido</div>
+          <div class="kpi-label">Volume Total Analisado</div>
           <div class="kpi-value" id="pag-kpi-total">—</div>
           <div class="kpi-delta" id="pag-kpi-total-sub"></div>
           <div class="progress-bar"><div class="progress-fill" id="pag-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div>
         </div>
+
+        <div class="kpi-card red" style="border:2px solid #ef4444">
+          <div class="kpi-icon">⚠️</div>
+          <div class="kpi-label" style="color:#ef4444;font-weight:700">Inconsistências SEM STONE</div>
+          <div class="kpi-value" id="pag-kpi-semstone" style="color:#ef4444">—</div>
+          <div class="kpi-delta" id="pag-kpi-semstone-sub"></div>
+        </div>
+
         <div class="kpi-card">
           <div class="kpi-icon">📱</div>
           <div class="kpi-label">PIX</div>
           <div class="kpi-value" id="pag-kpi-pix">—</div>
-          <div class="kpi-delta" id="pag-kpi-pix-sub"></div>
+          <div class="kpi-delta" id="pag-kpi-pix-pct"></div>
         </div>
+
         <div class="kpi-card amber">
           <div class="kpi-icon">💵</div>
           <div class="kpi-label">Dinheiro</div>
           <div class="kpi-value" id="pag-kpi-din">—</div>
-          <div class="kpi-delta" id="pag-kpi-din-sub"></div>
+          <div class="kpi-delta" id="pag-kpi-din-pct"></div>
         </div>
-        <div class="kpi-card">
-          <div class="kpi-icon">💳</div>
-          <div class="kpi-label">Cartão Débito</div>
-          <div class="kpi-value" id="pag-kpi-deb">—</div>
-          <div class="kpi-delta" id="pag-kpi-deb-sub"></div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon">💳</div>
-          <div class="kpi-label">Cartão Crédito</div>
-          <div class="kpi-value" id="pag-kpi-cred">—</div>
-          <div class="kpi-delta" id="pag-kpi-cred-sub"></div>
-        </div>
-        <div class="kpi-card red">
-          <div class="kpi-icon">⚠️</div>
-          <div class="kpi-label">Sem Stone (não confirmado)</div>
-          <div class="kpi-value" id="pag-kpi-semstone">—</div>
-          <div class="kpi-delta" id="pag-kpi-semstone-sub"></div>
-        </div>
+
       </div>
 
-      <!-- Gráficos linha 1: doughnut + barras empilhadas -->
-      <div class="chart-grid" id="pag-charts-1" style="display:none">
+      <!-- Gráficos: Rosca + Barras -->
+      <div class="chart-grid" id="pag-charts" style="display:none">
+
         <div class="panel">
-          <div class="panel-header"><span class="panel-title">🍩 Distribuição por Forma de Pagamento</span></div>
-          <div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="pag-chart-pizza"></canvas></div></div>
+          <div class="panel-header">
+            <span class="panel-title">🍩 Distribuição por Forma de Recebimento</span>
+          </div>
+          <div class="panel-body">
+            <div class="chart-wrap" style="height:280px"><canvas id="pag-chart-donut"></canvas></div>
+          </div>
         </div>
+
         <div class="panel">
-          <div class="panel-header"><span class="panel-title">📅 Evolução Mensal por Forma</span></div>
-          <div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="pag-chart-evolucao"></canvas></div></div>
+          <div class="panel-header">
+            <span class="panel-title">📊 Auditoria Stone vs SEM STONE (Cartões)</span>
+            <span class="badge badge-red" style="font-size:10px">⚠️ Risco</span>
+          </div>
+          <div class="panel-body">
+            <div class="chart-wrap" style="height:280px"><canvas id="pag-chart-stone"></canvas></div>
+          </div>
         </div>
+
       </div>
 
-      <!-- Gráfico linha 2: barras por categoria -->
-      <div class="chart-grid" id="pag-charts-2" style="display:none">
-        <div class="panel" style="grid-column:1/-1">
-          <div class="panel-header"><span class="panel-title">📊 Recebimento por Categoria (EVO · TotalPass · WellHub)</span></div>
-          <div class="panel-body"><div class="chart-wrap" style="height:240px"><canvas id="pag-chart-cat"></canvas></div></div>
-        </div>
-      </div>
-
-      <!-- Tabela detalhada -->
+      <!-- Tabela resumo por forma -->
       <div class="panel" id="pag-table-panel" style="display:none">
         <div class="panel-header">
-          <span class="panel-title">📋 Detalhamento por Forma e Categoria</span>
-          <span class="badge badge-green" id="pag-table-badge"></span>
+          <span class="panel-title">📋 Resumo por Forma de Recebimento</span>
+          <span class="badge badge-blue" id="pag-table-badge"></span>
         </div>
         <div class="panel-body" id="pag-table-wrap"></div>
       </div>
 
-      <!-- Empty -->
+      <!-- Empty state -->
       <div id="pag-empty" class="fin-placeholder-wrap">
         <div class="fin-ph-icon">💳</div>
-        <div class="fin-ph-title">Formas de Pagamento</div>
-        <div class="fin-ph-desc">Os dados serão carregados automaticamente da aba <strong>BD_Recebimento</strong> do Google Sheets.</div>
+        <div class="fin-ph-title">Formas de Recebimento</div>
+        <div class="fin-ph-desc">Dados carregados automaticamente da aba <strong>BD_Recebimento</strong> do Google Sheets.</div>
         <div class="feature-chips" style="justify-content:center;margin-top:16px">
           <span class="chip">📱 PIX</span>
           <span class="chip">💵 Dinheiro</span>
-          <span class="chip">💳 Débito · Crédito</span>
-          <span class="chip">⚠️ Sem Stone</span>
+          <span class="chip">💳 Cartão Crédito</span>
+          <span class="chip">💳 Cartão Débito</span>
+          <span class="chip">⚠️ SEM STONE</span>
           <span class="chip">🏦 TED</span>
         </div>
       </div>
+
     </div>
     <!-- ════ ABA: RETENCAO ════ -->
     <div class="tab-pane" id="tab-retencao">
@@ -4224,6 +4217,8 @@ const APPS_SCRIPT_FAT_URL = APPS_SCRIPT_URL + '?sheet=Base_de_Dados';
 let fatData       = [];
 let fatLoaded     = false;
 let pagLoaded     = false;
+let pagAnoSel     = '';
+let pagMesSel     = '';
 let chartFatEvol  = null;
 let chartFatCat   = null;
 
@@ -5952,38 +5947,38 @@ function cntRenderRanking(dados) {
 
 
 // ╔══════════════════════════════════════════════════════════╗
-//  ABA: FORMAS DE PAGAMENTO — BD_Recebimento
-//  Colunas: A=Ano B=Mês C=Categoria D=Forma E=Valor
+//  ABA: FORMAS DE RECEBIMENTO — BD_Recebimento
+//  Colunas: Ano | Mês | Categoria Recebimento | Formas de Recebimento | Valor
 // ╚══════════════════════════════════════════════════════════╝
 const APPS_SCRIPT_PAG_URL = APPS_SCRIPT_URL + '?sheet=BD_Recebimento';
 const MESES_ORD_PAG = ['janeiro','fevereiro','março','abril','maio','junho',
                        'julho','agosto','setembro','outubro','novembro','dezembro'];
 
-// Cores por forma de pagamento
-const COR_PAG = {
-  'PIX':                        '#7c3aed',
-  'Dinheiro':                   '#22c55e',
-  'Cartão Débito':              '#1e6fe8',
-  'Cartão Débito SEM STONE':    '#60a5fa',
-  'Cartão Crédito':             '#f59e0b',
-  'Cartão Crédito SEM STONE':   '#fbbf24',
-  'TED':                        '#ec4899',
-  'default':                    '#6b7280',
+const COR_FORMA = {
+  'PIX':                       '#7c3aed',
+  'Dinheiro':                  '#22c55e',
+  'TED':                       '#ec4899',
+  'Cartão Crédito':            '#1e6fe8',
+  'Cartão Débito':             '#0ea5e9',
+  'Cartão Débito SEM STONE':   '#ef4444',
+  'Cartão Crédito SEM STONE':  '#f97316',
 };
-// Cores por categoria
-const COR_CAT_PAG = { EVO:'#7c3aed', TotalPass:'#22c55e', WellHub:'#ec4899' };
-
-let pagData    = [];
-let pagChartPizza = null, pagChartEvol = null, pagChartCat = null;
-
-function corPag(forma) {
-  for (const [k, v] of Object.entries(COR_PAG)) {
-    if (forma && forma.trim().toLowerCase() === k.toLowerCase()) return v;
+function corForma(nome) {
+  for (const [k,v] of Object.entries(COR_FORMA)) {
+    if (nome && nome.trim().toLowerCase() === k.toLowerCase()) return v;
   }
-  return COR_PAG.default;
+  return nome && nome.toUpperCase().includes('SEM STONE') ? '#ef4444' : '#6b7280';
 }
 
-// ── Carregar dados ────────────────────────────────────────────────────────
+let pagData     = [];
+let pagChartDonut = null;
+let pagChartStone = null;
+
+// ── Parse de valor BR ou número nativo ───────────────────
+const pagPV = v => typeof v === 'number' ? v
+  : parseFloat(String(v||'0').replace(/\./g,'').replace(',','.')) || 0;
+
+// ── Carregar do Sheets ────────────────────────────────────
 async function loadPagamentos(force) {
   const subEl = document.getElementById('pag-sub');
   if (subEl) subEl.textContent = 'Conectando ao Google Sheets…';
@@ -5994,147 +5989,164 @@ async function loadPagamentos(force) {
     const rows = json.rows || [];
     if (!rows.length) throw new Error('Aba BD_Recebimento sem dados');
 
-    // Mapear colunas: A=Ano B=Mês C=Categoria D=Forma E=Valor
-    const headers = json.diagnostico?.headers || [];
-    const iAno  = headers.findIndex(h => /ano/i.test(h));
-    const iMes  = headers.findIndex(h => /m[eê]s/i.test(h));
-    const iCat  = headers.findIndex(h => /categoria/i.test(h));
-    const iForma= headers.findIndex(h => /forma/i.test(h));
-    const iVal  = headers.findIndex(h => /valor/i.test(h));
+    // Descobrir nomes exatos das colunas comparando case-insensitive
+    const firstRow = rows[0] || {};
+    const allKeys  = Object.keys(firstRow);
+    console.log('[BD_Recebimento] Colunas recebidas:', allKeys);
 
-    // Fallback posicional se headers não forem encontrados
-    const getField = (row, idx, fallback) => row[idx >= 0 ? idx : fallback];
-    const pv = v => typeof v === 'number' ? v
-                  : parseFloat(String(v||'0').replace(/\./g,'').replace(',','.')) || 0;
+    const findKey = (pat) => allKeys.find(k => pat.test(k)) || '';
+    const kAno   = findKey(/^ano$/i);
+    const kMes   = findKey(/^m[eê]s$/i);
+    const kCat   = findKey(/categoria/i);
+    const kForma = findKey(/forma/i);
+    const kVal   = findKey(/valor/i);
+    console.log('[BD_Recebimento] Mapeamento:', {kAno, kMes, kCat, kForma, kVal});
 
     pagData = rows.map(r => ({
-      ano:   String(getField(r, iAno,   'Ano')  || '').trim(),
-      mes:   String(getField(r, iMes,   'Mês')  || '').trim().toLowerCase(),
-      cat:   String(getField(r, iCat,   'Categoria Recebimento') || '').trim(),
-      forma: String(getField(r, iForma, 'Formas de Recebimento') || '').trim(),
-      valor: pv(getField(r, iVal, 'Valor')),
+      ano:   String(r[kAno]   || '').trim(),
+      mes:   String(r[kMes]   || '').trim().toLowerCase(),
+      cat:   String(r[kCat]   || '').trim(),
+      forma: String(r[kForma] || '').trim(),
+      valor: pagPV(r[kVal]),
     })).filter(r => r.valor > 0 && r.forma);
 
+    console.log('[BD_Recebimento] Registros válidos:', pagData.length, '| Total bruto:', rows.length);
+    if (!pagData.length) {
+      // Mostrar amostra para diagnóstico
+      console.log('[BD_Recebimento] Amostra row[0]:', firstRow);
+      throw new Error(`0 registros válidos de ${rows.length} linhas — verifique os nomes das colunas no console`);
+    }
+
     pagLoaded = true;
-    const badge = document.getElementById('pag-badge');
-    const empty = document.getElementById('pag-empty');
-    if (badge) badge.style.display = 'inline-block';
-    if (empty) empty.style.display = 'none';
+    document.getElementById('pag-badge').style.display  = 'inline-block';
+    document.getElementById('pag-empty').style.display  = 'none';
 
     pagPopularFiltros();
     renderPagamentos();
-    if (force) toast(`Pagamentos: ${pagData.length} registros`, '💳');
+    if (force) toast(`Recebimentos: ${pagData.length} registros`, '💳');
   } catch(err) {
     console.error('[Pagamentos]', err);
-    const subEl = document.getElementById('pag-sub');
-    if (subEl) subEl.textContent = 'Erro: ' + err.message;
+    const s = document.getElementById('pag-sub');
+    if (s) s.textContent = 'Erro: ' + err.message;
     toast('Erro BD_Recebimento: ' + err.message, '❌');
   }
 }
 
-// ── Popular selects de filtro ─────────────────────────────────────────────
+// ── Popular botões de filtro Ano / Mês ────────────────────
 function pagPopularFiltros() {
-  const anos = [...new Set(pagData.map(r => r.ano).filter(Boolean))].sort();
-  const meses = [...new Set(pagData.map(r => r.mes).filter(Boolean))]
+  const anos  = [...new Set(pagData.map(r=>r.ano).filter(Boolean))].sort();
+  const meses = [...new Set(pagData.map(r=>r.mes).filter(Boolean))]
     .sort((a,b) => MESES_ORD_PAG.indexOf(a) - MESES_ORD_PAG.indexOf(b));
-  const cats = [...new Set(pagData.map(r => r.cat).filter(Boolean))].sort();
 
-  const selAno = document.getElementById('pag-sel-ano');
-  if (selAno) selAno.innerHTML = '<option value="">Todos</option>'
-    + anos.map(a => `<option value="${a}">${a}</option>`).join('');
+  const btnStyle = (ativo) =>
+    `padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;
+     font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;
+     background:${ativo ? '#1e6fe8' : 'var(--bg-card)'};
+     color:${ativo ? '#fff' : 'var(--text-dark)'};`;
 
-  const selMes = document.getElementById('pag-sel-mes');
-  if (selMes) selMes.innerHTML = '<option value="">Todos</option>'
-    + meses.map(m => `<option value="${m}">${m.charAt(0).toUpperCase()+m.slice(1)}</option>`).join('');
+  const anosEl = document.getElementById('pag-anos-btns');
+  if (anosEl) {
+    anosEl.innerHTML = `<button style="${btnStyle(pagAnoSel==='')} " onclick="pagSetAno('')">Todos</button>`
+      + anos.map(a => `<button style="${btnStyle(pagAnoSel===a)}" onclick="pagSetAno('${a}')">${a}</button>`).join('');
+  }
 
-  const selCat = document.getElementById('pag-sel-cat');
-  if (selCat) selCat.innerHTML = '<option value="">Todas</option>'
-    + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+  const mesesEl = document.getElementById('pag-meses-btns');
+  if (mesesEl) {
+    mesesEl.innerHTML = `<button style="${btnStyle(pagMesSel==='')} " onclick="pagSetMes('')">Todos</button>`
+      + meses.map(m => {
+          const cap = m.charAt(0).toUpperCase()+m.slice(1,3);
+          return `<button style="${btnStyle(pagMesSel===m)}" onclick="pagSetMes('${m}')">${cap}</button>`;
+        }).join('');
+  }
 
-  const filtros = document.getElementById('pag-filtros');
-  if (filtros) filtros.style.display = 'block';
+  document.getElementById('pag-filtros').style.display = 'block';
 }
 
+function pagSetAno(ano) { pagAnoSel = ano; pagPopularFiltros(); renderPagamentos(); }
+function pagSetMes(mes) { pagMesSel = mes; pagPopularFiltros(); renderPagamentos(); }
+function pagResetFiltros() { pagAnoSel = ''; pagMesSel = ''; pagPopularFiltros(); renderPagamentos(); }
+
 function pagGetFiltered() {
-  const ano  = document.getElementById('pag-sel-ano')?.value || '';
-  const mes  = document.getElementById('pag-sel-mes')?.value || '';
-  const cat  = document.getElementById('pag-sel-cat')?.value || '';
   return pagData.filter(r =>
-    (!ano  || r.ano  === ano)  &&
-    (!mes  || r.mes  === mes)  &&
-    (!cat  || r.cat  === cat)
+    (!pagAnoSel || r.ano === pagAnoSel) &&
+    (!pagMesSel || r.mes === pagMesSel)
   );
 }
 
-function pagResetFiltros() {
-  ['pag-sel-ano','pag-sel-mes','pag-sel-cat'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  renderPagamentos();
-}
-
-// ── Render principal ──────────────────────────────────────────────────────
+// ── Render principal ──────────────────────────────────────
 function renderPagamentos() {
   const dados = pagGetFiltered();
   if (!dados.length) return;
 
-  const total = dados.reduce((s,r) => s + r.valor, 0);
+  // Mostrar painéis
+  ['pag-kpis','pag-charts','pag-table-panel'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id === 'pag-kpis' ? 'grid' : 'block';
+  });
 
-  // Agrupar por forma
+  const total = dados.reduce((s,r) => s+r.valor, 0);
+
+  // Agrupamento por forma
   const formaMap = {};
-  dados.forEach(r => { formaMap[r.forma] = (formaMap[r.forma] || 0) + r.valor; });
+  dados.forEach(r => { formaMap[r.forma] = (formaMap[r.forma]||0) + r.valor; });
+
+  // SEM STONE
+  const semStone = dados.filter(r => r.forma.toUpperCase().includes('SEM STONE'))
+                        .reduce((s,r) => s+r.valor, 0);
+  const pctSS = total ? (semStone/total*100).toFixed(1) : 0;
 
   // KPIs
-  ['pag-kpis','pag-charts-1','pag-charts-2','pag-table-panel'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.style.display = id.includes('kpis') ? 'grid' : 'grid';
-  });
-  document.getElementById('pag-table-panel').style.display = 'block';
-
-  const setKPI = (id, val, sub) => {
-    const el = document.getElementById(id); if (el) el.textContent = val;
-    const se = document.getElementById(id+'-sub');
-    if (se && sub !== undefined) se.innerHTML =
-      `<span style="font-size:11px;color:var(--text-mid)">${sub}</span>`;
+  const setK = (id, val, sub) => {
+    const e=document.getElementById(id); if(e) e.textContent=val;
+    const s=document.getElementById(id+'-sub')||document.getElementById(id+'-pct');
+    if(s&&sub!==undefined) s.innerHTML=`<span style="font-size:11px;color:var(--text-mid)">${sub}</span>`;
   };
 
-  const somaSemStone = (formaMap['Cartão Débito SEM STONE'] || 0)
-                     + (formaMap['Cartão Crédito SEM STONE'] || 0);
-
-  setKPI('pag-kpi-total',    fmtBRL(total),           `${dados.length} registros`);
+  setK('pag-kpi-total',    fmtBRL(total),    `${dados.length} registros · ${[...new Set(dados.map(r=>r.ano))].sort().join(', ')}`);
   document.getElementById('pag-prog').style.width = '80%';
-  setKPI('pag-kpi-pix',      fmtBRL(formaMap['PIX']           || 0), `${total ? ((formaMap['PIX']||0)/total*100).toFixed(1) : 0}% do total`);
-  setKPI('pag-kpi-din',      fmtBRL(formaMap['Dinheiro']      || 0), `${total ? ((formaMap['Dinheiro']||0)/total*100).toFixed(1) : 0}% do total`);
-  setKPI('pag-kpi-deb',      fmtBRL((formaMap['Cartão Débito']||0) + (formaMap['Cartão Débito SEM STONE']||0)), 'débito total');
-  setKPI('pag-kpi-cred',     fmtBRL((formaMap['Cartão Crédito']||0) + (formaMap['Cartão Crédito SEM STONE']||0)), 'crédito total');
-  setKPI('pag-kpi-semstone', fmtBRL(somaSemStone), '⚠️ não confirmados na maquininha');
+  setK('pag-kpi-semstone', fmtBRL(semStone), `${pctSS}% do total — pagamentos não confirmados na maquininha`);
+  setK('pag-kpi-pix',      fmtBRL(formaMap['PIX']||0),      `${total?((formaMap['PIX']||0)/total*100).toFixed(1):0}% do total`);
+  setK('pag-kpi-din',      fmtBRL(formaMap['Dinheiro']||0), `${total?((formaMap['Dinheiro']||0)/total*100).toFixed(1):0}% do total`);
 
-  const subEl = document.getElementById('pag-sub');
-  if (subEl) subEl.textContent = `${dados.length} registros · ${fmtBRL(total)} total`;
+  document.getElementById('pag-sub').textContent =
+    `${dados.length} registros · ${fmtBRL(total)} · Período: ${pagAnoSel||'todos os anos'} ${pagMesSel ? '· '+pagMesSel : ''}`;
 
-  pagRenderPizza(dados, formaMap, total);
-  pagRenderEvolucao(dados);
-  pagRenderCategoria(dados);
+  pagRenderDonut(formaMap, total);
+  pagRenderStone(dados);
   pagRenderTabela(dados, formaMap, total);
 }
 
-// ── Doughnut distribuição ─────────────────────────────────────────────────
-function pagRenderPizza(dados, formaMap, total) {
-  if (pagChartPizza) pagChartPizza.destroy();
-  const canvas = document.getElementById('pag-chart-pizza'); if (!canvas) return;
-  const formas = Object.keys(formaMap).sort((a,b) => formaMap[b] - formaMap[a]);
-  pagChartPizza = new Chart(canvas, {
+// ── Gráfico Rosca ─────────────────────────────────────────
+function pagRenderDonut(formaMap, total) {
+  if (pagChartDonut) pagChartDonut.destroy();
+  const canvas = document.getElementById('pag-chart-donut'); if (!canvas) return;
+  const formas = Object.keys(formaMap).sort((a,b) => formaMap[b]-formaMap[a]);
+
+  pagChartDonut = new Chart(canvas, {
     type: 'doughnut',
     data: {
       labels: formas,
-      datasets: [{ data: formas.map(f => formaMap[f]),
-        backgroundColor: formas.map(f => corPag(f)),
-        borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }]
+      datasets: [{
+        data: formas.map(f => formaMap[f]),
+        backgroundColor: formas.map(f => corForma(f)),
+        borderWidth: 2, borderColor: '#fff', hoverOffset: 8,
+      }]
     },
     options: {
-      responsive: true, maintainAspectRatio: false, cutout: '60%',
+      responsive: true, maintainAspectRatio: false, cutout: '62%',
       plugins: {
-        legend: { position: 'bottom', labels: { font:{family:'DM Sans',size:10}, padding:8, boxWidth:10 } },
+        legend: {
+          position: 'right',
+          labels: {
+            font: { family: 'DM Sans', size: 10 }, padding: 8, boxWidth: 10,
+            generateLabels: chart => chart.data.labels.map((l,i) => ({
+              text: (l.length > 22 ? l.slice(0,22)+'…' : l),
+              fillStyle: chart.data.datasets[0].backgroundColor[i],
+              strokeStyle: chart.data.datasets[0].backgroundColor[i],
+              hidden: false, index: i,
+            }))
+          }
+        },
         tooltip: { callbacks: { label: ctx => {
           const pct = total ? (ctx.raw/total*100).toFixed(1) : 0;
           return ` ${ctx.label}: ${fmtBRL(ctx.raw)} (${pct}%)`;
@@ -6144,140 +6156,104 @@ function pagRenderPizza(dados, formaMap, total) {
   });
 }
 
-// ── Evolução mensal por forma ─────────────────────────────────────────────
-function pagRenderEvolucao(dados) {
-  if (pagChartEvol) pagChartEvol.destroy();
-  const canvas = document.getElementById('pag-chart-evolucao'); if (!canvas) return;
+// ── Gráfico Barras Agrupadas Stone vs SEM STONE ───────────
+function pagRenderStone(dados) {
+  if (pagChartStone) pagChartStone.destroy();
+  const canvas = document.getElementById('pag-chart-stone'); if (!canvas) return;
 
-  // Agrupar por mês × forma
-  const mesMap = {};
-  dados.forEach(r => {
-    const mi  = MESES_ORD_PAG.indexOf(r.mes);
-    const key = `${r.ano}-${String(mi+1).padStart(2,'0')}`;
-    const lbl = `${r.mes.charAt(0).toUpperCase()+r.mes.slice(1,3)}/${r.ano.slice(2)}`;
-    if (!mesMap[key]) mesMap[key] = { label: lbl };
-    mesMap[key][r.forma] = (mesMap[key][r.forma] || 0) + r.valor;
-  });
-  const meses = Object.keys(mesMap).sort();
-  const labels = meses.map(k => mesMap[k].label);
-  const formas = [...new Set(dados.map(r => r.forma))].sort();
+  // Filtrar apenas linhas com "Cartão"
+  const cartoes = dados.filter(r => r.forma.toLowerCase().includes('cartão'));
 
-  pagChartEvol = new Chart(canvas, {
+  // Eixo X: Crédito e Débito
+  const tipos = ['Cartão Crédito', 'Cartão Débito'];
+
+  // Dataset 1: Validado (SEM "SEM STONE")
+  const validado = tipos.map(t =>
+    cartoes.filter(r => r.forma === t).reduce((s,r)=>s+r.valor, 0)
+  );
+  // Dataset 2: Risco (COM "SEM STONE")
+  const risco = tipos.map(t =>
+    cartoes.filter(r => r.forma === t + ' SEM STONE').reduce((s,r)=>s+r.valor, 0)
+  );
+
+  pagChartStone = new Chart(canvas, {
     type: 'bar',
     data: {
-      labels,
-      datasets: formas.map(f => ({
-        label: f,
-        data:  meses.map(k => mesMap[k][f] || 0),
-        backgroundColor: corPag(f) + 'cc',
-        borderRadius: 3,
-      }))
+      labels: tipos,
+      datasets: [
+        {
+          label: '✅ Validado (Stone)',
+          data: validado,
+          backgroundColor: '#22c55ecc',
+          borderColor: '#16a34a',
+          borderWidth: 1, borderRadius: 5,
+        },
+        {
+          label: '⚠️ SEM STONE (Risco)',
+          data: risco,
+          backgroundColor: '#ef4444cc',
+          borderColor: '#dc2626',
+          borderWidth: 1, borderRadius: 5,
+        }
+      ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: { position:'bottom', labels:{font:{family:'DM Sans',size:9},padding:6,boxWidth:10} },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtBRL(ctx.raw)}` }}
+        legend: { position: 'top', labels: { font:{ family:'DM Sans', size:11 }, padding:12 } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtBRL(ctx.raw)}` } },
       },
       scales: {
-        x: { stacked:true, grid:{display:false}, ticks:{font:{family:'DM Sans',size:10},maxRotation:35} },
-        y: { stacked:true, grid:{color:'rgba(0,0,0,.04)'},
-             ticks:{font:{family:'DM Mono',size:10}, callback: v => 'R$'+Math.round(v/1000)+'k'} }
+        x: { grid:{display:false}, ticks:{font:{family:'DM Sans',size:12,weight:'600'}} },
+        y: {
+          grid: { color:'rgba(0,0,0,.04)' },
+          ticks: { font:{family:'DM Mono',size:10}, callback: v => 'R$'+Math.round(v/1000)+'k' }
+        }
       }
     }
   });
 }
 
-// ── Barras por categoria ──────────────────────────────────────────────────
-function pagRenderCategoria(dados) {
-  if (pagChartCat) pagChartCat.destroy();
-  const canvas = document.getElementById('pag-chart-cat'); if (!canvas) return;
-
-  const cats   = [...new Set(dados.map(r => r.cat).filter(Boolean))].sort();
-  const formas = [...new Set(dados.map(r => r.forma))].sort();
-
-  const catFormaMap = {};
-  dados.forEach(r => {
-    if (!catFormaMap[r.cat]) catFormaMap[r.cat] = {};
-    catFormaMap[r.cat][r.forma] = (catFormaMap[r.cat][r.forma] || 0) + r.valor;
-  });
-
-  pagChartCat = new Chart(canvas, {
-    type: 'bar',
-    data: {
-      labels: cats,
-      datasets: formas.map(f => ({
-        label: f,
-        data:  cats.map(c => catFormaMap[c]?.[f] || 0),
-        backgroundColor: corPag(f) + 'cc',
-        borderRadius: 4,
-      }))
-    },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { position:'bottom', labels:{font:{family:'DM Sans',size:9},padding:6,boxWidth:10} },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmtBRL(ctx.raw)}` }}
-      },
-      scales: {
-        x: { stacked:true, grid:{display:false}, ticks:{font:{family:'DM Sans',size:11}} },
-        y: { stacked:true, grid:{color:'rgba(0,0,0,.04)'},
-             ticks:{font:{family:'DM Mono',size:10}, callback: v => 'R$'+Math.round(v/1000)+'k'} }
-      }
-    }
-  });
-}
-
-// ── Tabela detalhada ──────────────────────────────────────────────────────
+// ── Tabela resumo ─────────────────────────────────────────
 function pagRenderTabela(dados, formaMap, total) {
   const badge = document.getElementById('pag-table-badge');
   if (badge) badge.textContent = `${dados.length} registros`;
 
-  // Agrupar por Forma × Categoria com totais
-  const agrup = {};
-  dados.forEach(r => {
-    const k = r.forma;
-    if (!agrup[k]) agrup[k] = { total: 0, cats: {} };
-    agrup[k].total += r.valor;
-    agrup[k].cats[r.cat] = (agrup[k].cats[r.cat] || 0) + r.valor;
-  });
-  const cats = [...new Set(dados.map(r => r.cat).filter(Boolean))].sort();
-  const formasOrd = Object.keys(agrup).sort((a,b) => agrup[b].total - agrup[a].total);
+  const formasOrd = Object.keys(formaMap).sort((a,b) => formaMap[b]-formaMap[a]);
+  const isSemStone = f => f.toUpperCase().includes('SEM STONE');
 
   const thead = `<tr>
-    <th>Forma de Pagamento</th>
-    ${cats.map(c => `<th style="text-align:right">${c}</th>`).join('')}
-    <th style="text-align:right">Total</th>
-    <th style="text-align:right">% do total</th>
+    <th>Forma de Recebimento</th>
+    <th style="text-align:right">Valor</th>
+    <th style="text-align:right">% do Total</th>
+    <th style="min-width:120px">Participação</th>
   </tr>`;
 
   const tbody = formasOrd.map(f => {
-    const pct = total ? (agrup[f].total/total*100).toFixed(1) : 0;
-    const isSemStone = f.includes('SEM STONE');
-    return `<tr>
-      <td style="padding:9px 14px">
-        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;
-          background:${corPag(f)};margin-right:8px;vertical-align:middle"></span>
-        <strong style="${isSemStone ? 'color:var(--red)' : ''}">${f}</strong>
-        ${isSemStone ? '<span style="font-size:10px;color:var(--red);margin-left:4px">⚠️</span>' : ''}
+    const pct = total ? (formaMap[f]/total*100) : 0;
+    const alerta = isSemStone(f);
+    return `<tr style="${alerta ? 'background:rgba(239,68,68,.07)' : ''}">
+      <td style="padding:9px 14px;display:flex;align-items:center;gap:8px">
+        <span style="width:10px;height:10px;border-radius:50%;background:${corForma(f)};display:inline-block;flex-shrink:0"></span>
+        <strong style="${alerta ? 'color:#ef4444' : ''}">${f}</strong>
+        ${alerta ? '<span style="font-size:10px;background:#ef4444;color:#fff;border-radius:4px;padding:1px 6px;margin-left:4px">⚠️ SEM STONE</span>' : ''}
       </td>
-      ${cats.map(c => `<td style="padding:9px 14px;font-family:var(--mono);text-align:right;font-size:12px">
-        ${agrup[f].cats[c] ? fmtBRL(agrup[f].cats[c]) : '—'}
-      </td>`).join('')}
-      <td style="padding:9px 14px;font-family:var(--mono);font-weight:800;color:var(--green);text-align:right">${fmtBRL(agrup[f].total)}</td>
-      <td style="padding:9px 14px;font-family:var(--mono);text-align:right;color:var(--text-light)">${pct}%</td>
+      <td style="padding:9px 14px;font-family:var(--mono);font-weight:700;text-align:right;color:${alerta?'#ef4444':'var(--green)'}">${fmtBRL(formaMap[f])}</td>
+      <td style="padding:9px 14px;font-family:var(--mono);text-align:right;color:var(--text-light)">${pct.toFixed(1)}%</td>
+      <td style="padding:9px 14px">
+        <div style="background:var(--border);border-radius:99px;height:6px;overflow:hidden">
+          <div style="width:${pct.toFixed(0)}%;height:100%;background:${corForma(f)};border-radius:99px"></div>
+        </div>
+      </td>
     </tr>`;
   }).join('');
 
-  // Linha de totais
+  // Linha total
   const tfooter = `<tr style="background:var(--bg);font-weight:800">
     <td style="padding:10px 14px">TOTAL</td>
-    ${cats.map(c => {
-      const tot = dados.filter(r => r.cat===c).reduce((s,r)=>s+r.valor,0);
-      return `<td style="padding:10px 14px;font-family:var(--mono);text-align:right;color:var(--green)">${fmtBRL(tot)}</td>`;
-    }).join('')}
     <td style="padding:10px 14px;font-family:var(--mono);color:var(--green);text-align:right">${fmtBRL(total)}</td>
     <td style="padding:10px 14px;text-align:right">100%</td>
+    <td></td>
   </tr>`;
 
   const wrap = document.getElementById('pag-table-wrap');
@@ -6286,37 +6262,6 @@ function pagRenderTabela(dados, formaMap, total) {
   </div>`;
 }
 
-const REFRESH_INTERVAL_MS = 60 * 60 * 1000;
-let nextRefreshAt  = null;
-let refreshTimer   = null;
-let countdownTimer = null;
-
-function startAutoRefresh() {
-  if (refreshTimer)   clearTimeout(refreshTimer);
-  if (countdownTimer) clearInterval(countdownTimer);
-
-  nextRefreshAt = Date.now() + REFRESH_INTERVAL_MS;
-
-  countdownTimer = setInterval(() => {
-    const remaining = nextRefreshAt - Date.now();
-    if (remaining <= 0) { updateNextLabel('Atualizando…'); return; }
-    const m = Math.floor(remaining / 60000);
-    const s = Math.floor((remaining % 60000) / 1000);
-    updateNextLabel(`Próx. atualização em ${m}:${String(s).padStart(2,'0')}`);
-  }, 1000);
-
-  refreshTimer = setTimeout(() => {
-    if (finLoaded) loadFinanceiro(false);
-    startAutoRefresh();
-  }, REFRESH_INTERVAL_MS);
-}
-
-function updateNextLabel(text) {
-  const el = document.getElementById('next-update-label');
-  if (el) el.textContent = text;
-}
-
-// auto-refresh gerenciado dentro do DOMContentLoaded abaixo
 
 // ╔══════════════════════════════════════════════════════════╗
 //  INIT -- protegido com DOMContentLoaded + try/catch global
