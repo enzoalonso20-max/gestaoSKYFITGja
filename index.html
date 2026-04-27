@@ -854,6 +854,7 @@
       <div class="nav-sub" onclick="switchTab('fin-vendas',this)"><span class="nav-sub-dot">◉</span>Por Colaborador</div>
       <div class="nav-sub" onclick="switchTab('fin-detalhes',this)"><span class="nav-sub-dot">◉</span>Detalhadas</div>
       <div class="nav-sub" onclick="switchTab('vnd-contratos',this)"><span class="nav-sub-dot">◉</span>Contratos</div>
+      <div class="nav-sub" onclick="switchTab('vnd-servicos',this)"><span class="nav-sub-dot">◉</span>Serviços</div>
     </div>
 
     <!-- ══ FINANCEIRO ══ -->
@@ -2243,6 +2244,145 @@
       </div>
 
     </div>
+
+    <!-- ════ SERVIÇOS ════ -->
+    <div class="tab-pane" id="tab-vnd-servicos">
+
+      <div class="section-header">
+        <div>
+          <div class="section-title">🛎️ Serviços Vendidos</div>
+          <div class="section-sub" id="srv-sub">Carregando dados — VD_Serviços…</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-secondary" onclick="loadServicos(true)">🔄 Atualizar</button>
+          <span class="badge badge-green" id="srv-badge" style="display:none">● VD_Serviços</span>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div id="srv-filtros" style="display:none;margin-bottom:16px">
+        <div class="panel">
+          <div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label class="filter-label">Ano</label>
+              <div style="display:flex;gap:4px;flex-wrap:wrap" id="srv-anos-btns"></div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label class="filter-label">Mês</label>
+              <div style="display:flex;gap:4px;flex-wrap:wrap" id="srv-meses-btns"></div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label class="filter-label">Tipo</label>
+              <div style="display:flex;gap:4px;flex-wrap:wrap" id="srv-tipos-btns"></div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label class="filter-label">Serviço <span style="font-size:10px;color:var(--text-light)">(Ctrl)</span></label>
+              <select id="srv-sel-serv" multiple onchange="srvRender()"
+                style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;
+                       font-family:var(--font);font-size:12px;background:var(--bg-card);
+                       color:var(--text-dark);outline:none;min-width:200px;
+                       min-height:90px;max-height:120px;overflow-y:auto">
+              </select>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label class="filter-label">Vendedor <span style="font-size:10px;color:var(--text-light)">(Ctrl)</span></label>
+              <select id="srv-sel-vend" multiple onchange="srvRender()"
+                style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;
+                       font-family:var(--font);font-size:12px;background:var(--bg-card);
+                       color:var(--text-dark);outline:none;min-width:170px;
+                       min-height:90px;max-height:120px;overflow-y:auto">
+              </select>
+            </div>
+
+            <button class="btn btn-secondary" style="align-self:flex-end" onclick="srvResetFiltros()">↺ Todos</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="cards-grid" id="srv-kpis" style="display:none">
+        <div class="kpi-card green">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-label">Faturamento Total</div>
+          <div class="kpi-value" id="srv-kpi-fat">—</div>
+          <div class="kpi-delta" id="srv-kpi-fat-sub"></div>
+          <div class="progress-bar"><div class="progress-fill" id="srv-prog"
+            style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">🛎️</div>
+          <div class="kpi-label">Total de Serviços</div>
+          <div class="kpi-value" id="srv-kpi-qtd">—</div>
+          <div class="kpi-delta" id="srv-kpi-qtd-sub"></div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-icon">🎟️</div>
+          <div class="kpi-label">Ticket Médio</div>
+          <div class="kpi-value" id="srv-kpi-ticket">—</div>
+          <div class="kpi-delta" id="srv-kpi-ticket-sub"></div>
+        </div>
+        <!-- KPI Ouro: Diárias para não-alunos -->
+        <div class="kpi-card" style="border:2px solid #f59e0b;background:rgba(245,158,11,.07)">
+          <div class="kpi-icon">🔥</div>
+          <div class="kpi-label" style="color:#b45309;font-weight:700">Diárias — Leads Quentes</div>
+          <div class="kpi-value" id="srv-kpi-leads" style="color:#b45309">—</div>
+          <div class="kpi-delta" id="srv-kpi-leads-sub"></div>
+        </div>
+      </div>
+
+      <!-- Gráficos -->
+      <div class="chart-grid" id="srv-charts" style="display:none">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">🍩 Distribuição por Tipo de Cliente</span></div>
+          <div class="panel-body">
+            <div class="chart-wrap" style="height:260px"><canvas id="srv-chart-donut"></canvas></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">📊 Faturamento por Dia da Semana</span></div>
+          <div class="panel-body">
+            <div class="chart-wrap" style="height:260px"><canvas id="srv-chart-dia"></canvas></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ranking Serviços -->
+      <div class="panel" id="srv-rank-srv-panel" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">🏷️ Ranking de Serviços</span>
+          <span class="badge badge-blue" id="srv-rank-srv-badge"></span>
+        </div>
+        <div class="panel-body" id="srv-rank-srv-wrap"></div>
+      </div>
+
+      <!-- Ranking Vendedores -->
+      <div class="panel" id="srv-rank-vend-panel" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">🏅 Ranking de Vendedores — Serviços</span>
+          <span class="badge badge-blue" id="srv-rank-vend-badge"></span>
+        </div>
+        <div class="panel-body" id="srv-rank-vend-wrap"></div>
+      </div>
+
+      <!-- Empty -->
+      <div id="srv-empty" class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">🛎️</div>
+        <div class="fin-ph-title">Serviços Vendidos</div>
+        <div class="fin-ph-desc">Dados carregados automaticamente da aba <strong>VD_Serviços</strong> do Google Sheets.</div>
+        <div class="feature-chips" style="justify-content:center;margin-top:16px">
+          <span class="chip">🔥 Leads Quentes (Diárias)</span>
+          <span class="chip">🏷️ Ranking de Serviços</span>
+          <span class="chip">🏅 Ranking de Vendedores</span>
+          <span class="chip">🍩 Alunos vs Visitantes</span>
+        </div>
+      </div>
+
+    </div>
+
     <div class="tab-pane" id="tab-cham-oportunidades">
       <div class="section-header">
         <div>
@@ -2488,10 +2628,11 @@ const tabMeta = {
   'cham-inadimplencia': { title:'Inadimplência',           sub:'Ativos e expirados com pendência financeira' },
   'cham-oportunidades': { title:'Oportunidades',           sub:'Cadastros experimentais e incompletos no site' },
   'vnd-contratos':      { title:'Contratos Vendidos',       sub:'Análise detalhada de vendas de contratos — upload CSV do EVO' },
+  'vnd-servicos':       { title:'Serviços Vendidos',        sub:'Diárias, avaliações e serviços avulsos — VD_Serviços' },
 };
 
 // Grupo financeiro aberto por padrão ao clicar em qualquer sub-aba financeira
-const VND_TABS   = ['fin-vendas','fin-detalhes','vnd-contratos'];
+const VND_TABS   = ['fin-vendas','fin-detalhes','vnd-contratos','vnd-servicos'];
 const FIN_TABS   = ['fin-visao','fin-faturamento','fin-despesas','fin-lucro','fin-caixa','fin-pagamentos'];
 const AGR_TABS   = ['agregadores'];
 const CHAM_TABS  = ['cham-expirados','cham-inadimplencia','cham-oportunidades'];
@@ -2549,6 +2690,7 @@ function switchTab(tab, el) {
     const g=document.getElementById('vnd-group'), c=document.getElementById('vnd-chevron');
     if(g) g.classList.add('open'); if(c) c.classList.add('open');
     if(tab==='vnd-contratos' && !cntLoaded) loadContratos(false);
+    if(tab==='vnd-servicos'  && !srvLoaded) loadServicos(false);
 
   } else if (FIN_TABS.includes(tab)) {
     const g=document.getElementById('fin-group'), c=document.getElementById('fin-chevron');
@@ -4283,6 +4425,7 @@ let fatLoaded     = false;
 let pagLoaded     = false;
 let pagAnoSel     = '';
 let pagMesSel     = '';
+let srvLoaded     = false;
 let chartFatEvol  = null;
 let chartFatCat   = null;
 
@@ -4712,6 +4855,359 @@ function toggleDark() {
 }
 
 // Restaurar preferência ao carregar (após DOM estar pronto)
+// ╔══════════════════════════════════════════════════════════╗
+//  ABA: SERVIÇOS VENDIDOS — VD_Serviços
+// ╚══════════════════════════════════════════════════════════╝
+const APPS_SCRIPT_SRV_URL = APPS_SCRIPT_URL + '?sheet=VD_Servi%C3%A7os';
+
+let srvAnoSel  = '';
+let srvMesSel  = '';
+let srvTipoSel = '';
+let srvChartDonut  = null;
+let srvChartDia    = null;
+
+const srvPV = v => typeof v === 'number' ? v
+  : parseFloat(String(v||'0').replace(/\./g,'').replace(',','.')) || 0;
+
+const srvParseData = v => {
+  if (!v) return null;
+  if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
+  const s = String(v).trim();
+  const m1 = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m1) return new Date(+m1[1], +m1[2]-1, +m1[3]);
+  const m2 = s.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (m2) return new Date(+m2[3], +m2[2]-1, +m2[1]);
+  const n = parseFloat(s);
+  if (!isNaN(n) && n > 40000 && n < 70000)
+    return new Date(Date.UTC(1899,11,30) + n * 86400000);
+  return null;
+};
+
+async function loadServicos(force) {
+  const subEl = document.getElementById('srv-sub');
+  if (subEl) subEl.textContent = 'Conectando ao Google Sheets…';
+  try {
+    const resp = await fetch(APPS_SCRIPT_SRV_URL);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const json = await resp.json();
+    const rows = json.rows || [];
+    if (!rows.length) throw new Error('VD_Servicos sem dados');
+
+    const sample  = rows[0] || {};
+    const allKeys = Object.keys(sample);
+    console.log('[VD_Servicos] Colunas:', allKeys);
+
+    // Busca flexível de colunas (case-insensitive, trim)
+    const fk = pat => allKeys.find(k => pat.test(String(k).trim())) || '';
+    const kTipo = fk(/tipo/i);
+    const kServ = fk(/descri/i);
+    const kQtd  = fk(/quant/i);
+    const kVal  = fk(/valor/i);
+    const kData = fk(/data.*venda|venda.*data/i) || fk(/data/i);
+    const kVend = fk(/comiss/i);
+    console.log('[VD_Servicos] Colunas disponíveis:', allKeys);
+    console.log('[VD_Servicos] Mapeamento:', {kTipo,kServ,kQtd,kVal,kData,kVend});
+
+    if (!kTipo) {
+      throw new Error('Coluna "Tipo" não encontrada. Colunas disponíveis: ' + allKeys.join(', '));
+    }
+
+    // Filtrar apenas CLIENTE e OPORTUNIDADE
+    const linhasValidas = rows.filter(r => {
+      const t = String(r[kTipo]||'').trim().toUpperCase();
+      return t === 'CLIENTE' || t === 'OPORTUNIDADE';
+    });
+    console.log('[VD_Servicos] Linhas válidas:', linhasValidas.length, '/ total:', rows.length);
+
+    if (!linhasValidas.length) {
+      const amostra = rows.slice(0,3).map(r=>r[kTipo]);
+      throw new Error('0 linhas CLIENTE/OPORTUNIDADE. Valores de Tipo encontrados: ' + amostra.join(', '));
+    }
+
+    srvData = linhasValidas.map(r => {
+      const dt = srvParseData(r[kData]);
+      return {
+        tipo:    String(r[kTipo]||'').trim().toUpperCase(),
+        servico: String(r[kServ]||'').trim().toUpperCase(),
+        qtd:     Math.max(1, parseInt(r[kQtd]) || 1),
+        valor:   srvPV(r[kVal]),
+        dt,
+        mes:     dt ? MESES_FULL_CNT[dt.getMonth()] : '',
+        mesN:    dt ? dt.getMonth() : -1,
+        ano:     dt ? String(dt.getFullYear()) : '',
+        diaSem:  dt ? DIAS_SEMANA_CNT[dt.getDay()] : '',
+        diaSemN: dt ? dt.getDay() : -1,
+        vendedor:String(r[kVend]||'').trim() || 'Sem vendedor',
+      };
+    }).filter(r => r.servico);
+
+    if (!srvData.length) throw new Error('0 registros validos');
+
+    srvLoaded = true;
+    document.getElementById('srv-badge').style.display = 'inline-block';
+    document.getElementById('srv-empty').style.display = 'none';
+
+    const vEl = document.getElementById('srv-sel-vend');
+    if (vEl && !vEl._listenerAdded) {
+      vEl.addEventListener('change', srvRender);
+      vEl._listenerAdded = true;
+    }
+
+    srvPopularFiltros();
+    srvRender();
+    if (force) toast('Servicos: ' + srvData.length + ' registros', 'srv');
+  } catch(err) {
+    console.error('[Servicos]', err);
+    const s = document.getElementById('srv-sub');
+    if (s) s.textContent = 'Erro: ' + err.message;
+    toast('Erro VD_Servicos: ' + err.message, 'ERR');
+  }
+}
+
+function srvBtnStyle(ativo) {
+  return 'padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;' +
+    'font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;' +
+    'background:' + (ativo ? '#1e6fe8' : 'var(--bg-card)') + ';' +
+    'color:' + (ativo ? '#fff' : 'var(--text-dark)');
+}
+
+function srvPopularFiltros() {
+  const anos  = [...new Set(srvData.map(r=>r.ano).filter(Boolean))].sort();
+  const meses = [...new Set(srvData.map(r=>r.mes).filter(Boolean))]
+    .sort((a,b)=>MESES_FULL_CNT.indexOf(a)-MESES_FULL_CNT.indexOf(b));
+  const tipos = [...new Set(srvData.map(r=>r.tipo).filter(Boolean))].sort();
+  const vends = [...new Set(srvData.map(r=>r.vendedor).filter(Boolean))].sort();
+
+  const aEl = document.getElementById('srv-anos-btns');
+  if (aEl) aEl.innerHTML =
+    '<button style="' + srvBtnStyle(srvAnoSel==='') + '" onclick="srvSetF(\'ano\',\'\')">Todos</button>' +
+    anos.map(a=>'<button style="' + srvBtnStyle(srvAnoSel===a) + '" onclick="srvSetF(\'ano\',\'' + a + '\')">' + a + '</button>').join('');
+
+  const mEl = document.getElementById('srv-meses-btns');
+  if (mEl) mEl.innerHTML =
+    '<button style="' + srvBtnStyle(srvMesSel==='') + '" onclick="srvSetF(\'mes\',\'\')">Todos</button>' +
+    meses.map(m=>'<button style="' + srvBtnStyle(srvMesSel===m) + '" onclick="srvSetF(\'mes\',\'' + m + '\')">' + m.charAt(0).toUpperCase()+m.slice(1,3) + '</button>').join('');
+
+  const tEl = document.getElementById('srv-tipos-btns');
+  if (tEl) tEl.innerHTML =
+    '<button style="' + srvBtnStyle(srvTipoSel==='') + '" onclick="srvSetF(\'tipo\',\'\')">Todos</button>' +
+    tipos.map(t=>'<button style="' + srvBtnStyle(srvTipoSel===t) + '" onclick="srvSetF(\'tipo\',\'' + t + '\')">' + t + '</button>').join('');
+
+  // Popular select de Serviços
+  const servicos = [...new Set(srvData.map(r=>r.servico).filter(Boolean))].sort();
+  const sEl = document.getElementById('srv-sel-serv');
+  if (sEl) {
+    const selS = new Set([...sEl.selectedOptions].map(o=>o.value));
+    sEl.innerHTML = servicos.map(s=>'<option value="' + s + '"' + (selS.has(s)?' selected':'') + '>' + s + '</option>').join('');
+  }
+
+  const vEl = document.getElementById('srv-sel-vend');
+  if (vEl) {
+    const selV = new Set([...vEl.selectedOptions].map(o=>o.value));
+    vEl.innerHTML = vends.map(v=>'<option value="' + v + '"' + (selV.has(v)?' selected':'') + '>' + v + '</option>').join('');
+  }
+
+  document.getElementById('srv-filtros').style.display = 'block';
+}
+
+function srvSetF(tipo, val) {
+  if (tipo==='ano')  srvAnoSel=val;
+  if (tipo==='mes')  srvMesSel=val;
+  if (tipo==='tipo') srvTipoSel=val;
+  srvPopularFiltros(); srvRender();
+}
+
+function srvResetFiltros() {
+  srvAnoSel=''; srvMesSel=''; srvTipoSel='';
+  ['srv-sel-vend','srv-sel-serv'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) [...el.options].forEach(o=>o.selected=false);
+  });
+  srvPopularFiltros(); srvRender();
+}
+
+function srvGetFiltered() {
+  const vendSel = [...(document.getElementById('srv-sel-vend')?.selectedOptions||[])]
+    .map(o=>o.value).filter(Boolean);
+  const srvSel  = [...(document.getElementById('srv-sel-serv')?.selectedOptions||[])]
+    .map(o=>o.value).filter(Boolean);
+  return srvData.filter(r=>
+    (!srvAnoSel      || r.ano===srvAnoSel)       &&
+    (!srvMesSel      || r.mes===srvMesSel)        &&
+    (!srvTipoSel     || r.tipo===srvTipoSel)      &&
+    (!vendSel.length || vendSel.includes(r.vendedor)) &&
+    (!srvSel.length  || srvSel.includes(r.servico))
+  );
+}
+
+function srvRender() {
+  const dados = srvGetFiltered();
+  ['srv-kpis','srv-charts','srv-rank-srv-panel','srv-rank-vend-panel'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(!el) return;
+    if(id==='srv-kpis' || id==='srv-charts') el.style.display='grid';
+    else el.style.display='block';
+  });
+
+  const total    = dados.reduce((s,r)=>s+r.valor,0);
+  const qtdTotal = dados.reduce((s,r)=>s+(r.qtd||1),0);
+  const ticket   = qtdTotal ? total/qtdTotal : 0;
+
+  // DIARIA ou DIÁRIA (com ou sem acento, já em UPPERCASE pelo mapeamento)
+  const leads    = dados.filter(r=>
+    /DI.RIA/i.test(r.servico) &&
+    r.tipo === 'OPORTUNIDADE'
+  );
+  const leadsQtd = leads.reduce((s,r)=>s+(r.qtd||1),0);
+  const leadsFat = leads.reduce((s,r)=>s+r.valor,0);
+
+  const setK=(id,val,sub)=>{
+    const e=document.getElementById(id); if(e) e.textContent=val;
+    const s=document.getElementById(id+'-sub');
+    if(s&&sub!==undefined) s.innerHTML='<span style="font-size:11px;color:var(--text-mid)">'+sub+'</span>';
+  };
+  setK('srv-kpi-fat',    fmtBRL(total),   qtdTotal.toLocaleString('pt-BR') + ' serviços');
+  document.getElementById('srv-prog').style.width='80%';
+  setK('srv-kpi-qtd',    qtdTotal.toLocaleString('pt-BR'), dados.length + ' registros');
+  setK('srv-kpi-ticket', fmtBRL(ticket),  'por unidade');
+  setK('srv-kpi-leads',  leadsQtd + ' diárias', fmtBRL(leadsFat) + ' — oportunidades de conversão');
+
+  document.getElementById('srv-sub').textContent =
+    qtd + ' servicos · ' + fmtBRL(total) + ' · ' +
+    (srvAnoSel||'todos os anos') + (srvMesSel?' · '+srvMesSel:'');
+
+  srvRenderDonut(dados);
+  srvRenderDia(dados);
+  srvRenderRankingServicos(dados);
+  srvRenderRankingVendedores(dados);
+}
+
+function srvRenderDonut(dados) {
+  if (srvChartDonut) srvChartDonut.destroy();
+  const canvas = document.getElementById('srv-chart-donut'); if(!canvas) return;
+  if(!dados.length){ canvas.parentElement.innerHTML='<p style="color:var(--text-light);padding:20px;text-align:center">Sem dados</p>'; return; }
+  const tipoMap={};
+  dados.forEach(r=>{ tipoMap[r.tipo]=(tipoMap[r.tipo]||0)+1; });
+  const tipos=Object.keys(tipoMap).sort((a,b)=>tipoMap[b]-tipoMap[a]);
+  const total=dados.length;
+  const COR=['#7c3aed','#22c55e','#ec4899','#f59e0b','#1e6fe8','#ef4444'];
+  srvChartDonut = new Chart(canvas, {
+    type:'doughnut',
+    data:{labels:tipos,datasets:[{
+      data:tipos.map(t=>tipoMap[t]),
+      backgroundColor:tipos.map((_,i)=>COR[i%COR.length]),
+      borderWidth:2,borderColor:'#fff',hoverOffset:6
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{
+        legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},padding:10,boxWidth:10}},
+        tooltip:{callbacks:{label:ctx=>{
+          const pct=total?(ctx.raw/total*100).toFixed(1):0;
+          return ' '+ctx.label+': '+ctx.raw+' ('+pct+'%)';
+        }}}
+      }
+    }
+  });
+}
+
+
+
+
+function srvRenderDia(dados) {
+  if (srvChartDia) srvChartDia.destroy();
+  const canvas = document.getElementById('srv-chart-dia'); if(!canvas) return;
+
+  const vals = DIAS_SEMANA_CNT.map((_,i) =>
+    dados.filter(r=>r.diaSemN===i).reduce((s,r)=>s+r.valor,0)
+  );
+  // Garantir que há dados para renderizar
+  if (vals.every(v=>v===0)) { canvas.parentElement.innerHTML='<p style="color:var(--text-light);padding:20px;text-align:center">Sem dados no período</p>'; return; }
+  const max = Math.max(...vals)||1;
+
+  srvChartDia = new Chart(canvas, {
+    type:'bar',
+    data:{
+      labels: DIAS_SEMANA_CNT,
+      datasets:[{
+        label:'Faturamento',
+        data: vals,
+        backgroundColor: vals.map(v=>v===max?'#22c55ecc':'#1e6fe8aa'),
+        borderRadius:5,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>' '+fmtBRL(ctx.raw)}},
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:12,weight:'600'}}},
+        y:{grid:{color:'rgba(0,0,0,.04)'},
+           ticks:{font:{family:'DM Mono',size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}
+      }
+    }
+  });
+}
+
+function srvRenderRankingServicos(dados) {
+  const sMap={};
+  dados.forEach(r=>{
+    if(!sMap[r.servico]) sMap[r.servico]={qtd:0,fat:0};
+    sMap[r.servico].qtd += (r.qtd || 1); // soma Quantidade real
+    sMap[r.servico].fat += r.valor;
+  });
+  const sorted=Object.entries(sMap).sort((a,b)=>b[1].qtd-a[1].qtd);
+  const maxQtd=sorted[0]?.[1].qtd||1;
+  const badge=document.getElementById('srv-rank-srv-badge');
+  if(badge) badge.textContent=sorted.length+' servicos';
+  const thead='<tr><th>#</th><th>Servico</th><th style="text-align:center;width:100px">Qtd</th><th style="text-align:right;width:150px">Faturamento</th></tr>';
+  const tbody=sorted.map(([serv,d],i)=>{
+    const bar=(d.qtd/maxQtd*100).toFixed(0);
+    const cor=i===0?'#7c3aed':i===1?'#1e6fe8':i===2?'#22c55e':'var(--text-light)';
+    return '<tr style="border-bottom:1px solid var(--border)">' +
+      '<td style="padding:9px 10px;text-align:center;font-weight:800;color:'+cor+'">'+( i+1)+'</td>' +
+      '<td style="padding:9px 14px;font-size:12px"><div style="font-weight:600">'+serv+'</div>' +
+      '<div style="margin-top:3px;height:4px;border-radius:99px;background:var(--border);overflow:hidden">' +
+      '<div style="width:'+bar+'%;height:100%;background:'+cor+';border-radius:99px"></div></div></td>' +
+      '<td style="padding:9px 10px;font-family:var(--mono);font-weight:800;text-align:center">'+d.qtd+'</td>' +
+      '<td style="padding:9px 14px;font-family:var(--mono);color:var(--green);text-align:right;font-weight:700">'+fmtBRL(d.fat)+'</td>' +
+      '</tr>';
+  }).join('');
+  const wrap=document.getElementById('srv-rank-srv-wrap');
+  if(wrap) wrap.innerHTML='<div class="table-wrapper"><table><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table></div>';
+}
+
+function srvRenderRankingVendedores(dados) {
+  const vMap={};
+  dados.forEach(r=>{
+    if(!vMap[r.vendedor]) vMap[r.vendedor]={qtd:0,fat:0};
+    vMap[r.vendedor].qtd += (r.qtd || 1);
+    vMap[r.vendedor].fat += r.valor;
+  });
+  const sorted=Object.entries(vMap).sort((a,b)=>b[1].fat-a[1].fat);
+  const maxFat=sorted[0]?.[1].fat||1;
+  const badge=document.getElementById('srv-rank-vend-badge');
+  if(badge) badge.textContent=sorted.length+' vendedores';
+  const thead='<tr><th style="width:32px">#</th><th>Vendedor</th><th style="text-align:center;width:90px">Qtd</th><th style="text-align:right;width:150px">Faturamento</th><th style="min-width:110px">Part.</th></tr>';
+  const tbody=sorted.map(([nome,d],i)=>{
+    const pct=(d.fat/maxFat*100).toFixed(0);
+    const cor=i===0?'#22c55e':i===1?'#f59e0b':'var(--accent)';
+    return '<tr style="border-bottom:1px solid var(--border)">' +
+      '<td style="padding:10px 8px;text-align:center;font-weight:800;color:var(--text-light)">'+(i+1)+'</td>' +
+      '<td style="padding:10px 12px;font-weight:700">'+nome+'</td>' +
+      '<td style="padding:10px 8px;font-family:var(--mono);text-align:center;font-weight:800">'+d.qtd+'</td>' +
+      '<td style="padding:10px 12px;font-family:var(--mono);font-weight:800;color:var(--green);text-align:right;white-space:nowrap">'+fmtBRL(d.fat)+'</td>' +
+      '<td style="padding:10px 12px"><div style="display:flex;align-items:center;gap:6px">' +
+      '<div style="flex:1;background:var(--border);border-radius:99px;height:6px;overflow:hidden">' +
+      '<div style="width:'+pct+'%;height:100%;background:'+cor+';border-radius:99px"></div></div>' +
+      '<span style="font-size:11px;font-weight:700;color:'+cor+';min-width:28px">'+pct+'%</span></div></td></tr>';
+  }).join('');
+  const wrap=document.getElementById('srv-rank-vend-wrap');
+  if(wrap) wrap.innerHTML='<div class="table-wrapper"><table><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table></div>';
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('skyfit_dark') === '1') {
     document.body.classList.add('dark');
