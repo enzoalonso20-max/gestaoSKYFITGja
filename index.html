@@ -199,6 +199,34 @@
     flex-wrap: nowrap; -webkit-overflow-scrolling: touch;
   }
 
+  .cnt-dropdown { position:relative; display:inline-block; }
+  .cnt-dd-btn {
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:6px 10px; border:1px solid var(--border); border-radius:8px;
+    background:var(--bg-card); color:var(--text-dark); font-family:var(--font);
+    font-size:13px; cursor:pointer; min-width:160px; white-space:nowrap;
+    user-select:none; transition:border-color .15s;
+  }
+  .cnt-dd-btn:hover, .cnt-dd-btn.open { border-color:#1e6fe8; }
+  .cnt-dd-btn .dd-arrow { font-size:10px; color:var(--text-light); transition:transform .2s; }
+  .cnt-dd-btn.open .dd-arrow { transform:rotate(180deg); }
+  .cnt-dd-list {
+    position:absolute; top:calc(100% + 4px); left:0; z-index:9999;
+    background:var(--bg-card); border:1px solid var(--border); border-radius:10px;
+    box-shadow:0 8px 24px rgba(0,0,0,.18); min-width:100%; max-height:240px;
+    overflow-y:auto; padding:6px 0; display:none;
+  }
+  .cnt-dd-list.open { display:block; }
+  .cnt-dd-item {
+    display:flex; align-items:center; gap:10px; padding:7px 14px;
+    cursor:pointer; font-size:12px; color:var(--text-dark);
+    transition:background .1s; white-space:nowrap;
+  }
+  .cnt-dd-item:hover { background:var(--bg); }
+  .cnt-dd-item input[type=checkbox] { width:14px; height:14px; accent-color:#1e6fe8; cursor:pointer; flex-shrink:0; }
+  .cnt-dd-item.checked { color:#1e6fe8; font-weight:600; }
+  .cnt-dd-sep { height:1px; background:var(--border); margin:4px 0; }
+
   .pf-btn {
     font-family: var(--font); font-size: 12px; font-weight: 600;
     padding: 6px 14px; border-radius: 99px; border: none;
@@ -1873,6 +1901,19 @@
               <div style="display:flex;gap:4px;flex-wrap:wrap" id="pag-meses-btns"></div>
             </div>
 
+            <!-- Toggle SEM STONE -->
+            <div style="display:flex;flex-direction:column;gap:5px;align-self:flex-end">
+              <label class="filter-label">Validação</label>
+              <label style="display:flex;align-items:center;gap:8px;padding:7px 12px;
+                            background:var(--bg-card);border:1px solid var(--border);
+                            border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;
+                            color:var(--text-dark);white-space:nowrap">
+                <input type="checkbox" id="pag-toggle-stone"
+                  style="width:16px;height:16px;accent-color:#22c55e;cursor:pointer">
+                ✅ Validar SEM STONE
+              </label>
+            </div>
+
             <button class="btn btn-secondary" style="align-self:flex-end" onclick="pagResetFiltros()">↺ Todos</button>
           </div>
         </div>
@@ -2054,50 +2095,65 @@
     <!-- ════ CONTRATOS ════ -->
     <div class="tab-pane" id="tab-vnd-contratos">
 
-      <!-- Header -->
       <div class="section-header">
         <div>
-          <div class="section-title">📑 Contratos Vendidos</div>
-          <div class="section-sub" id="cnt-sub">Faça o upload do relatório exportado do EVO (.xlsx ou .csv)</div>
+          <div class="section-title">📑 Contratos</div>
+          <div class="section-sub" id="cnt-sub">Carregando dados do Google Sheets — VD_Contratos…</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-primary" onclick="document.getElementById('cnt-upload').click()">
-            ⬆️ Upload EVO
-          </button>
-          <input type="file" id="cnt-upload" accept=".xlsx,.xls,.csv" style="display:none" onchange="cntHandleUpload(event)">
-          <span class="badge badge-green" id="cnt-badge" style="display:none">● Dados carregados</span>
+          <button class="btn btn-secondary" onclick="loadContratos(true)">🔄 Atualizar</button>
+          <span class="badge badge-green" id="cnt-badge" style="display:none">● VD_Contratos</span>
         </div>
       </div>
 
       <!-- Filtros -->
       <div id="cnt-filtros" style="display:none;margin-bottom:16px">
         <div class="panel">
-          <div class="panel-body" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
+          <div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
             <div style="display:flex;flex-direction:column;gap:5px">
-              <label class="filter-label">Período</label>
-              <div style="display:flex;gap:4px;flex-wrap:wrap">
-                <button class="pf-btn active" data-per="todos"  onclick="cntSetPeriodo(this)">Todos</button>
-                <button class="pf-btn"        data-per="semana" onclick="cntSetPeriodo(this)">Semana</button>
-                <button class="pf-btn"        data-per="mes"    onclick="cntSetPeriodo(this)">Mês</button>
-                <button class="pf-btn"        data-per="ano"    onclick="cntSetPeriodo(this)">Ano</button>
-              </div>
+              <label class="filter-label">Ano</label>
+              <div style="display:flex;gap:4px;flex-wrap:wrap" id="cnt-anos-btns"></div>
             </div>
             <div style="display:flex;flex-direction:column;gap:5px">
-              <label class="filter-label">Plano</label>
-              <select id="cnt-sel-plano" onchange="cntRender()"
-                style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none;min-width:220px">
-                <option value="">Todos os planos</option>
+              <label class="filter-label">Mês</label>
+              <div style="display:flex;gap:4px;flex-wrap:wrap" id="cnt-meses-btns"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label class="filter-label">Dia da Semana</label>
+              <div style="display:flex;gap:4px;flex-wrap:wrap" id="cnt-dias-btns"></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <label class="filter-label">Vendedor <span style="font-size:10px;color:var(--text-light)">(Ctrl para múltiplos)</span></label>
+              <select id="cnt-sel-vend" multiple onchange="cntRender()"
+                style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;
+                       font-family:var(--font);font-size:12px;background:var(--bg-card);
+                       color:var(--text-dark);outline:none;min-width:170px;
+                       min-height:100px;max-height:130px;overflow-y:auto">
               </select>
             </div>
             <div style="display:flex;flex-direction:column;gap:5px">
-              <label class="filter-label">Ordenar ranking por</label>
-              <select id="cnt-sel-ordem" onchange="cntRenderRanking(cntGetFiltered())"
-                style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none">
-                <option value="fat">Faturamento</option>
-                <option value="qtd">Quantidade</option>
+              <label class="filter-label">Plano <span style="font-size:10px;color:var(--text-light)">(Ctrl para múltiplos)</span></label>
+              <select id="cnt-sel-plano" multiple onchange="cntRender()"
+                style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;
+                       font-family:var(--font);font-size:12px;background:var(--bg-card);
+                       color:var(--text-dark);outline:none;min-width:230px;
+                       min-height:100px;max-height:130px;overflow-y:auto">
               </select>
             </div>
-            <button class="btn btn-secondary" onclick="cntResetFiltros()">↺ Limpar</button>
+            <!-- Checkbox Online -->
+            <div style="display:flex;flex-direction:column;gap:5px;align-self:flex-end">
+              <label class="filter-label">Agrupamento</label>
+              <label style="display:flex;align-items:center;gap:8px;padding:7px 12px;
+                            background:var(--bg-card);border:1px solid var(--border);
+                            border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;
+                            color:var(--text-dark);white-space:nowrap">
+                <input type="checkbox" id="cnt-toggle-online"
+                  style="width:16px;height:16px;accent-color:#1e6fe8;cursor:pointer">
+                🌐 Somar Vendas Online
+              </label>
+            </div>
+
+            <button class="btn btn-secondary" style="align-self:flex-end" onclick="cntResetFiltros()">↺ Todos</button>
           </div>
         </div>
       </div>
@@ -2105,54 +2161,44 @@
       <!-- KPIs -->
       <div class="cards-grid" id="cnt-kpis" style="display:none">
         <div class="kpi-card green">
-          <div class="kpi-icon">💰</div>
-          <div class="kpi-label">Faturamento Total</div>
+          <div class="kpi-icon">💰</div><div class="kpi-label">Faturamento Total</div>
           <div class="kpi-value" id="cnt-kpi-fat">—</div>
           <div class="kpi-delta" id="cnt-kpi-fat-sub"></div>
           <div class="progress-bar"><div class="progress-fill" id="cnt-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div>
         </div>
         <div class="kpi-card">
-          <div class="kpi-icon">📋</div>
-          <div class="kpi-label">Total de Contratos</div>
+          <div class="kpi-icon">📋</div><div class="kpi-label">Total de Contratos</div>
           <div class="kpi-value" id="cnt-kpi-qtd">—</div>
           <div class="kpi-delta" id="cnt-kpi-qtd-sub"></div>
         </div>
         <div class="kpi-card amber">
-          <div class="kpi-icon">🎟️</div>
-          <div class="kpi-label">Ticket Médio</div>
+          <div class="kpi-icon">🎟️</div><div class="kpi-label">Ticket Médio</div>
           <div class="kpi-value" id="cnt-kpi-ticket">—</div>
           <div class="kpi-delta" id="cnt-kpi-ticket-sub"></div>
         </div>
-        <div class="kpi-card">
-          <div class="kpi-icon">🏆</div>
-          <div class="kpi-label">Top Vendedor</div>
-          <div class="kpi-value" id="cnt-kpi-top" style="font-size:17px">—</div>
-          <div class="kpi-delta" id="cnt-kpi-top-sub"></div>
+        <div class="kpi-card red" style="border:2px solid #f59e0b">
+          <div class="kpi-icon">🔔</div>
+          <div class="kpi-label" style="color:#f59e0b;font-weight:700">Upsell — Mensal no Crédito</div>
+          <div class="kpi-value" id="cnt-kpi-upsell" style="color:#f59e0b">—</div>
+          <div class="kpi-delta" id="cnt-kpi-upsell-sub"></div>
         </div>
       </div>
 
-      <!-- Gráficos -->
-      <div class="chart-grid" id="cnt-charts" style="display:none">
+      <!-- Gráficos linha 1 -->
+      <div class="chart-grid" id="cnt-charts-1" style="display:none">
         <div class="panel">
           <div class="panel-header">
-            <span class="panel-title">🍩 Market Share dos Planos</span>
-            <span id="cnt-pizza-label" style="font-size:11px;color:var(--text-light);font-family:var(--mono)"></span>
-          </div>
-          <div class="panel-body">
-            <div class="chart-wrap" style="height:300px"><canvas id="cnt-chart-pizza"></canvas></div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-header">
-            <span class="panel-title">📅 Sazonalidade Mensal</span>
+            <span class="panel-title">📅 Faturamento por Dia da Semana</span>
             <div style="display:flex;gap:4px">
-              <button class="pf-btn active" id="cnt-bar-qtd" onclick="cntSetBarMode('qtd')">Qtd</button>
-              <button class="pf-btn"        id="cnt-bar-fat" onclick="cntSetBarMode('fat')">R$</button>
+              <button class="pf-btn active" id="cnt-bar-dia" onclick="cntSetBarView('dia')">Dia</button>
+              <button class="pf-btn"        id="cnt-bar-mes" onclick="cntSetBarView('mes')">Mês</button>
             </div>
           </div>
-          <div class="panel-body">
-            <div class="chart-wrap" style="height:300px"><canvas id="cnt-chart-barras"></canvas></div>
-          </div>
+          <div class="panel-body"><div class="chart-wrap" style="height:240px"><canvas id="cnt-chart-barras"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">🍩 Origem das Vendas</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:240px"><canvas id="cnt-chart-origem"></canvas></div></div>
         </div>
       </div>
 
@@ -2165,21 +2211,38 @@
         <div class="panel-body" id="cnt-ranking-wrap"></div>
       </div>
 
-      <!-- Empty state -->
+      <!-- Upsell detalhado -->
+      <div class="panel" id="cnt-upsell-panel" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">🔔 Oportunidades de Upsell — Mensal pago no Crédito</span>
+          <span class="badge" style="background:#f59e0b;color:#fff;font-size:10px">Migrar para Anual/Trimestral</span>
+        </div>
+        <div class="panel-body" id="cnt-upsell-wrap"></div>
+      </div>
+
+      <!-- Ranking de Planos -->
+      <div class="panel" id="cnt-planos-panel" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">🏷️ Ranking de Planos</span>
+          <span class="badge badge-blue" id="cnt-planos-badge"></span>
+        </div>
+        <div class="panel-body" id="cnt-planos-wrap"></div>
+      </div>
+
+      <!-- Empty -->
       <div id="cnt-empty" class="fin-placeholder-wrap">
         <div class="fin-ph-icon">📑</div>
-        <div class="fin-ph-title">Contratos Vendidos</div>
-        <div class="fin-ph-desc">Exporte o relatório de vendas do EVO (.xlsx ou .csv) e faça o upload.<br>O sistema detecta automaticamente as linhas de contrato (tipo "CLIENTE").</div>
+        <div class="fin-ph-title">Contratos</div>
+        <div class="fin-ph-desc">Dados carregados automaticamente da aba <strong>VD_Contratos</strong> do Google Sheets.</div>
         <div class="feature-chips" style="justify-content:center;margin-top:16px">
-          <span class="chip">🏅 Ranking de vendedores</span>
-          <span class="chip">🍩 Market share de planos</span>
-          <span class="chip">📅 Sazonalidade mensal</span>
-          <span class="chip">🔍 Filtro por plano e período</span>
+          <span class="chip">🏅 Ranking vendedores</span>
+          <span class="chip">📅 Sazonalidade</span>
+          <span class="chip">🍩 Site vs Balcão</span>
+          <span class="chip">🔔 Upsell Mensal→Anual</span>
         </div>
       </div>
 
     </div>
-
     <div class="tab-pane" id="tab-cham-oportunidades">
       <div class="section-header">
         <div>
@@ -2485,6 +2548,7 @@ function switchTab(tab, el) {
   if (VND_TABS.includes(tab)) {
     const g=document.getElementById('vnd-group'), c=document.getElementById('vnd-chevron');
     if(g) g.classList.add('open'); if(c) c.classList.add('open');
+    if(tab==='vnd-contratos' && !cntLoaded) loadContratos(false);
 
   } else if (FIN_TABS.includes(tab)) {
     const g=document.getElementById('fin-group'), c=document.getElementById('fin-chevron');
@@ -5530,419 +5594,453 @@ function pdfAddImg(pdf, imgObj, x, y, maxW, maxH) {
 
 
 // ╔══════════════════════════════════════════════════════════╗
-//  ABA: CONTRATOS VENDIDOS — upload CSV do EVO
+//  ABA: CONTRATOS — Google Sheets VD_Contratos
+//  Parsing: apenas linhas onde col[1] === "CLIENTE"
 // ╚══════════════════════════════════════════════════════════╝
-let cntRows      = [];   // dados brutos processados
-let cntPeriodo   = 'todos';
-let cntBarMode   = 'qtd';
-let cntChartPizza= null;
-let cntChartBar  = null;
+const APPS_SCRIPT_CNT_URL = APPS_SCRIPT_URL + '?sheet=VD_Contratos';
+const DIAS_SEMANA_CNT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MESES_CNT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const MESES_FULL_CNT = ['janeiro','fevereiro','março','abril','maio','junho',
+                        'julho','agosto','setembro','outubro','novembro','dezembro'];
 
-const CNT_CORES = [
-  '#7c3aed','#22c55e','#ec4899','#f59e0b','#1e6fe8',
-  '#ef4444','#0ea5e9','#84cc16','#f97316','#8b5cf6',
-];
+let cntData       = [];
+let cntLoaded     = false;
+let cntAnoSel     = '';
+let cntMesSel     = '';
+let cntDiaSel     = '';   // '' = Todos
+let cntBarView    = 'dia';
+let cntChartBar   = null;
+let cntChartDonut = null;
 
-// ── Upload e parsing ──────────────────────────────────────────────────────
-function cntHandleUpload(evt) {
-  const file = evt.target.files[0]; if (!file) return;
-  toast('Processando arquivo…', '⏳');
+const cntPV = v => typeof v === 'number' ? v
+  : parseFloat(String(v||'0').replace(/\./g,'').replace(',','.')) || 0;
 
-  // Processamento unificado após leitura (xlsx ou csv)
-  function processarLinhas(rows) {
-    // rows: array de arrays (sem header — índice posicional)
-    // col[1]  = Tipo   | col[6] = Descrição (plano)
-    // col[9]  = Valor  | col[10]= Data da venda
-    // col[12] = Vendedor (pode ser NaN/null/"NaN")
-    const clientes = rows.filter(r => String(r[1]||'').trim().toUpperCase() === 'CLIENTE');
+const cntParseData = v => {
+  if (!v) return null;
+  if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
+  const s = String(v).trim();
+  const m1 = s.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (m1) return new Date(+m1[1], +m1[2]-1, +m1[3]);
+  const m2 = s.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+  if (m2) return new Date(+m2[3], +m2[2]-1, +m2[1]);
+  const n = parseFloat(s);
+  if (!isNaN(n) && n > 40000 && n < 70000)
+    return new Date(Date.UTC(1899,11,30) + n * 86400000);
+  return null;
+};
 
-    if (!clientes.length) {
-      toast('Nenhuma linha "CLIENTE" encontrada no arquivo', '⚠️'); return;
+// ── Carregar do Sheets ────────────────────────────────────
+async function loadContratos(force) {
+  const subEl = document.getElementById('cnt-sub');
+  if (subEl) subEl.textContent = 'Conectando ao Google Sheets…';
+  try {
+    const resp = await fetch(APPS_SCRIPT_CNT_URL);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const json = await resp.json();
+    const rows = json.rows || [];
+    if (!rows.length) throw new Error('VD_Contratos sem dados');
+
+    // Descobrir chaves exatas
+    const sample  = rows[0] || {};
+    const allKeys = Object.keys(sample);
+    console.log('[VD_Contratos] Colunas:', allKeys);
+
+    const fk = pat => allKeys.find(k => pat.test(k)) || '';
+    const kTipo  = fk(/tipo/i);
+    const kDesc  = fk(/descri/i);
+    const kVal   = fk(/valor/i);
+    const kData  = fk(/data.*venda|venda.*data/i) || fk(/data/i);
+    const kFPag  = fk(/forma.*pag|pag.*forma/i);
+    const kVend  = fk(/comiss/i) || fk(/colabor/i) || fk(/vendedor/i);
+    const kOrig  = fk(/origem/i);
+    console.log('[VD_Contratos] Mapeamento:', {kTipo,kDesc,kVal,kData,kFPag,kVend,kOrig});
+
+    // Filtrar APENAS linhas CLIENTE
+    const clientes = rows.filter(r => String(r[kTipo]||'').trim().toUpperCase() === 'CLIENTE');
+    console.log('[VD_Contratos] Linhas CLIENTE:', clientes.length, '/ total:', rows.length);
+
+    if (!clientes.length) throw new Error(`0 linhas CLIENTE de ${rows.length} — verifique coluna "${kTipo}"`);
+
+    cntData = clientes.map(r => {
+      const dt = cntParseData(r[kData]);
+      return {
+        plano:   String(r[kDesc]||'').trim(),
+        valor:   cntPV(r[kVal]),
+        dt,
+        mes:     dt ? MESES_FULL_CNT[dt.getMonth()] : '',
+        ano:     dt ? String(dt.getFullYear()) : '',
+        diaSem:  dt ? DIAS_SEMANA_CNT[dt.getDay()] : '',
+        diaSemN: dt ? dt.getDay() : -1,
+        mesN:    dt ? dt.getMonth() : -1,
+        fpag:    String(r[kFPag]||'').trim(),
+        vendedor:String(r[kVend]||'').trim() || 'Online / Site',
+        origem:  String(r[kOrig]||'').trim() || 'Balcão',
+      };
+    }).filter(r => r.dt && r.valor > 0);
+
+    if (!cntData.length) throw new Error('0 registros válidos — verifique datas e valores');
+
+    cntLoaded = true;
+    document.getElementById('cnt-badge').style.display = 'inline-block';
+    document.getElementById('cnt-empty').style.display = 'none';
+
+    // Event listener no toggle online — re-renderiza ao mudar
+    const togOnline = document.getElementById('cnt-toggle-online');
+    if (togOnline && !togOnline._listenerAdded) {
+      togOnline.addEventListener('change', () => { cntPopularFiltros(); cntRender(); });
+      togOnline._listenerAdded = true;
     }
-
-    const parseData = v => {
-      if (!v || v === 'NaN' || v === null) return null;
-      // SheetJS com cellDates:true retorna objeto Date diretamente
-      if (v instanceof Date) return isNaN(v.getTime()) ? null : v;
-      const s = String(v).trim();
-      // Formato ISO: "2025-11-04 12:21:29" ou "2025-11-04T12:21:29"
-      const m1 = s.match(/(\d{4})-(\d{2})-(\d{2})/);
-      if (m1) return new Date(+m1[1], +m1[2]-1, +m1[3]);
-      // Formato BR: "04/11/2025"
-      const m2 = s.match(/(\d{2})\/(\d{2})\/(\d{4})/);
-      if (m2) return new Date(+m2[3], +m2[2]-1, +m2[1]);
-      // Número serial do Excel (fallback seguro)
-      if (typeof v === 'number' && v > 40000 && v < 60000) {
-        const d = new Date(Date.UTC(1899,11,30) + v * 86400000);
-        return isNaN(d.getTime()) ? null : d;
-      }
-      return null;
-    };
-
-    const parseValor = v => {
-      if (typeof v === 'number') return v;
-      return parseFloat(String(v||'0').replace(/\./g,'').replace(',','.')) || 0;
-    };
-
-    cntRows = clientes.map(r => {
-      const dt       = parseData(r[10]);
-      const plano    = String(r[6]||'').trim() || 'Sem plano';
-      const valor    = parseValor(r[9]);
-      const vend     = String(r[12]||'').trim();
-      const vendedor = (!vend || vend === 'NaN') ? 'Online / Site' : vend;
-      return { dt, plano, valor, vendedor };
-    }).filter(r => r.dt !== null);
-
-    if (!cntRows.length) {
-      toast('Nenhuma linha com data válida encontrada', '⚠️'); return;
-    }
-
-    document.getElementById('cnt-badge').style.display  = 'inline-block';
-    document.getElementById('cnt-empty').style.display  = 'none';
-    document.getElementById('cnt-filtros').style.display = 'block';
-    document.getElementById('cnt-sub').textContent =
-      `${file.name} · ${cntRows.length} contratos · ${new Set(cntRows.map(r=>r.vendedor)).size} vendedores`;
 
     cntPopularFiltros();
     cntRender();
-    toast(`${cntRows.length} contratos carregados`, '🏆');
-  }
-
-  const ext = file.name.split('.').pop().toLowerCase();
-
-  if (ext === 'csv') {
-    Papa.parse(file, {
-      header: false, skipEmptyLines: true, encoding: 'UTF-8',
-      complete: res => {
-        try { processarLinhas(res.data); }
-        catch(e) { console.error(e); toast('Erro CSV: ' + e.message, '❌'); }
-      },
-      error: e => toast('Erro ao ler CSV: ' + e.message, '❌')
-    });
-  } else {
-    // XLSX via SheetJS (já carregado no head)
-    if (typeof XLSX === 'undefined') {
-      toast('SheetJS não carregou — recarregue a página', '❌'); return;
-    }
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const wb   = XLSX.read(e.target.result, { type: 'array', cellDates: true });
-        const ws   = wb.Sheets[wb.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
-        processarLinhas(rows);
-      } catch(err) {
-        console.error(err);
-        toast('Erro XLSX: ' + err.message, '❌');
-      }
-    };
-    reader.readAsArrayBuffer(file);
+    if (force) toast(`Contratos: ${cntData.length} registros`, '📑');
+  } catch(err) {
+    console.error('[Contratos]', err);
+    const s = document.getElementById('cnt-sub');
+    if (s) s.textContent = 'Erro: ' + err.message;
+    toast('Erro VD_Contratos: ' + err.message, '❌');
   }
 }
 
+// ── Botões de filtro ──────────────────────────────────────
+function cntBtnStyle(ativo) {
+  return `padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;
+    font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;
+    background:${ativo?'#1e6fe8':'var(--bg-card)'};color:${ativo?'#fff':'var(--text-dark)'}`;
+}
 
-// ── Popular select de planos ──────────────────────────────────────────────
 function cntPopularFiltros() {
-  const planos = [...new Set(cntRows.map(r => r.plano))].sort();
-  const sel = document.getElementById('cnt-sel-plano');
-  sel.innerHTML = '<option value="">Todos os planos</option>'
-    + planos.map(p => `<option value="${p}">${p}</option>`).join('');
+  const anos = [...new Set(cntData.map(r=>r.ano).filter(Boolean))].sort();
+  const meses = [...new Set(cntData.map(r=>r.mes).filter(Boolean))]
+    .sort((a,b)=>MESES_FULL_CNT.indexOf(a)-MESES_FULL_CNT.indexOf(b));
+  const dias = DIAS_SEMANA_CNT.filter(d => cntData.some(r=>r.diaSem===d));
+  const vendedores = [...new Set(cntData.map(r=>r.vendedor).filter(Boolean))].sort();
+
+  const aEl = document.getElementById('cnt-anos-btns');
+  if (aEl) aEl.innerHTML = `<button style="${cntBtnStyle(cntAnoSel==='')} " onclick="cntSetF('ano','')">Todos</button>`
+    + anos.map(a=>`<button style="${cntBtnStyle(cntAnoSel===a)}" onclick="cntSetF('ano','${a}')">${a}</button>`).join('');
+
+  const mEl = document.getElementById('cnt-meses-btns');
+  if (mEl) mEl.innerHTML = `<button style="${cntBtnStyle(cntMesSel==='')} " onclick="cntSetF('mes','')">Todos</button>`
+    + meses.map(m=>`<button style="${cntBtnStyle(cntMesSel===m)}" onclick="cntSetF('mes','${m}')">${m.charAt(0).toUpperCase()+m.slice(1,3)}</button>`).join('');
+
+  const dEl = document.getElementById('cnt-dias-btns');
+  if (dEl) dEl.innerHTML = `<button style="${cntBtnStyle(cntDiaSel==='')} " onclick="cntSetF('dia','')">Todos</button>`
+    + dias.map(d=>`<button style="${cntBtnStyle(cntDiaSel===d)}" onclick="cntSetF('dia','${d}')">${d}</button>`).join('');
+
+  // Popular selects nativos (preservar seleção)
+  const somarOnline = document.getElementById('cnt-toggle-online')?.checked || false;
+  const normPop = p => somarOnline ? p.replace(/\s*\(online\)\s*/i,'').trim() : p;
+  const planos = [...new Set(cntData.map(r=>normPop(r.plano)).filter(Boolean))].sort();
+
+  const vEl = document.getElementById('cnt-sel-vend');
+  if (vEl) {
+    const selV = new Set([...vEl.selectedOptions].map(o=>o.value));
+    vEl.innerHTML = vendedores
+      .map(v=>`<option value="${v}" ${selV.has(v)?'selected':''}>${v}</option>`).join('');
+  }
+  const pEl = document.getElementById('cnt-sel-plano');
+  if (pEl) {
+    const selP = new Set([...pEl.selectedOptions].map(o=>o.value));
+    pEl.innerHTML = planos
+      .map(p=>`<option value="${p}" ${selP.has(p)?'selected':''}>${p}</option>`).join('');
+  }
+
+  document.getElementById('cnt-filtros').style.display = 'block';
 }
 
-// ── Filtro de período ─────────────────────────────────────────────────────
-function cntSetPeriodo(btn) {
-  cntPeriodo = btn.dataset.per;
-  document.querySelectorAll('[data-per]').forEach(b =>
-    b.classList.toggle('active', b.dataset.per === cntPeriodo));
+function cntSetF(tipo, val) {
+  if (tipo==='ano') cntAnoSel=val;
+  if (tipo==='mes') cntMesSel=val;
+  if (tipo==='dia') cntDiaSel=val;
+  cntPopularFiltros();
   cntRender();
-}
-
-function cntGetFiltered() {
-  const plano = document.getElementById('cnt-sel-plano')?.value || '';
-  const hoje  = new Date();
-  const ini   = new Date(hoje);
-
-  return cntRows.filter(r => {
-    if (plano && r.plano !== plano) return false;
-    if (cntPeriodo === 'semana') {
-      const dow = hoje.getDay();
-      ini.setDate(hoje.getDate() - (dow === 0 ? 6 : dow - 1));
-      ini.setHours(0,0,0,0);
-      return r.dt >= ini;
-    }
-    if (cntPeriodo === 'mes') {
-      return r.dt.getMonth() === hoje.getMonth() && r.dt.getFullYear() === hoje.getFullYear();
-    }
-    if (cntPeriodo === 'ano') {
-      return r.dt.getFullYear() === hoje.getFullYear();
-    }
-    return true; // todos
-  });
 }
 
 function cntResetFiltros() {
-  cntPeriodo = 'todos';
-  document.querySelectorAll('[data-per]').forEach(b =>
-    b.classList.toggle('active', b.dataset.per === 'todos'));
-  const sel = document.getElementById('cnt-sel-plano');
-  if (sel) sel.value = '';
-  const ord = document.getElementById('cnt-sel-ordem');
-  if (ord) ord.value = 'fat';
-  cntRender();
+  cntAnoSel=''; cntMesSel=''; cntDiaSel='';
+  ['cnt-sel-vend','cnt-sel-plano'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) [...el.options].forEach(o=>o.selected=false);
+  });
+  const tog=document.getElementById('cnt-toggle-online');
+  if(tog) tog.checked=false;
+  cntPopularFiltros(); cntRender();
 }
 
-// ── Toggle modo barra Qtd/R$ ──────────────────────────────────────────────
-function cntSetBarMode(mode) {
-  cntBarMode = mode;
-  document.getElementById('cnt-bar-qtd').classList.toggle('active', mode === 'qtd');
-  document.getElementById('cnt-bar-fat').classList.toggle('active', mode === 'fat');
+
+
+function cntGetFiltered() {
+  const vendSel  = [...(document.getElementById('cnt-sel-vend')?.selectedOptions  || [])]
+    .map(o => o.value).filter(Boolean);
+  const planoSel = [...(document.getElementById('cnt-sel-plano')?.selectedOptions || [])]
+    .map(o => o.value).filter(Boolean);
+  const somarOnline = document.getElementById('cnt-toggle-online')?.checked || false;
+  const normPlano = p => somarOnline ? p.replace(/\s*\(online\)\s*/i,'').trim() : p;
+
+  return cntData
+    .map(r => somarOnline ? { ...r, plano: normPlano(r.plano) } : r)
+    .filter(r =>
+      (!cntAnoSel      || r.ano === cntAnoSel)          &&
+      (!cntMesSel      || r.mes === cntMesSel)          &&
+      (!cntDiaSel      || r.diaSem === cntDiaSel)       &&
+      (!vendSel.length || vendSel.includes(r.vendedor)) &&
+      (!planoSel.length|| planoSel.includes(r.plano))
+    );
+}
+
+function cntSetBarView(v) {
+  cntBarView=v;
+  document.getElementById('cnt-bar-dia').classList.toggle('active',v==='dia');
+  document.getElementById('cnt-bar-mes').classList.toggle('active',v==='mes');
   cntRenderBarras(cntGetFiltered());
 }
 
-// ── Render principal ──────────────────────────────────────────────────────
+// ── Render principal ──────────────────────────────────────
 function cntRender() {
   const dados = cntGetFiltered();
-
-  document.getElementById('cnt-kpis').style.display          = 'grid';
-  document.getElementById('cnt-charts').style.display        = 'grid';
-  document.getElementById('cnt-ranking-panel').style.display = 'block';
-
-  // KPIs
-  const fatTotal = dados.reduce((s, r) => s + r.valor, 0);
-  const qtd      = dados.length;
-  const ticket   = qtd ? fatTotal / qtd : 0;
-
-  // Top vendedor
-  const vMap = {};
-  dados.forEach(r => {
-    if (!vMap[r.vendedor]) vMap[r.vendedor] = { fat: 0, qtd: 0 };
-    vMap[r.vendedor].fat += r.valor;
-    vMap[r.vendedor].qtd += 1;
+  ['cnt-kpis','cnt-charts-1','cnt-ranking-panel','cnt-planos-panel','cnt-upsell-panel'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display = id==='cnt-kpis'?'grid':'block';
   });
-  const topV = Object.entries(vMap).sort((a,b) => b[1].fat - a[1].fat)[0];
 
-  document.getElementById('cnt-kpi-fat').textContent      = fmtBRL(fatTotal);
-  document.getElementById('cnt-kpi-fat-sub').innerHTML    = `<span style="color:var(--text-mid);font-size:12px">${qtd} contratos</span>`;
-  document.getElementById('cnt-prog').style.width         = '80%';
-  document.getElementById('cnt-kpi-qtd').textContent      = qtd.toLocaleString('pt-BR');
-  document.getElementById('cnt-kpi-qtd-sub').innerHTML    = `<span style="color:var(--text-mid);font-size:12px">contratos no período</span>`;
-  document.getElementById('cnt-kpi-ticket').textContent   = fmtBRL(ticket);
-  document.getElementById('cnt-kpi-ticket-sub').innerHTML = `<span style="color:var(--text-mid);font-size:12px">por contrato</span>`;
-  document.getElementById('cnt-kpi-top').textContent      = topV ? topV[0].split(' ')[0] : '—';
-  document.getElementById('cnt-kpi-top-sub').innerHTML    = topV
-    ? `<span style="color:var(--text-mid);font-size:12px">${fmtBRL(topV[1].fat)} · ${topV[1].qtd} contratos</span>` : '';
+  const total  = dados.reduce((s,r)=>s+r.valor,0);
+  const qtd    = dados.length;
+  const ticket = qtd ? total/qtd : 0;
 
-  cntRenderPizza(dados);
+  // Upsell: Plano Mensal + Cartão Crédito
+  const upsell = dados.filter(r =>
+    r.plano.toLowerCase().includes('mensal') &&
+    r.fpag.toLowerCase().includes('cr') && r.fpag.toLowerCase().includes('cart')
+  );
+
+  const setK=(id,val,sub)=>{
+    const e=document.getElementById(id); if(e) e.textContent=val;
+    const s=document.getElementById(id+'-sub');
+    if(s&&sub!==undefined) s.innerHTML=`<span style="font-size:11px;color:var(--text-mid)">${sub}</span>`;
+  };
+  setK('cnt-kpi-fat',    fmtBRL(total),   `${qtd} contratos no período`);
+  document.getElementById('cnt-prog').style.width='80%';
+  setK('cnt-kpi-qtd',    qtd.toLocaleString('pt-BR'), 'contratos');
+  setK('cnt-kpi-ticket', fmtBRL(ticket),  'por contrato');
+  setK('cnt-kpi-upsell', upsell.length.toLocaleString('pt-BR'),
+    `${fmtBRL(upsell.reduce((s,r)=>s+r.valor,0))} — candidatos à migração Anual/Trimestral`);
+
+  document.getElementById('cnt-sub').textContent =
+    `${dados.length} contratos · ${fmtBRL(total)} · `+
+    `${cntAnoSel||'todos os anos'} ${cntMesSel?'· '+cntMesSel:''}`;
+
   cntRenderBarras(dados);
+  cntRenderOrigem(dados);
   cntRenderRanking(dados);
+  cntRenderRankingPlanos(dados);
+  cntRenderUpsell(upsell);
 }
 
-// ── Gráfico Pizza ─────────────────────────────────────────────────────────
-function cntRenderPizza(dados) {
-  if (cntChartPizza) cntChartPizza.destroy();
-  const canvas = document.getElementById('cnt-chart-pizza'); if (!canvas) return;
+// ── Barras: Dia da Semana ou Mês ──────────────────────────
+function cntRenderBarras(dados) {
+  if (cntChartBar) cntChartBar.destroy();
+  const canvas = document.getElementById('cnt-chart-barras'); if(!canvas) return;
 
-  // Agrupar por plano
-  const pMap = {};
-  dados.forEach(r => { pMap[r.plano] = (pMap[r.plano] || 0) + 1; });
-  const planos = Object.keys(pMap).sort((a,b) => pMap[b] - pMap[a]);
-  const vals   = planos.map(p => pMap[p]);
-  const total  = vals.reduce((s,v) => s+v, 0);
+  let labels, valores;
+  if (cntBarView==='dia') {
+    labels = DIAS_SEMANA_CNT;
+    valores = labels.map(d => dados.filter(r=>r.diaSem===d).reduce((s,r)=>s+r.valor,0));
+  } else {
+    labels = MESES_CNT;
+    valores = labels.map((_,i) => dados.filter(r=>r.mesN===i).reduce((s,r)=>s+r.valor,0));
+  }
 
-  // Abreviar labels da pizza
-  const labelsAbrev = planos.map(p => cntNomeCurto(p));
-  const labelNote = document.getElementById('cnt-pizza-label');
-  if (labelNote) labelNote.textContent = `${planos.length} planos`;
-
-  cntChartPizza = new Chart(canvas, {
-    type: 'doughnut',
-    data: {
-      labels: labelsAbrev,
-      datasets: [{ data: vals,
-        backgroundColor: planos.map((_, i) => CNT_CORES[i % CNT_CORES.length]),
-        borderWidth: 2, borderColor: '#fff', hoverOffset: 6 }]
+  const max = Math.max(...valores)||1;
+  cntChartBar = new Chart(canvas, {
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        label:'Faturamento (R$)',
+        data: valores,
+        backgroundColor: valores.map(v=>v===max?'#7c3aedcc':'#1e6fe8aa'),
+        borderRadius:5,
+      }]
     },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      cutout: '62%',
-      layout: { padding: { bottom: 8 } },
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            font: { family: 'DM Sans', size: 10 },
-            padding: 8, boxWidth: 10,
-            generateLabels: chart => chart.data.labels.map((l, i) => ({
-              text: l.length > 24 ? l.slice(0,24)+'…' : l,
-              fillStyle: chart.data.datasets[0].backgroundColor[i],
-              strokeStyle: chart.data.datasets[0].backgroundColor[i],
-              hidden: false, index: i
-            }))
-          },
-          maxHeight: 80
-        },
-        tooltip: { callbacks: { label: ctx => {
-          const pct = total ? (ctx.raw / total * 100).toFixed(1) : 0;
-          const nomeCompleto = planos[ctx.dataIndex] || ctx.label;
-          return ` ${nomeCompleto}: ${ctx.raw} (${pct}%)`;
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>` ${fmtBRL(ctx.raw)}`}},
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:11,weight:'600'}}},
+        y:{grid:{color:'rgba(0,0,0,.04)'},
+           ticks:{font:{family:'DM Mono',size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}
+      }
+    }
+  });
+}
+
+// ── Donut Origem ──────────────────────────────────────────
+function cntRenderOrigem(dados) {
+  if (cntChartDonut) cntChartDonut.destroy();
+  const canvas = document.getElementById('cnt-chart-origem'); if(!canvas) return;
+  const origens = [...new Set(dados.map(r=>r.origem||'Balcão'))];
+  const vals    = origens.map(o=>dados.filter(r=>(r.origem||'Balcão')===o).reduce((s,r)=>s+r.valor,0));
+  const total   = vals.reduce((s,v)=>s+v,0);
+
+  cntChartDonut = new Chart(canvas, {
+    type:'doughnut',
+    data:{labels:origens,datasets:[{
+      data:vals,
+      backgroundColor:['#7c3aedcc','#22c55ecc','#ec4899cc','#f59e0bcc'],
+      borderWidth:2,borderColor:'#fff',hoverOffset:6
+    }]},
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'60%',
+      plugins:{
+        legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},padding:10,boxWidth:10}},
+        tooltip:{callbacks:{label:ctx=>{
+          const pct=total?(ctx.raw/total*100).toFixed(1):0;
+          return ` ${ctx.label}: ${fmtBRL(ctx.raw)} (${pct}%)`;
         }}}
       }
     }
   });
 }
 
-// ── Gráfico Barras Sazonalidade ────────────────────────────────────────────
-function cntRenderBarras(dados) {
-  if (cntChartBar) cntChartBar.destroy();
-  const canvas = document.getElementById('cnt-chart-barras'); if (!canvas) return;
-
-  const MESES_NM = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-
-  // Agrupar por mês × plano
-  const planos  = [...new Set(dados.map(r => r.plano))].sort();
-  const mesSet  = {};
-  dados.forEach(r => {
-    if (!r.dt) return;
-    const key = `${r.dt.getFullYear()}-${String(r.dt.getMonth()+1).padStart(2,'0')}`;
-    if (!mesSet[key]) mesSet[key] = { label: `${MESES_NM[r.dt.getMonth()]}/${String(r.dt.getFullYear()).slice(2)}` };
-    if (!mesSet[key][r.plano]) mesSet[key][r.plano] = { qtd: 0, fat: 0 };
-    mesSet[key][r.plano].qtd += 1;
-    mesSet[key][r.plano].fat += r.valor;
-  });
-
-  const meses  = Object.keys(mesSet).sort();
-  const labels = meses.map(k => mesSet[k].label);
-  const mode   = cntBarMode;
-
-  const planosAbrev = planos.map(p => cntNomeCurto(p));
-  const datasets = planos.map((p, i) => ({
-    label: planosAbrev[i],
-    data:  meses.map(k => mesSet[k][p] ? mesSet[k][p][mode] : 0),
-    backgroundColor: (CNT_CORES[i % CNT_CORES.length]) + 'cc',
-    borderRadius: 4,
-  }));
-
-  cntChartBar = new Chart(canvas, {
-    type: 'bar',
-    data: { labels, datasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            font: { family: 'DM Sans', size: 9 }, padding: 6, boxWidth: 10,
-            generateLabels: chart => chart.data.datasets.map((ds, i) => ({
-              text: ds.label.length > 20 ? ds.label.slice(0,20)+'…' : ds.label,
-              fillStyle: Array.isArray(ds.backgroundColor) ? ds.backgroundColor[0] : ds.backgroundColor,
-              strokeStyle: Array.isArray(ds.backgroundColor) ? ds.backgroundColor[0] : ds.backgroundColor,
-              hidden: !chart.isDatasetVisible(i), datasetIndex: i
-            }))
-          },
-          maxHeight: 70
-        },
-        tooltip: { callbacks: { label: ctx =>
-          mode === 'fat'
-            ? ` ${ctx.dataset.label}: ${fmtBRL(ctx.raw)}`
-            : ` ${ctx.dataset.label}: ${ctx.raw} contratos`
-        }}
-      },
-      scales: {
-        x: { stacked: true, grid: { display: false },
-             ticks: { font: { family: 'DM Sans', size: 10 }, maxRotation: 35 } },
-        y: { stacked: true, grid: { color: 'rgba(0,0,0,.04)' },
-             ticks: { font: { family: 'DM Mono', size: 10 },
-               callback: v => mode === 'fat' ? 'R$' + Math.round(v/1000) + 'k' : v }}
-      }
-    }
-  });
-}
-
-// ── Ranking de Vendedores ─────────────────────────────────────────────────
-// Encurta nome do plano para caber na tabela
-function cntNomeCurto(plano) {
-  if (!plano) return '—';
-  // Extrair palavras-chave: ANUAL, MENSAL, TRIMESTRAL, RECORRENTE, ESPECIAL + valor
-  const p = plano.toUpperCase();
-  const tipo = p.includes('ANUAL') ? 'Anual'
-             : p.includes('TRIMESTRAL') ? 'Trimestral'
-             : p.includes('RECORRENTE') ? 'Recorrente'
-             : p.includes('ESPECIAL') ? 'Especial'
-             : p.includes('MENSAL') ? 'Mensal'
-             : p.includes('PRIME') ? 'Prime' : '';
-  // Extrair valor (ex: 149,90 ou 139.90)
-  const valM = plano.match(/(\d{2,3}[.,]\d{2})/);
-  const val  = valM ? ' R$' + valM[1] : '';
-  // Online?
-  const online = p.includes('ONLINE') || p.includes('SITE') ? ' 🌐' : '';
-  return (tipo + val + online) || plano.slice(0, 22) + '…';
-}
-
+// ── Ranking Vendedores ────────────────────────────────────
 function cntRenderRanking(dados) {
-  const ordem = document.getElementById('cnt-sel-ordem')?.value || 'fat';
-
-  const vMap = {};
-  dados.forEach(r => {
-    if (!vMap[r.vendedor]) vMap[r.vendedor] = { qtd: 0, fat: 0, planos: {} };
-    vMap[r.vendedor].qtd += 1;
-    vMap[r.vendedor].fat += r.valor;
-    vMap[r.vendedor].planos[r.plano] = (vMap[r.vendedor].planos[r.plano] || 0) + 1;
+  const vMap={};
+  dados.forEach(r=>{
+    if(!vMap[r.vendedor]) vMap[r.vendedor]={qtd:0,fat:0,dias:new Set()};
+    vMap[r.vendedor].qtd++;
+    vMap[r.vendedor].fat+=r.valor;
+    // Dias únicos com venda (usando dateStr YYYY-MM-DD)
+    if(r.dt) vMap[r.vendedor].dias.add(r.dt.toISOString().slice(0,10));
   });
+  const sorted=Object.entries(vMap).sort((a,b)=>b[1].fat-a[1].fat);
+  const maxFat=sorted[0]?.[1].fat||1;
 
-  const sorted = Object.entries(vMap).sort((a, b) => b[1][ordem] - a[1][ordem]);
-  const maxFat = sorted[0]?.[1].fat || 1;
+  document.getElementById('cnt-ranking-badge').textContent=`${sorted.length} vendedores`;
 
-  const badge = document.getElementById('cnt-ranking-badge');
-  if (badge) badge.textContent = `${sorted.length} vendedores`;
-
-  const wrap = document.getElementById('cnt-ranking-wrap');
-  if (!wrap) return;
-
-  const thead = `<tr>
-    <th style="width:32px;padding:10px 8px">#</th>
-    <th style="padding:10px 12px;min-width:120px">Vendedor</th>
-    <th style="text-align:center;width:70px;padding:10px 8px">Qtd</th>
-    <th style="padding:10px 12px;min-width:160px">Plano Mais Vendido</th>
-    <th style="text-align:right;width:130px;padding:10px 12px">Faturamento</th>
-    <th style="width:130px;padding:10px 12px">Participação</th>
+  const thead=`<tr>
+    <th style="width:32px">#</th>
+    <th>Vendedor</th>
+    <th style="text-align:center;width:70px">Contratos</th>
+    <th style="text-align:center;width:80px">Dias c/ Venda</th>
+    <th style="text-align:right;width:140px">Faturamento</th>
+    <th style="min-width:110px">Participação</th>
   </tr>`;
 
-  const tbody = sorted.map(([nome, d], i) => {
-    const topEntry = Object.entries(d.planos).sort((a,b) => b[1]-a[1])[0];
-    const topPlano = topEntry ? topEntry[0] : '—';
-    const topQtd   = topEntry ? topEntry[1] : 0;
-    const pct = (d.fat / maxFat * 100).toFixed(0);
-    const corPct = i === 0 ? '#22c55e' : i === 1 ? '#f59e0b' : 'var(--accent)';
-    const nomeAbrev = cntNomeCurto(topPlano);
+  const tbody=sorted.map(([nome,d],i)=>{
+    const pct=(d.fat/maxFat*100).toFixed(0);
+    const cor=i===0?'#22c55e':i===1?'#f59e0b':'var(--accent)';
+    const mediaVendDia = d.dias.size ? (d.qtd/d.dias.size).toFixed(1) : '—';
     return `<tr style="border-bottom:1px solid var(--border)">
-      <td style="padding:10px 8px;color:var(--text-light);font-weight:700;font-size:12px;text-align:center">${i+1}</td>
+      <td style="padding:10px 8px;text-align:center;font-weight:800;color:var(--text-light)">${i+1}</td>
       <td style="padding:10px 12px">
-        <div style="font-weight:700;font-size:13px;white-space:nowrap">${nome}</div>
-        <div style="font-size:10px;color:var(--text-light);margin-top:2px">${fmtBRL(d.fat/d.qtd)} ticket médio</div>
+        <div style="font-weight:700">${nome}</div>
+        <div style="font-size:10px;color:var(--text-light);margin-top:1px">${mediaVendDia} contratos/dia</div>
       </td>
-      <td style="padding:10px 8px;font-family:var(--mono);text-align:center;font-size:15px;font-weight:800">${d.qtd}</td>
-      <td style="padding:10px 12px">
-        <div style="font-size:11px;font-weight:600;color:var(--text-dark)" title="${topPlano}">${nomeAbrev}</div>
-        <div style="font-size:10px;color:var(--text-light);margin-top:1px">${topQtd}× vendido</div>
+      <td style="padding:10px 8px;font-family:var(--mono);text-align:center;font-weight:800">${d.qtd}</td>
+      <td style="padding:10px 8px;font-family:var(--mono);text-align:center;color:var(--accent)">
+        <span style="font-weight:700">${d.dias.size}</span>
+        <span style="font-size:10px;color:var(--text-light);margin-left:2px">dias</span>
       </td>
-      <td style="padding:10px 12px;font-family:var(--mono);font-weight:800;color:var(--green);text-align:right;font-size:13px;white-space:nowrap">${fmtBRL(d.fat)}</td>
+      <td style="padding:10px 12px;font-family:var(--mono);font-weight:800;color:var(--green);text-align:right;white-space:nowrap">${fmtBRL(d.fat)}</td>
       <td style="padding:10px 12px">
         <div style="display:flex;align-items:center;gap:6px">
-          <div style="flex:1;background:var(--border);border-radius:99px;height:6px;overflow:hidden;min-width:60px">
-            <div style="width:${pct}%;height:100%;background:${corPct};border-radius:99px"></div>
+          <div style="flex:1;background:var(--border);border-radius:99px;height:6px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${cor};border-radius:99px"></div>
           </div>
-          <span style="font-size:11px;font-weight:700;color:${corPct};min-width:30px;text-align:right">${pct}%</span>
+          <span style="font-size:11px;font-weight:700;color:${cor};min-width:28px">${pct}%</span>
         </div>
       </td>
     </tr>`;
   }).join('');
 
-  wrap.innerHTML = `<div class="table-wrapper">
-    <table style="table-layout:fixed;width:100%">
-      <thead>${thead}</thead>
-      <tbody>${tbody}</tbody>
-    </table>
-  </div>`;
+  const wrap=document.getElementById('cnt-ranking-wrap');
+  if(wrap) wrap.innerHTML=`<div class="table-wrapper">
+    <table><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+}
+
+// ── Tabela Upsell ─────────────────────────────────────────
+
+// ── Ranking de Planos ─────────────────────────────────────
+function cntRenderRankingPlanos(dados) {
+  const pMap={};
+  dados.forEach(r=>{
+    if(!pMap[r.plano]) pMap[r.plano]={qtd:0,fat:0};
+    pMap[r.plano].qtd++;
+    pMap[r.plano].fat+=r.valor;
+  });
+
+  const sorted=Object.entries(pMap).sort((a,b)=>b[1].qtd-a[1].qtd);
+  const panel=document.getElementById('cnt-planos-panel');
+  const badge=document.getElementById('cnt-planos-badge');
+  const wrap =document.getElementById('cnt-planos-wrap');
+  if(!panel||!wrap) return;
+
+  panel.style.display='block';
+  if(badge) badge.textContent=`${sorted.length} planos`;
+
+  const thead=`<tr>
+    <th>#</th>
+    <th>Plano</th>
+    <th style="text-align:center;width:100px">Qtd Vendida</th>
+    <th style="text-align:right;width:160px">Faturamento (R$)</th>
+  </tr>`;
+
+  const maxQtd=sorted[0]?.[1].qtd||1;
+  const tbody=sorted.map(([plano,d],i)=>{
+    const bar=(d.qtd/maxQtd*100).toFixed(0);
+    const cor=i===0?'#7c3aed':i===1?'#1e6fe8':i===2?'#22c55e':'var(--text-light)';
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:9px 10px;text-align:center;font-weight:800;color:${cor};font-size:13px">${i+1}</td>
+      <td style="padding:9px 14px;font-weight:600;font-size:12px">
+        <div>${plano}</div>
+        <div style="margin-top:3px;height:4px;border-radius:99px;background:var(--border);overflow:hidden">
+          <div style="width:${bar}%;height:100%;background:${cor};border-radius:99px"></div>
+        </div>
+      </td>
+      <td style="padding:9px 10px;font-family:var(--mono);font-weight:800;text-align:center;font-size:14px">${d.qtd}</td>
+      <td style="padding:9px 14px;font-family:var(--mono);color:var(--green);text-align:right;font-weight:700">${fmtBRL(d.fat)}</td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML=`<div class="table-wrapper">
+    <table><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
+}
+
+function cntRenderUpsell(upsell) {
+  const wrap=document.getElementById('cnt-upsell-wrap');
+  if(!wrap) return;
+  if(!upsell.length){ wrap.innerHTML='<p style="color:var(--text-light);padding:16px">Nenhuma oportunidade no período filtrado.</p>'; return; }
+
+  // Agrupar por plano
+  const pMap={};
+  upsell.forEach(r=>{
+    if(!pMap[r.plano]) pMap[r.plano]={qtd:0,fat:0};
+    pMap[r.plano].qtd++; pMap[r.plano].fat+=r.valor;
+  });
+  const sorted=Object.entries(pMap).sort((a,b)=>b[1].qtd-a[1].qtd);
+
+  const thead=`<tr>
+    <th>Plano (Mensal)</th>
+    <th style="text-align:center">Contratos</th>
+    <th style="text-align:right">Faturamento</th>
+    <th>Oportunidade</th>
+  </tr>`;
+  const tbody=sorted.map(([plano,d])=>`<tr>
+    <td style="padding:9px 14px;font-weight:600">${plano}</td>
+    <td style="padding:9px 14px;font-family:var(--mono);text-align:center;font-weight:700">${d.qtd}</td>
+    <td style="padding:9px 14px;font-family:var(--mono);color:var(--green);text-align:right;font-weight:700">${fmtBRL(d.fat)}</td>
+    <td style="padding:9px 14px">
+      <span style="font-size:11px;background:#f59e0b22;color:#b45309;border-radius:6px;
+        padding:3px 8px;font-weight:600">💡 Migrar para Anual ou Trimestral</span>
+    </td>
+  </tr>`).join('');
+
+  wrap.innerHTML=`<div class="table-wrapper">
+    <table><thead>${thead}</thead><tbody>${tbody}</tbody></table></div>`;
 }
 
 
@@ -6021,6 +6119,13 @@ async function loadPagamentos(force) {
     document.getElementById('pag-badge').style.display  = 'inline-block';
     document.getElementById('pag-empty').style.display  = 'none';
 
+    // Event listener no toggle — re-renderiza instantaneamente
+    const togEl = document.getElementById('pag-toggle-stone');
+    if (togEl && !togEl._listenerAdded) {
+      togEl.addEventListener('change', () => renderPagamentos());
+      togEl._listenerAdded = true;
+    }
+
     pagPopularFiltros();
     renderPagamentos();
     if (force) toast(`Recebimentos: ${pagData.length} registros`, '💳');
@@ -6075,8 +6180,17 @@ function pagGetFiltered() {
 
 // ── Render principal ──────────────────────────────────────
 function renderPagamentos() {
-  const dados = pagGetFiltered();
-  if (!dados.length) return;
+  const rawDados = pagGetFiltered();
+  if (!rawDados.length) return;
+
+  // Se toggle ativo: normalizar forma removendo " SEM STONE" → agrupa automaticamente
+  const validarSS = document.getElementById('pag-toggle-stone')?.checked || false;
+  const dados = validarSS
+    ? rawDados.map(r => ({
+        ...r,
+        forma: r.forma.replace(/\s*SEM STONE\s*/i, '').trim()
+      }))
+    : rawDados;
 
   // Mostrar painéis
   ['pag-kpis','pag-charts','pag-table-panel'].forEach(id => {
@@ -6086,7 +6200,7 @@ function renderPagamentos() {
 
   const total = dados.reduce((s,r) => s+r.valor, 0);
 
-  // Agrupamento por forma
+  // Agrupamento por forma (com dados já normalizados)
   const formaMap = {};
   dados.forEach(r => { formaMap[r.forma] = (formaMap[r.forma]||0) + r.valor; });
 
@@ -6160,21 +6274,31 @@ function pagRenderDonut(formaMap, total) {
 function pagRenderStone(dados) {
   if (pagChartStone) pagChartStone.destroy();
   const canvas = document.getElementById('pag-chart-stone'); if (!canvas) return;
+  const validarSemStone = document.getElementById('pag-toggle-stone')?.checked || false;
 
-  // Filtrar apenas linhas com "Cartão"
-  const cartoes = dados.filter(r => r.forma.toLowerCase().includes('cartão'));
+  // Normalizar forma: remove acentos e compara flexível
+  const normForma = f => String(f||'').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  const isCartao  = r => normForma(r.forma).includes('cart');
+  const isCred    = r => isCartao(r) && normForma(r.forma).includes('cr');
+  const isDeb     = r => isCartao(r) && normForma(r.forma).includes('deb');
+  const isSemSt   = r => normForma(r.forma).includes('sem stone');
 
-  // Eixo X: Crédito e Débito
-  const tipos = ['Cartão Crédito', 'Cartão Débito'];
+  const cartoes = dados.filter(r => isCartao(r));
+  const tipos   = ['Cartão Crédito', 'Cartão Débito'];
 
-  // Dataset 1: Validado (SEM "SEM STONE")
-  const validado = tipos.map(t =>
-    cartoes.filter(r => r.forma === t).reduce((s,r)=>s+r.valor, 0)
-  );
-  // Dataset 2: Risco (COM "SEM STONE")
-  const risco = tipos.map(t =>
-    cartoes.filter(r => r.forma === t + ' SEM STONE').reduce((s,r)=>s+r.valor, 0)
-  );
+  // Validado: sem stone normal + (se toggle) com stone
+  const validado = [
+    cartoes.filter(r => isCred(r) && !isSemSt(r)).reduce((s,r)=>s+r.valor,0)
+    + (validarSemStone ? cartoes.filter(r=>isCred(r)&&isSemSt(r)).reduce((s,r)=>s+r.valor,0) : 0),
+    cartoes.filter(r => isDeb(r) && !isSemSt(r)).reduce((s,r)=>s+r.valor,0)
+    + (validarSemStone ? cartoes.filter(r=>isDeb(r)&&isSemSt(r)).reduce((s,r)=>s+r.valor,0) : 0),
+  ];
+  // Risco: sem stone (zerado se toggle ativo)
+  const risco = validarSemStone ? [0, 0] : [
+    cartoes.filter(r=>isCred(r)&&isSemSt(r)).reduce((s,r)=>s+r.valor,0),
+    cartoes.filter(r=>isDeb(r) &&isSemSt(r)).reduce((s,r)=>s+r.valor,0),
+  ];
 
   pagChartStone = new Chart(canvas, {
     type: 'bar',
