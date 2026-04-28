@@ -5073,7 +5073,7 @@ function srvRender() {
   setK('srv-kpi-leads',  leadsQtd + ' diárias', fmtBRL(leadsFat) + ' — oportunidades de conversão');
 
   document.getElementById('srv-sub').textContent =
-    qtd + ' servicos · ' + fmtBRL(total) + ' · ' +
+    qtdTotal + ' serviços · ' + fmtBRL(total) + ' · ' +
     (srvAnoSel||'todos os anos') + (srvMesSel?' · '+srvMesSel:'');
 
   srvRenderDonut(dados);
