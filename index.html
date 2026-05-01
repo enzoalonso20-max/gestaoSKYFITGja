@@ -87,126 +87,52 @@
   }
   #dark-toggle:hover { background: rgba(255,255,255,.16); }
 
-  /* ══════════════════════════════════════════
-     KAIZEN LOADING SCREEN — Tech Dark
-  ══════════════════════════════════════════ */
-  #kaizen-loading {
-    position:fixed; inset:0; z-index:99999;
-    background:#030b14;
-    display:flex; align-items:center; justify-content:center;
-    transition:opacity .6s ease;
-    overflow:hidden;
-  }
-  #kaizen-loading.fade-out { opacity:0; pointer-events:none; }
-
-  /* Grid de fundo */
-  .kz-grid {
-    position:absolute; inset:0; pointer-events:none;
-    background-image:
-      linear-gradient(rgba(0,245,196,.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(0,245,196,.04) 1px, transparent 1px);
-    background-size:48px 48px;
-    animation:kz-grid-drift 20s linear infinite;
-  }
+  /* Kaizen Loading */
+  #kaizen-loading { position:fixed;inset:0;z-index:99999;background:#030b14;display:flex;align-items:center;justify-content:center;transition:opacity .6s ease;overflow:hidden; }
+  #kaizen-loading.fade-out { opacity:0;pointer-events:none; }
+  .kz-grid { position:absolute;inset:0;pointer-events:none;background-image:linear-gradient(rgba(0,245,196,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,245,196,.04) 1px,transparent 1px);background-size:48px 48px;animation:kz-grid-drift 20s linear infinite; }
   @keyframes kz-grid-drift { from{background-position:0 0} to{background-position:48px 48px} }
-
-  /* Linha de scan */
-  .kz-scanline {
-    position:absolute; left:0; right:0; height:2px; pointer-events:none;
-    background:linear-gradient(90deg, transparent, rgba(0,245,196,.4), transparent);
-    animation:kz-scan 4s linear infinite;
-  }
+  .kz-scanline { position:absolute;left:0;right:0;height:2px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(0,245,196,.4),transparent);animation:kz-scan 4s linear infinite; }
   @keyframes kz-scan { 0%{top:-2px} 100%{top:100vh} }
-
-  .kz-content {
-    position:relative; z-index:2;
-    display:flex; flex-direction:column; align-items:center; gap:20px;
-  }
-
-  /* Logo SVG */
-  .kz-logo-svg { width:110px; height:110px; filter:drop-shadow(0 0 18px rgba(0,245,196,.4)); }
-  .kz-hex-outer { animation:kz-spin 12s linear infinite; transform-origin:60px 60px; }
-  .kz-hex-inner { animation:kz-spin 8s linear infinite reverse; transform-origin:60px 60px; }
+  .kz-content { position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:18px; }
+  .kz-logo-svg { width:100px;height:100px;filter:drop-shadow(0 0 18px rgba(0,245,196,.4)); }
+  .kz-hex-outer { animation:kz-spin 12s linear infinite;transform-origin:60px 60px; }
+  .kz-hex-inner { animation:kz-spin 8s linear infinite reverse;transform-origin:60px 60px; }
   .kz-letter { animation:kz-letter-glow 2s ease-in-out infinite alternate; }
   @keyframes kz-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-  @keyframes kz-letter-glow {
-    from { filter:drop-shadow(0 0 4px rgba(0,245,196,.3)); }
-    to   { filter:drop-shadow(0 0 16px rgba(0,245,196,.9)); }
-  }
-
-  /* Marca */
-  .kz-brand { text-align:center; letter-spacing:.05em; }
-  .kz-brand-main {
-    font-family:'Courier New',monospace;
-    font-size:32px; font-weight:900; letter-spacing:.3em;
-    background:linear-gradient(90deg, #00f5c4, #0099ff, #00f5c4);
-    background-size:200%;
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-    animation:kz-text-flow 3s linear infinite;
-  }
+  @keyframes kz-letter-glow { from{filter:drop-shadow(0 0 4px rgba(0,245,196,.3))} to{filter:drop-shadow(0 0 16px rgba(0,245,196,.9))} }
+  .kz-brand { text-align:center; }
+  .kz-brand-main { font-family:'Courier New',monospace;font-size:28px;font-weight:900;letter-spacing:.3em;background:linear-gradient(90deg,#00f5c4,#0099ff,#00f5c4);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:kz-text-flow 3s linear infinite; }
   @keyframes kz-text-flow { 0%{background-position:0%} 100%{background-position:200%} }
-  .kz-brand-sub {
-    font-family:'Courier New',monospace;
-    font-size:11px; letter-spacing:.35em; color:rgba(0,245,196,.55);
-    margin-top:4px; text-transform:uppercase;
-  }
-  .kz-by { color:rgba(255,255,255,.3); font-style:italic; letter-spacing:.05em; }
-
-  /* Tagline / status */
-  .kz-tagline {
-    font-family:'Courier New',monospace; font-size:12px;
-    color:rgba(0,245,196,.6); letter-spacing:.1em;
-    min-height:18px;
-  }
-  .kz-tagline::before { content:'> '; color:#0099ff; }
-
-  /* Barra de progresso */
-  .kz-progress-wrap { display:flex; align-items:center; gap:10px; width:320px; }
-  .kz-progress-track {
-    flex:1; height:3px; background:rgba(0,245,196,.1);
-    border-radius:0; position:relative; overflow:visible;
-  }
-  .kz-progress-fill {
-    height:100%; width:0%; transition:width .5s ease;
-    background:linear-gradient(90deg,#00f5c4,#0099ff);
-  }
-  .kz-progress-glow {
-    position:absolute; top:-3px; width:8px; height:8px;
-    border-radius:50%; background:#00f5c4; right:0;
-    box-shadow:0 0 12px 4px rgba(0,245,196,.7);
-    transition:right .5s ease;
-  }
-  .kz-progress-label {
-    font-family:'Courier New',monospace; font-size:11px;
-    color:rgba(0,245,196,.7); min-width:32px; text-align:right;
-  }
-
-  /* Status list */
-  .kz-status-list {
-    display:flex; flex-direction:column; gap:8px;
-    width:320px;
-  }
-  .kz-status-item {
-    display:flex; align-items:center; gap:10px;
-    font-family:'Courier New',monospace; font-size:11px;
-    color:rgba(255,255,255,.35);
-  }
-  .kz-dot {
-    width:6px; height:6px; border-radius:50%; flex-shrink:0;
-    background:rgba(0,245,196,.2); transition:all .4s;
-  }
-  .kz-status-item.done .kz-dot {
-    background:#00f5c4; box-shadow:0 0 8px rgba(0,245,196,.8);
-  }
+  .kz-brand-sub { font-family:'Courier New',monospace;font-size:10px;letter-spacing:.3em;color:rgba(0,245,196,.55);margin-top:3px;text-transform:uppercase; }
+  .kz-by { color:rgba(255,255,255,.3);font-style:italic; }
+  .kz-tagline { font-family:'Courier New',monospace;font-size:11px;color:rgba(0,245,196,.6);letter-spacing:.1em;min-height:16px; }
+  .kz-tagline::before { content:'> ';color:#0099ff; }
+  .kz-progress-wrap { display:flex;align-items:center;gap:10px;width:300px; }
+  .kz-progress-track { flex:1;height:3px;background:rgba(0,245,196,.1);position:relative;overflow:visible; }
+  .kz-progress-fill { height:100%;width:0%;transition:width .5s ease;background:linear-gradient(90deg,#00f5c4,#0099ff); }
+  .kz-progress-glow { position:absolute;top:-3px;width:8px;height:8px;border-radius:50%;background:#00f5c4;right:0;box-shadow:0 0 12px 4px rgba(0,245,196,.7);transition:right .5s ease; }
+  .kz-progress-label { font-family:'Courier New',monospace;font-size:11px;color:rgba(0,245,196,.7);min-width:32px;text-align:right; }
+  .kz-status-list { display:flex;flex-direction:column;gap:6px;width:300px; }
+  .kz-status-item { display:flex;align-items:center;gap:8px;font-family:'Courier New',monospace;font-size:10px;color:rgba(255,255,255,.3); }
+  .kz-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0;background:rgba(0,245,196,.2);transition:all .4s; }
+  .kz-status-item.done .kz-dot { background:#00f5c4;box-shadow:0 0 8px rgba(0,245,196,.8); }
   .kz-status-item.done { color:rgba(0,245,196,.8); }
-  .kz-status-item.loading .kz-dot {
-    background:#0099ff; animation:kz-blink .6s ease-in-out infinite;
-  }
+  .kz-status-item.loading .kz-dot { background:#0099ff;animation:kz-blink .6s ease-in-out infinite; }
   .kz-status-item.loading { color:rgba(0,153,255,.9); }
   @keyframes kz-blink { 0%,100%{opacity:1} 50%{opacity:.2} }
-  .kz-status-val { margin-left:auto; opacity:.5; }
-  .kz-status-item.done .kz-status-val { opacity:1; }
-  .kz-status-item.loading .kz-status-val { opacity:1; }
+  .kz-status-val { margin-left:auto;opacity:.5; }
+  .kz-status-item.done .kz-status-val,.kz-status-item.loading .kz-status-val { opacity:1; }
+
+  /* Mobile Vendas Sheet */
+  .mob-vnd-sheet { display:none;position:fixed;bottom:56px;left:0;right:0;z-index:900;background:var(--sidebar-bg);border-top:2px solid rgba(255,255,255,.1);padding:8px 0;border-radius:16px 16px 0 0;animation:slideUp .22s ease; }
+  .mob-vnd-sheet.open { display:block; }
+  @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+  .mob-vnd-item { display:flex;align-items:center;gap:10px;padding:13px 20px;color:var(--text-mid);font-size:14px;font-weight:600;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.05); }
+  .mob-vnd-item:last-child { border-bottom:none; }
+  .mob-vnd-item:hover,.mob-vnd-item.active { color:#fff;background:rgba(255,255,255,.06); }
+  .mob-vnd-dot { width:7px;height:7px;border-radius:50%;background:#1e6fe8;flex-shrink:0; }
+  @media (min-width:769px) { .mob-vnd-sheet { display:none !important; } }
 
   html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text-dark); font-size: 15px; }
   .app { display: flex; height: 100vh; overflow: hidden; }
@@ -892,55 +818,25 @@
 </head>
 <body>
 <div id="kaizen-loading">
-  <!-- Grid lines background -->
   <div class="kz-grid"></div>
-  <!-- Scan line -->
   <div class="kz-scanline"></div>
-
   <div class="kz-content">
-    <!-- Logo SVG -->
     <svg class="kz-logo-svg" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-      <!-- Hexágono externo -->
-      <polygon points="60,4 112,32 112,88 60,116 8,88 8,32"
-        fill="none" stroke="url(#kzGrad)" stroke-width="2" opacity="0.8"
-        class="kz-hex-outer"/>
-      <!-- Hexágono interno -->
-      <polygon points="60,18 100,40 100,80 60,102 20,80 20,40"
-        fill="none" stroke="url(#kzGrad2)" stroke-width="1" opacity="0.4"
-        class="kz-hex-inner"/>
-      <!-- K central estilizado -->
+      <polygon points="60,4 112,32 112,88 60,116 8,88 8,32" fill="none" stroke="url(#kzGrad)" stroke-width="2" opacity="0.8" class="kz-hex-outer"/>
+      <polygon points="60,18 100,40 100,80 60,102 20,80 20,40" fill="none" stroke="url(#kzGrad2)" stroke-width="1" opacity="0.4" class="kz-hex-inner"/>
       <g fill="none" stroke="url(#kzGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="kz-letter">
-        <line x1="46" y1="36" x2="46" y2="84"/>
-        <line x1="46" y1="60" x2="74" y2="36"/>
-        <line x1="46" y1="60" x2="74" y2="84"/>
+        <line x1="46" y1="36" x2="46" y2="84"/><line x1="46" y1="60" x2="74" y2="36"/><line x1="46" y1="60" x2="74" y2="84"/>
       </g>
-      <!-- Ângulo decorativo -->
-      <polyline points="52,60 60,48 68,60 60,72 52,60"
-        fill="url(#kzFill)" opacity="0.15"/>
       <defs>
-        <linearGradient id="kzGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#00f5c4"/>
-          <stop offset="100%" stop-color="#0099ff"/>
-        </linearGradient>
-        <linearGradient id="kzGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stop-color="#0099ff"/>
-          <stop offset="100%" stop-color="#00f5c4"/>
-        </linearGradient>
-        <linearGradient id="kzFill" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#00f5c4"/>
-          <stop offset="100%" stop-color="#0099ff"/>
-        </linearGradient>
+        <linearGradient id="kzGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00f5c4"/><stop offset="100%" stop-color="#0099ff"/></linearGradient>
+        <linearGradient id="kzGrad2" x1="100%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#0099ff"/><stop offset="100%" stop-color="#00f5c4"/></linearGradient>
       </defs>
     </svg>
-
     <div class="kz-brand">
       <div class="kz-brand-main">KAIZEN</div>
       <div class="kz-brand-sub">PERFORMANCE <span class="kz-by">by</span> KANAWA</div>
     </div>
-
-    <div class="kz-tagline" id="loading-msg">Sincronizando sistemas…</div>
-
-    <!-- Barra de progresso tech -->
+    <div class="kz-tagline" id="loading-msg">Sincronizando sistemas...</div>
     <div class="kz-progress-wrap">
       <div class="kz-progress-track">
         <div class="kz-progress-fill" id="loading-bar"></div>
@@ -948,29 +844,14 @@
       </div>
       <div class="kz-progress-label" id="kz-prog-pct">0%</div>
     </div>
-
-    <!-- Status items -->
     <div class="kz-status-list">
-      <div class="kz-status-item" id="kzs-fat">
-        <span class="kz-dot"></span>
-        <span>Base de Faturamento</span>
-        <span class="kz-status-val">aguardando</span>
-      </div>
-      <div class="kz-status-item" id="kzs-agg">
-        <span class="kz-dot"></span>
-        <span>Agregadores & Check-ins</span>
-        <span class="kz-status-val">aguardando</span>
-      </div>
-      <div class="kz-status-item" id="kzs-fin">
-        <span class="kz-dot"></span>
-        <span>Base de Despesas</span>
-        <span class="kz-status-val">aguardando</span>
-      </div>
-      <div class="kz-status-item" id="kzs-pag">
-        <span class="kz-dot"></span>
-        <span>Formas de Recebimento</span>
-        <span class="kz-status-val">aguardando</span>
-      </div>
+      <div class="kz-status-item" id="kzs-fat"><span class="kz-dot"></span><span>Base de Faturamento</span><span class="kz-status-val">aguardando</span></div>
+      <div class="kz-status-item" id="kzs-agg"><span class="kz-dot"></span><span>Agregadores e Check-ins</span><span class="kz-status-val">aguardando</span></div>
+      <div class="kz-status-item" id="kzs-fin"><span class="kz-dot"></span><span>Base de Despesas</span><span class="kz-status-val">aguardando</span></div>
+      <div class="kz-status-item" id="kzs-pag"><span class="kz-dot"></span><span>Formas de Recebimento</span><span class="kz-status-val">aguardando</span></div>
+      <div class="kz-status-item" id="kzs-cnt"><span class="kz-dot"></span><span>Contratos (VD_Contratos)</span><span class="kz-status-val">aguardando</span></div>
+      <div class="kz-status-item" id="kzs-srv"><span class="kz-dot"></span><span>Servicos (VD_Servicos)</span><span class="kz-status-val">aguardando</span></div>
+      <div class="kz-status-item" id="kzs-prd"><span class="kz-dot"></span><span>Produtos (VD_Produtos)</span><span class="kz-status-val">aguardando</span></div>
     </div>
   </div>
 </div>
@@ -1052,11 +933,9 @@
 
     <div class="topbar-right">
       <button onclick="location.reload()" title="Atualizar dados"
-        style="background:none;border:1px solid rgba(255,255,255,.2);border-radius:8px;
-               color:rgba(255,255,255,.8);cursor:pointer;font-size:15px;padding:4px 10px;
-               margin-right:8px;transition:all .2s;line-height:1"
-        onmouseover="this.style.background='rgba(255,255,255,.12)'"
-        onmouseout="this.style.background='none'">↻ Atualizar</button>
+        style="background:none;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.8);cursor:pointer;font-size:14px;padding:5px 10px;margin-right:6px;transition:all .2s">&#8635; Atualizar</button>
+      <button id="dark-toggle-top" onclick="toggleDark()" title="Modo escuro"
+        style="background:none;border:1px solid rgba(255,255,255,.2);border-radius:8px;color:rgba(255,255,255,.8);cursor:pointer;font-size:16px;padding:4px 9px;margin-right:6px;transition:all .2s">&#127769;</button>
             <div class="topbar-date" id="topbar-date"></div>
       <div class="avatar">SG</div>
     </div>
@@ -1140,6 +1019,153 @@
       </div>
     </div>
 
+    <!-- ════ ABA: AGREGADORES ════ -->
+ab-agregadores">
+      <div class="section-header">
+        <div>
+          <div class="section-title">🔗 Agregadores</div>
+          <div class="section-sub" id="agg-sub">Carregando dados do Google Sheets…</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-secondary" onclick="loadAgregadores(true)">🔄 Atualizar</button>
+          <button class="btn btn-primary" id="agg-btn-pdf" onclick="exportarAgregadoresPDF()" style="display:none">📄 Baixar PDF</button>
+          <span class="badge badge-green" id="agg-badge" style="display:none">● Google Sheets</span>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="panel" id="agg-filtros" style="display:none">
+        <div class="panel-body" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label class="filter-label">Ano</label>
+            <select id="agg-sel-ano" onchange="renderAgregadores()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label class="filter-label">Mês</label>
+            <select id="agg-sel-mes" onchange="renderAgregadores()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <label class="filter-label">Agregador</label>
+            <select id="agg-sel-agr" onchange="renderAgregadores()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" onclick="resetAggFiltros()">🔄 Limpar</button>
+        </div>
+      </div>
+
+      <!-- KPIs estratégicos -->
+      <div class="cards-grid" id="agg-kpis" style="display:none">
+        <div class="kpi-card green">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-label">Faturamento Total</div>
+          <div class="kpi-value" id="agg-fat">—</div>
+          <div class="kpi-delta" id="agg-fat-sub"></div>
+          <div class="progress-bar"><div class="progress-fill" id="agg-fat-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-label">Valor Médio / Visita</div>
+          <div class="kpi-value" id="agg-vmv">—</div>
+          <div class="kpi-delta" id="agg-vmv-sub"></div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-icon">🎟️</div>
+          <div class="kpi-label">Ticket Médio Mensal</div>
+          <div class="kpi-value" id="agg-tmm">—</div>
+          <div class="kpi-delta" id="agg-tmm-sub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">🏃</div>
+          <div class="kpi-label">Frequência Média</div>
+          <div class="kpi-value" id="agg-freq">—</div>
+          <div class="kpi-delta" id="agg-freq-sub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-label">Usuários Únicos</div>
+          <div class="kpi-value" id="agg-users">—</div>
+          <div class="kpi-delta" id="agg-users-sub"></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">📋</div>
+          <div class="kpi-label">Check-ins</div>
+          <div class="kpi-value" id="agg-checkins">—</div>
+          <div class="kpi-delta" id="agg-checkins-sub"></div>
+        </div>
+        <div class="kpi-card" id="agg-mom-card">
+          <div class="kpi-icon">📈</div>
+          <div class="kpi-label">Crescimento MoM</div>
+          <div class="kpi-value" id="agg-mom">—</div>
+          <div class="kpi-delta" id="agg-mom-sub"></div>
+        </div>
+      </div>
+
+      <!-- Gráficos -->
+      <div class="chart-grid" id="agg-charts-1" style="display:none">
+        <div class="panel" style="grid-column:1/-1">
+          <div class="panel-header"><span class="panel-title">📈 Evolução do Faturamento por Agregador</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="chart-agg-fat"></canvas></div></div>
+        </div>
+      </div>
+      <div class="chart-grid" id="agg-charts-2" style="display:none">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">🏃 Check-ins por Mês</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-agg-checkins"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">💰 Valor Médio / Visita</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-agg-vmv"></canvas></div></div>
+        </div>
+      </div>
+      <div class="chart-grid" id="agg-charts-3" style="display:none">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">🍩 Participação por Agregador</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-agg-pie"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">🎟️ Ticket Médio Mensal</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-agg-ticket"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- Resumo estratégico automático -->
+      <div class="panel" id="agg-resumo-panel" style="display:none">
+        <div class="panel-header"><span class="panel-title">🧠 Resumo Estratégico</span></div>
+        <div class="panel-body" id="agg-resumo-body" style="font-size:14px;line-height:1.7;color:var(--text-dark)"></div>
+      </div>
+
+      <!-- Tabela detalhada -->
+      <div class="panel" id="agg-table-panel" style="display:none">
+        <div class="panel-header">
+          <span class="panel-title">📋 Dados Detalhados</span>
+          <span class="badge badge-green" id="agg-table-badge">● Google Sheets</span>
+        </div>
+        <div class="panel-body" id="agg-table-wrap"></div>
+      </div>
+
+      <!-- Empty state -->
+      <div id="agg-empty" class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">🔗</div>
+        <div class="fin-ph-title">Agregadores</div>
+        <div class="fin-ph-desc">Os dados serão carregados automaticamente via Google Sheets (aba Agregadores)</div>
+        <div class="feature-chips" style="justify-content:center;margin-top:16px">
+          <span class="chip">💰 Valor médio por visita</span>
+          <span class="chip">🎟️ Ticket médio mensal</span>
+          <span class="chip">🏃 Frequência média</span>
+          <span class="chip">📈 Crescimento MoM</span>
+          <span class="chip">🔍 Filtro por ano · mês · agregador</span>
+        </div>
+      </div>
+    </div>
+    <!-- ════ ABA: FINANCEIRO ════ -->
+
+    <!-- ════ ABA: AGREGADORES ════ -->
+    <div class="tab-pane" id="t
     <!-- ════ ABA: AGREGADORES ════ -->
     <div class="tab-pane" id="tab-agregadores">
       <div class="section-header">
@@ -1283,7 +1309,6 @@
         </div>
       </div>
     </div>
-    <!-- ════ ABA: FINANCEIRO ════ -->
     <!-- ════ ABA: FIN-FATURAMENTO ════ -->
     <div class="tab-pane" id="tab-fin-faturamento">
       <div class="section-header">
@@ -2032,102 +2057,7 @@
         </div>
       </div>
     </div>
-    <!-- ════ ABA: FIN-PAGAMENTOS ════ -->
-    <div class="tab-pane" id="tab-fin-pagamentos">
-      <div class="section-header">
-        <div>
-          <div class="section-title">💳 Formas de Pagamento</div>
-          <div class="section-sub" id="pag-sub">Carregando — BD_Recebimento…</div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn btn-secondary" onclick="loadPagamentos(true)">🔄 Atualizar</button>
-          <span class="badge badge-green" id="pag-badge" style="display:none">● BD_Recebimento</span>
-        </div>
-      </div>
 
-      <!-- Filtros -->
-      <div id="pag-filtros" style="display:none;margin-bottom:16px">
-        <div class="panel">
-          <div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-            <div style="display:flex;flex-direction:column;gap:5px">
-              <label class="filter-label">Ano</label>
-              <div style="display:flex;gap:4px;flex-wrap:wrap" id="pag-anos-btns"></div>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:5px">
-              <label class="filter-label">Mês</label>
-              <div style="display:flex;gap:4px;flex-wrap:wrap" id="pag-meses-btns"></div>
-            </div>
-            <label style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-dark);white-space:nowrap;align-self:flex-end">
-              <input type="checkbox" id="pag-toggle-stone" style="width:16px;height:16px;accent-color:#ef4444;cursor:pointer">
-              🔴 Validar SEM STONE
-            </label>
-            <button class="btn btn-secondary" style="align-self:flex-end" onclick="pagResetFiltros()">↺ Todos</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- KPIs -->
-      <div class="cards-grid" id="pag-kpis" style="display:none">
-        <div class="kpi-card green">
-          <div class="kpi-icon">💰</div>
-          <div class="kpi-label">Total Recebido</div>
-          <div class="kpi-value" id="pag-kpi-total">—</div>
-          <div class="kpi-delta" id="pag-kpi-total-sub"></div>
-          <div class="progress-bar"><div class="progress-fill" id="pag-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div>
-        </div>
-        <div class="kpi-card" style="border:2px solid #ef4444">
-          <div class="kpi-icon">⚠️</div>
-          <div class="kpi-label" style="color:#ef4444;font-weight:700">SEM STONE (Risco)</div>
-          <div class="kpi-value" id="pag-kpi-semstone" style="color:#ef4444">—</div>
-          <div class="kpi-delta" id="pag-kpi-semstone-sub"></div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon">📱</div>
-          <div class="kpi-label">PIX</div>
-          <div class="kpi-value" id="pag-kpi-pix">—</div>
-          <div class="kpi-delta" id="pag-kpi-pix-sub"></div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon">💵</div>
-          <div class="kpi-label">Dinheiro</div>
-          <div class="kpi-value" id="pag-kpi-din">—</div>
-          <div class="kpi-delta" id="pag-kpi-din-sub"></div>
-        </div>
-      </div>
-
-      <!-- Gráficos -->
-      <div class="chart-grid" id="pag-charts" style="display:none">
-        <div class="panel">
-          <div class="panel-header"><span class="panel-title">🍩 Distribuição por Forma</span></div>
-          <div class="panel-body">
-            <div class="chart-wrap" style="height:280px"><canvas id="pag-chart-donut"></canvas></div>
-          </div>
-        </div>
-        <div class="panel">
-          <div class="panel-header"><span class="panel-title">📊 Cartões: Stone vs SEM STONE</span></div>
-          <div class="panel-body">
-            <div class="chart-wrap" style="height:280px"><canvas id="pag-chart-stone"></canvas></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabela -->
-      <div class="panel" id="pag-table-panel" style="display:none">
-        <div class="panel-header">
-          <span class="panel-title">📋 Resumo por Forma de Pagamento</span>
-          <span class="badge badge-blue" id="pag-table-badge"></span>
-        </div>
-        <div class="panel-body" id="pag-table-wrap"></div>
-      </div>
-
-      <!-- Empty -->
-      <div id="pag-empty" class="fin-placeholder-wrap">
-        <div class="fin-ph-icon">💳</div>
-        <div class="fin-ph-title">Formas de Pagamento</div>
-        <div class="fin-ph-desc">Dados carregados da aba <strong>BD_Recebimento</strong> do Google Sheets.</div>
-      </div>
-    </div>
-    <!-- ════ ABA: RETENCAO ════ -->
     <div class="tab-pane" id="tab-retencao">
       <div class="section-header">
         <div><div class="section-title">🔄 Retenção & Churn</div><div class="section-sub">Quantos alunos ficam e por que saem</div></div>
@@ -2237,127 +2167,139 @@
       </div>
     </div>
 
-    <!-- ════ GERAL ════ -->
+    <!-- GERAL -->
     <div class="tab-pane" id="tab-vnd-geral">
       <div class="section-header">
-        <div>
-          <div class="section-title">📈 Visão Geral de Vendas</div>
-          <div class="section-sub" id="ger-sub">Consolidado — Contratos · Serviços · Produtos · Base_de_Dados</div>
-        </div>
+        <div><div class="section-title">📈 Visão Geral de Vendas</div><div class="section-sub" id="ger-sub">Consolidado</div></div>
+        <button class="btn btn-secondary" onclick="exportarGeralPDF()">📄 Exportar PDF</button>
       </div>
-      <div class="panel" style="margin-bottom:16px">
-        <div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-          <label class="filter-label" style="margin:0">Mês:</label>
-          <div style="display:flex;gap:4px;flex-wrap:wrap" id="ger-meses-btns"></div>
-          <button class="btn btn-secondary" onclick="geralSetMes('')">↺ Todos</button>
-          <span id="ger-aviso" style="font-size:12px;color:var(--text-light);display:none">⚠️ Carregue Contratos, Serviços e Produtos</span>
-        </div>
-      </div>
-      <div style="font-size:11px;font-weight:700;color:var(--text-light);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">📦 Vendas (Contratos · Serviços · Produtos)</div>
+      <div class="panel" style="margin-bottom:16px"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <label class="filter-label" style="margin:0">Mês:</label>
+        <div style="display:flex;gap:4px;flex-wrap:wrap" id="ger-meses-btns"></div>
+        <button class="btn btn-secondary" onclick="geralSetMes('')">↺ Todos</button>
+        <span id="ger-aviso" style="font-size:12px;color:var(--text-light);display:none">⚠️ Carregando...</span>
+      </div></div>
+      <div style="font-size:11px;font-weight:700;color:var(--text-light);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">📦 Vendas</div>
       <div class="cards-grid" id="ger-kpis-vendas">
         <div class="kpi-card"><div class="kpi-icon">🛒</div><div class="kpi-label">Volume Total de Vendas</div><div class="kpi-value" id="ger-kpi-fat">—</div><div class="kpi-delta" id="ger-kpi-fat-sub"></div><div class="progress-bar"><div class="progress-fill" id="ger-prog-fat" style="width:0%;background:linear-gradient(90deg,#7c3aed,#1e6fe8)"></div></div></div>
         <div class="kpi-card"><div class="kpi-icon">🏆</div><div class="kpi-label">Maior Fonte de Venda</div><div class="kpi-value" id="ger-kpi-fonte" style="font-size:20px">—</div><div class="kpi-delta" id="ger-kpi-fonte-sub"></div></div>
         <div class="kpi-card amber"><div class="kpi-icon">🎯</div><div class="kpi-label">Maior Vendedor do Mês</div><div class="kpi-value" id="ger-kpi-top-vend" style="font-size:18px">—</div><div class="kpi-delta" id="ger-kpi-top-vend-sub"></div></div>
-        <div class="kpi-card"><div class="kpi-icon">🏪</div><div class="kpi-label">Vendas Recepção (Balcão)</div><div class="kpi-value" id="ger-kpi-recepcao">—</div><div class="kpi-delta" id="ger-kpi-recepcao-sub"></div></div>
       </div>
-      <div style="font-size:11px;font-weight:700;color:var(--text-light);letter-spacing:.5px;text-transform:uppercase;margin:20px 0 8px">💳 Faturamento Real (EVO · TotalPass · WellHub)</div>
+      <div style="font-size:11px;font-weight:700;color:var(--text-light);letter-spacing:.5px;text-transform:uppercase;margin:20px 0 8px">💳 Faturamento Real</div>
       <div class="cards-grid" id="ger-kpis-fat">
         <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label" id="ger-fat-label">Faturamento Total</div><div class="kpi-value" id="ger-kpi-fat-base">—</div><div class="kpi-delta" id="ger-kpi-fat-base-sub"></div><div class="progress-bar"><div class="progress-fill" id="ger-prog-base" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
         <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-label">Maior Fonte (EVO/TP/WH)</div><div class="kpi-value" id="ger-kpi-fonte-base" style="font-size:18px">—</div><div class="kpi-delta" id="ger-kpi-fonte-base-sub"></div></div>
         <div class="kpi-card"><div class="kpi-icon">📈</div><div class="kpi-label">Tendência vs Mês Anterior</div><div class="kpi-value" id="ger-kpi-tendencia" style="font-size:20px">—</div><div class="kpi-delta" id="ger-kpi-tendencia-sub"></div></div>
       </div>
-      <div style="font-size:11px;font-weight:700;color:var(--text-light);letter-spacing:.5px;text-transform:uppercase;margin:20px 0 8px">🤝 Check-ins por Agregador</div>
+      <div style="font-size:11px;font-weight:700;color:var(--text-light);letter-spacing:.5px;text-transform:uppercase;margin:20px 0 8px">🤝 Check-ins</div>
       <div class="cards-grid" id="ger-kpis-checkins"></div>
       <div class="chart-grid" style="margin-top:20px">
         <div class="panel"><div class="panel-header"><span class="panel-title">📊 Vendas por Categoria</span></div><div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="ger-chart-cat"></canvas></div></div></div>
-        <div class="panel"><div class="panel-header"><span class="panel-title">🏅 Top 5 Planos Mais Vendidos</span></div><div class="panel-body" id="ger-top5-wrap"><p style="color:var(--text-light);padding:16px">Carregando…</p></div></div>
+        <div class="panel"><div class="panel-header"><span class="panel-title">🏅 Top 5 Planos</span></div><div class="panel-body" id="ger-top5-wrap"><p style="color:var(--text-light);padding:16px">Carregando...</p></div></div>
       </div>
-      <div id="ger-empty" style="display:none" class="fin-placeholder-wrap"><div class="fin-ph-icon">📈</div><div class="fin-ph-title">Visão Geral</div><div class="fin-ph-desc">Carregue Contratos, Serviços e Produtos primeiro.</div></div>
+      <div id="ger-empty" style="display:none" class="fin-placeholder-wrap"><div class="fin-ph-icon">📈</div><div class="fin-ph-title">Visão Geral</div><div class="fin-ph-desc">Carregue os dados primeiro.</div></div>
     </div>
 
-    <!-- ════ CONTRATOS ════ -->
+    <!-- CONTRATOS -->
     <div class="tab-pane" id="tab-vnd-contratos">
-      <div class="section-header"><div><div class="section-title">📑 Contratos</div><div class="section-sub" id="cnt-sub">Carregando — VD_Contratos…</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="loadContratos(true)">🔄 Atualizar</button><span class="badge badge-green" id="cnt-badge" style="display:none">● VD_Contratos</span></div></div>
-      <div id="cnt-filtros" style="display:none;margin-bottom:16px">
-        <div class="panel"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Ano</label><div id="cnt-anos-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Mês</label><div id="cnt-meses-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Dia da Semana</label><div id="cnt-dias-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Vendedor <span style="font-size:10px;color:var(--text-light)">(Ctrl)</span></label><select id="cnt-sel-vend" multiple onchange="cntRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;min-width:160px;min-height:100px;max-height:130px;overflow-y:auto"></select></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Plano <span style="font-size:10px;color:var(--text-light)">(Ctrl)</span></label><select id="cnt-sel-plano" multiple onchange="cntRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;min-width:230px;min-height:100px;max-height:130px;overflow-y:auto"></select></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Agrupamento</label><label style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-dark)"><input type="checkbox" id="cnt-toggle-online" style="width:16px;height:16px;accent-color:#1e6fe8">🌐 Somar Online</label></div>
-          <button class="btn btn-secondary" style="align-self:flex-end" onclick="cntResetFiltros()">↺ Todos</button>
-        </div></div>
-      </div>
+      <div class="section-header"><div><div class="section-title">📑 Contratos</div><div class="section-sub" id="cnt-sub">Carregando...</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="loadContratos(true)">🔄</button><span class="badge badge-green" id="cnt-badge" style="display:none">● VD_Contratos</span></div></div>
+      <div id="cnt-filtros" style="display:none;margin-bottom:16px"><div class="panel"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Ano</label><div id="cnt-anos-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Mês</label><div id="cnt-meses-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Dia</label><div id="cnt-dias-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Vendedor</label><select id="cnt-sel-vend" multiple onchange="cntRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;min-width:160px;min-height:100px;max-height:130px;overflow-y:auto"></select></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Plano</label><select id="cnt-sel-plano" multiple onchange="cntRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;min-width:230px;min-height:100px;max-height:130px;overflow-y:auto"></select></div>
+        <label style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-dark)"><input type="checkbox" id="cnt-toggle-online" style="width:16px;height:16px;accent-color:#1e6fe8">🌐 Somar Online</label>
+        <button class="btn btn-secondary" style="align-self:flex-end" onclick="cntResetFiltros()">↺</button>
+      </div></div></div>
       <div class="cards-grid" id="cnt-kpis" style="display:none">
-        <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Faturamento Total</div><div class="kpi-value" id="cnt-kpi-fat">—</div><div class="kpi-delta" id="cnt-kpi-fat-sub"></div><div class="progress-bar"><div class="progress-fill" id="cnt-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
-        <div class="kpi-card"><div class="kpi-icon">📋</div><div class="kpi-label">Total de Contratos</div><div class="kpi-value" id="cnt-kpi-qtd">—</div><div class="kpi-delta" id="cnt-kpi-qtd-sub"></div></div>
+        <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Faturamento</div><div class="kpi-value" id="cnt-kpi-fat">—</div><div class="kpi-delta" id="cnt-kpi-fat-sub"></div><div class="progress-bar"><div class="progress-fill" id="cnt-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
+        <div class="kpi-card"><div class="kpi-icon">📋</div><div class="kpi-label">Total Contratos</div><div class="kpi-value" id="cnt-kpi-qtd">—</div><div class="kpi-delta" id="cnt-kpi-qtd-sub"></div></div>
         <div class="kpi-card amber"><div class="kpi-icon">🎟️</div><div class="kpi-label">Ticket Médio</div><div class="kpi-value" id="cnt-kpi-ticket">—</div><div class="kpi-delta" id="cnt-kpi-ticket-sub"></div></div>
-        <div class="kpi-card" style="border:2px solid #f59e0b"><div class="kpi-icon">🔔</div><div class="kpi-label" style="color:#f59e0b;font-weight:700">Upsell — Mensal no Crédito</div><div class="kpi-value" id="cnt-kpi-upsell" style="color:#f59e0b">—</div><div class="kpi-delta" id="cnt-kpi-upsell-sub"></div></div>
+        <div class="kpi-card" style="border:2px solid #f59e0b"><div class="kpi-icon">🔔</div><div class="kpi-label" style="color:#f59e0b;font-weight:700">Upsell Mensal</div><div class="kpi-value" id="cnt-kpi-upsell" style="color:#f59e0b">—</div><div class="kpi-delta" id="cnt-kpi-upsell-sub"></div></div>
       </div>
       <div class="chart-grid" id="cnt-charts-1" style="display:none">
-        <div class="panel"><div class="panel-header"><span class="panel-title">📅 Faturamento por Dia/Mês</span><div style="display:flex;gap:4px"><button class="pf-btn active" id="cnt-bar-dia" onclick="cntSetBarView('dia')">Dia</button><button class="pf-btn" id="cnt-bar-mes" onclick="cntSetBarView('mes')">Mês</button></div></div><div class="panel-body"><div class="chart-wrap" style="height:240px"><canvas id="cnt-chart-barras"></canvas></div></div></div>
-        <div class="panel"><div class="panel-header"><span class="panel-title">🍩 Origem das Vendas</span></div><div class="panel-body"><div class="chart-wrap" style="height:240px"><canvas id="cnt-chart-origem"></canvas></div></div></div>
+        <div class="panel"><div class="panel-header"><span class="panel-title">📅 Fat. por Dia/Mês</span><div style="display:flex;gap:4px"><button class="pf-btn active" id="cnt-bar-dia" onclick="cntSetBarView('dia')">Dia</button><button class="pf-btn" id="cnt-bar-mes" onclick="cntSetBarView('mes')">Mês</button></div></div><div class="panel-body"><div class="chart-wrap" style="height:240px"><canvas id="cnt-chart-barras"></canvas></div></div></div>
+        <div class="panel"><div class="panel-header"><span class="panel-title">🍩 Origem</span></div><div class="panel-body"><div class="chart-wrap" style="height:240px"><canvas id="cnt-chart-origem"></canvas></div></div></div>
       </div>
-      <div class="panel" id="cnt-ranking-panel" style="display:none"><div class="panel-header"><span class="panel-title">🏅 Ranking de Vendedores</span><span class="badge badge-blue" id="cnt-ranking-badge"></span></div><div class="panel-body" id="cnt-ranking-wrap"></div></div>
-      <div class="panel" id="cnt-planos-panel" style="display:none"><div class="panel-header"><span class="panel-title">🏷️ Ranking de Planos</span><span class="badge badge-blue" id="cnt-planos-badge"></span></div><div class="panel-body" id="cnt-planos-wrap"></div></div>
-      <div class="panel" id="cnt-upsell-panel" style="display:none"><div class="panel-header"><span class="panel-title">🔔 Upsell — Mensal no Crédito</span></div><div class="panel-body" id="cnt-upsell-wrap"></div></div>
-      <div id="cnt-empty" class="fin-placeholder-wrap"><div class="fin-ph-icon">📑</div><div class="fin-ph-title">Contratos</div><div class="fin-ph-desc">Dados de <strong>VD_Contratos</strong> do Google Sheets.</div></div>
+      <div class="panel" id="cnt-ranking-panel" style="display:none"><div class="panel-header"><span class="panel-title">🏅 Ranking Vendedores</span><span class="badge badge-blue" id="cnt-ranking-badge"></span></div><div class="panel-body" id="cnt-ranking-wrap"></div></div>
+      <div class="panel" id="cnt-planos-panel" style="display:none"><div class="panel-header"><span class="panel-title">🏷️ Ranking Planos</span><span class="badge badge-blue" id="cnt-planos-badge"></span></div><div class="panel-body" id="cnt-planos-wrap"></div></div>
+      <div class="panel" id="cnt-upsell-panel" style="display:none"><div class="panel-header"><span class="panel-title">🔔 Upsell</span></div><div class="panel-body" id="cnt-upsell-wrap"></div></div>
+      <div id="cnt-empty" class="fin-placeholder-wrap"><div class="fin-ph-icon">📑</div><div class="fin-ph-title">Contratos</div><div class="fin-ph-desc">Dados de <strong>VD_Contratos</strong>.</div></div>
     </div>
 
-    <!-- ════ SERVIÇOS ════ -->
+    <!-- SERVICOS -->
     <div class="tab-pane" id="tab-vnd-servicos">
-      <div class="section-header"><div><div class="section-title">🛎️ Serviços Vendidos</div><div class="section-sub" id="srv-sub">Carregando — VD_Serviços…</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="loadServicos(true)">🔄 Atualizar</button><span class="badge badge-green" id="srv-badge" style="display:none">● VD_Serviços</span></div></div>
-      <div id="srv-filtros" style="display:none;margin-bottom:16px">
-        <div class="panel"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Ano</label><div id="srv-anos-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Mês</label><div id="srv-meses-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Tipo</label><div id="srv-tipos-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Serviço <span style="font-size:10px;color:var(--text-light)">(Ctrl)</span></label><select id="srv-sel-serv" multiple onchange="srvRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;width:200px;min-height:90px;max-height:120px;overflow-y:auto"></select></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Vendedor <span style="font-size:10px;color:var(--text-light)">(Ctrl)</span></label><select id="srv-sel-vend" multiple onchange="srvRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;width:170px;min-height:90px;max-height:120px;overflow-y:auto"></select></div>
-          <button class="btn btn-secondary" style="align-self:flex-end" onclick="srvResetFiltros()">↺ Todos</button>
-        </div></div>
-      </div>
+      <div class="section-header"><div><div class="section-title">🛎️ Serviços</div><div class="section-sub" id="srv-sub">Carregando...</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="loadServicos(true)">🔄</button><span class="badge badge-green" id="srv-badge" style="display:none">● VD_Serviços</span></div></div>
+      <div id="srv-filtros" style="display:none;margin-bottom:16px"><div class="panel"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Ano</label><div id="srv-anos-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Mês</label><div id="srv-meses-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Tipo</label><div id="srv-tipos-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Serviço</label><select id="srv-sel-serv" multiple onchange="srvRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;width:200px;min-height:90px;max-height:120px;overflow-y:auto"></select></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Vendedor</label><select id="srv-sel-vend" multiple onchange="srvRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;width:170px;min-height:90px;max-height:120px;overflow-y:auto"></select></div>
+        <button class="btn btn-secondary" style="align-self:flex-end" onclick="srvResetFiltros()">↺</button>
+      </div></div></div>
       <div class="cards-grid" id="srv-kpis" style="display:none">
-        <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Faturamento Total</div><div class="kpi-value" id="srv-kpi-fat">—</div><div class="kpi-delta" id="srv-kpi-fat-sub"></div><div class="progress-bar"><div class="progress-fill" id="srv-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
-        <div class="kpi-card"><div class="kpi-icon">🛎️</div><div class="kpi-label">Total de Serviços</div><div class="kpi-value" id="srv-kpi-qtd">—</div><div class="kpi-delta" id="srv-kpi-qtd-sub"></div></div>
+        <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Faturamento</div><div class="kpi-value" id="srv-kpi-fat">—</div><div class="kpi-delta" id="srv-kpi-fat-sub"></div><div class="progress-bar"><div class="progress-fill" id="srv-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
+        <div class="kpi-card"><div class="kpi-icon">🛎️</div><div class="kpi-label">Total Serviços</div><div class="kpi-value" id="srv-kpi-qtd">—</div><div class="kpi-delta" id="srv-kpi-qtd-sub"></div></div>
         <div class="kpi-card amber"><div class="kpi-icon">🎟️</div><div class="kpi-label">Ticket Médio</div><div class="kpi-value" id="srv-kpi-ticket">—</div><div class="kpi-delta" id="srv-kpi-ticket-sub"></div></div>
-        <div class="kpi-card" style="border:2px solid #f59e0b;background:rgba(245,158,11,.07)"><div class="kpi-icon">🔥</div><div class="kpi-label" style="color:#b45309;font-weight:700">Diárias — Leads Quentes</div><div class="kpi-value" id="srv-kpi-leads" style="color:#b45309">—</div><div class="kpi-delta" id="srv-kpi-leads-sub"></div></div>
+        <div class="kpi-card" style="border:2px solid #f59e0b;background:rgba(245,158,11,.07)"><div class="kpi-icon">🔥</div><div class="kpi-label" style="color:#b45309;font-weight:700">Diárias Leads Quentes</div><div class="kpi-value" id="srv-kpi-leads" style="color:#b45309">—</div><div class="kpi-delta" id="srv-kpi-leads-sub"></div></div>
       </div>
       <div class="chart-grid" id="srv-charts" style="display:none">
-        <div class="panel"><div class="panel-header"><span class="panel-title">🍩 Distribuição por Tipo de Cliente</span></div><div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="srv-chart-donut"></canvas></div></div></div>
-        <div class="panel"><div class="panel-header"><span class="panel-title">📊 Faturamento por Dia da Semana</span></div><div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="srv-chart-dia"></canvas></div></div></div>
+        <div class="panel"><div class="panel-header"><span class="panel-title">🍩 Por Tipo de Cliente</span></div><div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="srv-chart-donut"></canvas></div></div></div>
+        <div class="panel"><div class="panel-header"><span class="panel-title">📊 Por Dia da Semana</span></div><div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="srv-chart-dia"></canvas></div></div></div>
       </div>
-      <div class="panel" id="srv-rank-srv-panel" style="display:none"><div class="panel-header"><span class="panel-title">🏷️ Ranking de Serviços</span><span class="badge badge-blue" id="srv-rank-srv-badge"></span></div><div class="panel-body" id="srv-rank-srv-wrap"></div></div>
-      <div class="panel" id="srv-rank-vend-panel" style="display:none"><div class="panel-header"><span class="panel-title">🏅 Ranking de Vendedores</span><span class="badge badge-blue" id="srv-rank-vend-badge"></span></div><div class="panel-body" id="srv-rank-vend-wrap"></div></div>
-      <div id="srv-empty" class="fin-placeholder-wrap"><div class="fin-ph-icon">🛎️</div><div class="fin-ph-title">Serviços Vendidos</div><div class="fin-ph-desc">Dados de <strong>VD_Serviços</strong> do Google Sheets.</div></div>
+      <div class="panel" id="srv-rank-srv-panel" style="display:none"><div class="panel-header"><span class="panel-title">🏷️ Ranking Serviços</span><span class="badge badge-blue" id="srv-rank-srv-badge"></span></div><div class="panel-body" id="srv-rank-srv-wrap"></div></div>
+      <div class="panel" id="srv-rank-vend-panel" style="display:none"><div class="panel-header"><span class="panel-title">🏅 Ranking Vendedores</span><span class="badge badge-blue" id="srv-rank-vend-badge"></span></div><div class="panel-body" id="srv-rank-vend-wrap"></div></div>
+      <div id="srv-empty" class="fin-placeholder-wrap"><div class="fin-ph-icon">🛎️</div><div class="fin-ph-title">Serviços</div><div class="fin-ph-desc">Dados de <strong>VD_Serviços</strong>.</div></div>
     </div>
 
-    <!-- ════ PRODUTOS ════ -->
+    <!-- PRODUTOS -->
     <div class="tab-pane" id="tab-vnd-produtos">
-      <div class="section-header"><div><div class="section-title">🛍️ Produtos Vendidos</div><div class="section-sub" id="prd-sub">Carregando — VD_Produtos…</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="loadProdutos(true)">🔄 Atualizar</button><span class="badge badge-green" id="prd-badge" style="display:none">● VD_Produtos</span></div></div>
-      <div id="prd-filtros" style="display:none;margin-bottom:16px">
-        <div class="panel"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start">
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Ano</label><div id="prd-anos-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Mês</label><div id="prd-meses-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Dia da Semana</label><div id="prd-dias-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Produto <span style="font-size:10px;color:var(--text-light)">(Ctrl)</span></label><select id="prd-sel-prod" multiple onchange="prdRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;width:220px;min-height:120px;overflow-y:auto"><option value="">Todos</option></select></div>
-          <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Vendedor <span style="font-size:10px;color:var(--text-light)">(Ctrl)</span></label><select id="prd-sel-vend" multiple onchange="prdRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;width:180px;min-height:120px;overflow-y:auto"><option value="">Todos</option></select></div>
-          <button class="btn btn-secondary" style="align-self:flex-end" onclick="prdResetFiltros()">↺ Todos</button>
-        </div></div>
-      </div>
+      <div class="section-header"><div><div class="section-title">🛍️ Produtos</div><div class="section-sub" id="prd-sub">Carregando...</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="loadProdutos(true)">🔄</button><span class="badge badge-green" id="prd-badge" style="display:none">● VD_Produtos</span></div></div>
+      <div id="prd-filtros" style="display:none;margin-bottom:16px"><div class="panel"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start">
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Ano</label><div id="prd-anos-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Mês</label><div id="prd-meses-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Dia</label><div id="prd-dias-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Produto</label><select id="prd-sel-prod" multiple onchange="prdRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;width:220px;min-height:120px;overflow-y:auto"><option value="">Todos</option></select></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Vendedor</label><select id="prd-sel-vend" multiple onchange="prdRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;width:180px;min-height:120px;overflow-y:auto"><option value="">Todos</option></select></div>
+        <button class="btn btn-secondary" style="align-self:flex-end" onclick="prdResetFiltros()">↺</button>
+      </div></div></div>
       <div class="cards-grid" id="prd-kpis" style="display:none">
         <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Total Faturado</div><div class="kpi-value" id="prd-kpi-fat">—</div><div class="kpi-delta" id="prd-kpi-fat-sub"></div><div class="progress-bar"><div class="progress-fill" id="prd-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
-        <div class="kpi-card amber"><div class="kpi-icon">📦</div><div class="kpi-label">Total de Itens Vendidos</div><div class="kpi-value" id="prd-kpi-itens">—</div><div class="kpi-delta" id="prd-kpi-itens-sub"></div></div>
-        <div class="kpi-card"><div class="kpi-icon">🎟️</div><div class="kpi-label">Ticket Médio por Item</div><div class="kpi-value" id="prd-kpi-ticket">—</div><div class="kpi-delta" id="prd-kpi-ticket-sub"></div></div>
+        <div class="kpi-card amber"><div class="kpi-icon">📦</div><div class="kpi-label">Total Itens</div><div class="kpi-value" id="prd-kpi-itens">—</div><div class="kpi-delta" id="prd-kpi-itens-sub"></div></div>
+        <div class="kpi-card"><div class="kpi-icon">🎟️</div><div class="kpi-label">Ticket Médio</div><div class="kpi-value" id="prd-kpi-ticket">—</div><div class="kpi-delta" id="prd-kpi-ticket-sub"></div></div>
         <div class="kpi-card"><div class="kpi-icon">🏷️</div><div class="kpi-label">Produtos Únicos</div><div class="kpi-value" id="prd-kpi-uniq">—</div><div class="kpi-delta" id="prd-kpi-uniq-sub"></div></div>
       </div>
       <div class="chart-grid" id="prd-charts" style="display:none">
-        <div class="panel"><div class="panel-header"><span class="panel-title">🏅 Top Vendedores (Qtd)</span></div><div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="prd-chart-vend"></canvas></div></div></div>
-        <div class="panel"><div class="panel-header"><span class="panel-title">📊 Top 10 Produtos (Qtd)</span></div><div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="prd-chart-top10"></canvas></div></div></div>
+        <div class="panel"><div class="panel-header"><span class="panel-title">🏅 Top Vendedores</span></div><div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="prd-chart-vend"></canvas></div></div></div>
+        <div class="panel"><div class="panel-header"><span class="panel-title">📊 Top 10 Produtos</span></div><div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="prd-chart-top10"></canvas></div></div></div>
       </div>
       <div class="panel" id="prd-table-panel" style="display:none"><div class="panel-header"><span class="panel-title">📋 Radar de Reposição</span><span class="badge badge-blue" id="prd-table-badge"></span></div><div class="panel-body" id="prd-table-wrap"></div></div>
-      <div id="prd-empty" class="fin-placeholder-wrap"><div class="fin-ph-icon">🛍️</div><div class="fin-ph-title">Produtos Vendidos</div><div class="fin-ph-desc">Dados de <strong>VD_Produtos</strong> do Google Sheets.</div></div>
+      <div id="prd-empty" class="fin-placeholder-wrap"><div class="fin-ph-icon">🛍️</div><div class="fin-ph-title">Produtos</div><div class="fin-ph-desc">Dados de <strong>VD_Produtos</strong>.</div></div>
+    </div>
+
+    <!-- PAGAMENTOS -->
+    <div class="tab-pane" id="tab-fin-pagamentos">
+      <div class="section-header"><div><div class="section-title">💳 Formas de Pagamento</div><div class="section-sub" id="pag-sub">Carregando...</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="loadPagamentos(true)">🔄</button><span class="badge badge-green" id="pag-badge" style="display:none">● BD_Recebimento</span></div></div>
+      <div id="pag-filtros" style="display:none;margin-bottom:16px"><div class="panel"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Ano</label><div style="display:flex;gap:4px;flex-wrap:wrap" id="pag-anos-btns"></div></div>
+        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Mês</label><div style="display:flex;gap:4px;flex-wrap:wrap" id="pag-meses-btns"></div></div>
+        <label style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-dark);white-space:nowrap;align-self:flex-end"><input type="checkbox" id="pag-toggle-stone" style="width:16px;height:16px;accent-color:#ef4444;cursor:pointer">🔴 Validar SEM STONE</label>
+        <button class="btn btn-secondary" style="align-self:flex-end" onclick="pagResetFiltros()">↺</button>
+      </div></div></div>
+      <div class="cards-grid" id="pag-kpis" style="display:none">
+        <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Total Recebido</div><div class="kpi-value" id="pag-kpi-total">—</div><div class="kpi-delta" id="pag-kpi-total-sub"></div><div class="progress-bar"><div class="progress-fill" id="pag-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
+        <div class="kpi-card" style="border:2px solid #ef4444"><div class="kpi-icon">⚠️</div><div class="kpi-label" style="color:#ef4444;font-weight:700">SEM STONE (Risco)</div><div class="kpi-value" id="pag-kpi-semstone" style="color:#ef4444">—</div><div class="kpi-delta" id="pag-kpi-semstone-sub"></div></div>
+        <div class="kpi-card"><div class="kpi-icon">📱</div><div class="kpi-label">PIX</div><div class="kpi-value" id="pag-kpi-pix">—</div><div class="kpi-delta" id="pag-kpi-pix-sub"></div></div>
+        <div class="kpi-card"><div class="kpi-icon">💵</div><div class="kpi-label">Dinheiro</div><div class="kpi-value" id="pag-kpi-din">—</div><div class="kpi-delta" id="pag-kpi-din-sub"></div></div>
+      </div>
+      <div class="chart-grid" id="pag-charts" style="display:none">
+        <div class="panel"><div class="panel-header"><span class="panel-title">🍩 Distribuição</span></div><div class="panel-body"><div class="chart-wrap" style="height:280px"><canvas id="pag-chart-donut"></canvas></div></div></div>
+        <div class="panel"><div class="panel-header"><span class="panel-title">📊 Stone vs SEM STONE</span></div><div class="panel-body"><div class="chart-wrap" style="height:280px"><canvas id="pag-chart-stone"></canvas></div></div></div>
+      </div>
+      <div class="panel" id="pag-table-panel" style="display:none"><div class="panel-header"><span class="panel-title">📋 Resumo</span><span class="badge badge-blue" id="pag-table-badge"></span></div><div class="panel-body" id="pag-table-wrap"></div></div>
+      <div id="pag-empty" class="fin-placeholder-wrap"><div class="fin-ph-icon">💳</div><div class="fin-ph-title">Formas de Pagamento</div><div class="fin-ph-desc">Dados de <strong>BD_Recebimento</strong>.</div></div>
     </div>
 
   </div><!-- /content -->
@@ -2366,7 +2308,7 @@
 
 <!-- ═══ BOTTOM NAV (mobile portrait) ═══ -->
 <nav class="bottom-nav" id="bottom-nav">
-  <div class="bn-item active" onclick="switchTab('fin-vendas',this)" data-tab="vendas">
+  <div class="bn-item active" onclick="mobVndToggle(this)" data-tab="vendas">
     <span class="bn-icon">📊</span><span>Vendas</span>
   </div>
   <div class="bn-item" onclick="switchTab('fin-faturamento',this)" data-tab="financeiro">
@@ -2420,7 +2362,7 @@
 //  CONFIGURAÇÃO FIXA
 // ╚══════════════════════════════════════════════════════════╝
 // URL do Apps Script (proxy -- resolve CORS ao abrir via file://)
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwGY54dZWb4INsksEyyq2RtoajuwsR8dzU4efP2R5SVCLdvQa5mZ-r0quUibLak_CkQNA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwnEgYr7ga7vG1Kex9hjob3d7Lbe32B2xjzKYeYgGRa6XygNiWCABZAegsEGYvFBhVIkQ/exec';
 const SHEET_TAB = 'Base_Despesas';
 
 // Índices das colunas (0-based): Data | Ano | Mês | Categoria | Subcategoria | Descrição/Fornecedor | Valor
@@ -2440,6 +2382,54 @@ let chartDough   = null;
 // ╔══════════════════════════════════════════════════════════╗
 //  UTILITÁRIOS
 // ╚══════════════════════════════════════════════════════════╝
+
+// ── Funções auxiliares (definidas primeiro para evitar hoisting issues) ──
+
+function skyLoading(pct, msg) {
+  const bar = document.getElementById('loading-bar');
+  const msgEl = document.getElementById('loading-msg');
+  if (bar) bar.style.width = pct + '%';
+  if (msgEl) msgEl.textContent = msg || '';
+}
+
+function kzStatusUpdate(id,state,val){
+  const el=document.getElementById(id);if(!el)return;el.className='kz-status-item '+state;const v=el.querySelector('.kz-status-val');if(v)v.textContent=val;
+}
+
+function _kaizCheckLoaded(){
+  const flags=[window._kaizFatOk,window._kaizAggOk,window._kaizFinOk,window._kaizPagOk,window._kaizCntOk,window._kaizSrvOk,window._kaizPrdOk];
+  const done=flags.every(Boolean),loaded=flags.filter(Boolean).length;
+  skyLoading(Math.round(loaded/flags.length*100),done?'Todos os sistemas conectados':'Carregando '+loaded+'/'+flags.length+'...');
+  if(done){['kzs-fat','kzs-agg','kzs-fin','kzs-pag','kzs-cnt','kzs-srv','kzs-prd'].forEach(id=>kzStatusUpdate(id,'done','ok'));setTimeout(skyLoadingHide,700);}
+}
+
+function skyLoadingHide() {
+  const el = document.getElementById('skyfit-loading');
+  if (!el) return;
+  el.classList.add('fade-out');
+  setTimeout(() => { el.style.display = 'none'; }, 450);
+}
+
+function mobVndToggle(el){
+  const sheet=document.getElementById('mob-vnd-sheet'),ov=document.getElementById('mob-vnd-overlay');
+  const isOpen=sheet&&sheet.classList.contains('open');
+  if(sheet)sheet.classList.toggle('open');if(ov)ov.style.display=isOpen?'none':'block';
+}
+
+function mobVndClose(){
+  const sheet=document.getElementById('mob-vnd-sheet'),ov=document.getElementById('mob-vnd-overlay');
+  if(sheet)sheet.classList.remove('open');if(ov)ov.style.display='none';
+}
+
+function mobVndGo(tab){
+  mobVndClose();
+  switchTab(tab,document.querySelector('.bn-item[data-tab="vendas"]'));
+  // Marcar item ativo no sheet
+  document.querySelectorAll('.mob-vnd-item').forEach(el=>{
+    el.classList.toggle('active',el.getAttribute('onclick')&&el.getAttribute('onclick').includes(tab));
+  });
+}
+
 function fmtBRL(v) {
   return 'R$ ' + Number(v).toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 });
 }
@@ -2570,6 +2560,10 @@ function toast(msg, icon='✅') {
 // ╚══════════════════════════════════════════════════════════╝
 const tabMeta = {
   'fin-vendas':         { title:'Vendas por Colaborador', sub:'Ranking de vendas e desempenho por recepcionista' },
+  'vnd-geral':      { title:'Visao Geral de Vendas',  sub:'Consolidado - Contratos + Servicos + Produtos' },
+  'vnd-contratos':  { title:'Contratos Vendidos',     sub:'Analise de contratos - VD_Contratos' },
+  'vnd-servicos':   { title:'Servicos Vendidos',       sub:'Diarias e servicos avulsos - VD_Servicos' },
+  'vnd-produtos':   { title:'Produtos Vendidos',       sub:'Suplementos e acessorios - VD_Produtos' },
   'fin-detalhes':       { title:'Vendas Detalhadas',       sub:'Raio-X por categoria, plano e colaborador' },
   'fin-faturamento':    { title:'Receita',                 sub:'Faturamento oficial — EVO · WellHub · TotalPass' },
   'fin-despesas':       { title:'Despesas',                sub:'Lançamentos reais via Google Sheets' },
@@ -2622,14 +2616,10 @@ function switchTab(tab, el) {
   if (VND_TABS.includes(tab)) {
     const g=document.getElementById('vnd-group'), c=document.getElementById('vnd-chevron');
     if(g) g.classList.add('open'); if(c) c.classList.add('open');
-    if(tab==='vnd-geral') {
-      if(!fatLoaded) loadFaturamento(false); // callback chama geralRender ao terminar
-      if(!aggLoaded) loadAgregadores(false); // callback chama geralRender ao terminar
-      geralRender(); // renderiza imediatamente com o que já está disponível
-    }
-    if(tab==='vnd-contratos'&&!cntLoaded)     loadContratos(false);
-    if(tab==='vnd-servicos' &&!srvLoaded)     loadServicos(false);
-    if(tab==='vnd-produtos' &&!prdLoaded)     loadProdutos(false);
+    if(tab==='vnd-geral')                    geralRender();
+    if(tab==='vnd-contratos'&&!cntLoaded)    loadContratos(false);
+    if(tab==='vnd-servicos' &&!srvLoaded)    loadServicos(false);
+    if(tab==='vnd-produtos' &&!prdLoaded)    loadProdutos(false);
 
   } else if (FIN_TABS.includes(tab)) {
     const g=document.getElementById('fin-group'), c=document.getElementById('fin-chevron');
@@ -2798,7 +2788,6 @@ function navPeriod(dir) {
 // ╚══════════════════════════════════════════════════════════╝
 async function loadFinanceiro(force) {
   // spinner
-  kzStatusUpdate('kzs-fin','loading','conectando…');
   document.getElementById('fin-table-wrap').innerHTML =
     `<div class="spinner-wrap"><div class="spinner"></div><div class="spinner-label">Buscando dados do Google Sheets…</div></div>`;
   document.getElementById('fin-sub').textContent = 'Conectando…';
@@ -2843,10 +2832,7 @@ async function loadFinanceiro(force) {
     console.log('[SkyFit] Campo Data (raw):', rows.slice(0,5).map(r => r[0]));
     console.log('[SkyFit] Datas parseadas:', rows.slice(0,5).map(r => String(parseSheetDate(r[0]))));
 
-    allRows   = rows;
-    finLoaded = true;
-    window._kaizFinOk = true; _kaizCheckLoaded();
-    kzStatusUpdate('kzs-fin','done','conectado');
+    allRows=rows; finLoaded=true; window._kaizFinOk=true; kzStatusUpdate('kzs-fin','done','ok'); _kaizCheckLoaded();
     if(document.getElementById('tab-fin-lucro')?.classList.contains('active')) renderLucro();
 
     // Popular selects de Mês e Ano da aba Despesas
@@ -2863,10 +2849,20 @@ async function loadFinanceiro(force) {
     renderFinanceiro(rows);
     if (force) {
       toast(`${rows.length} registros carregados -- ${periodLabelText()}`,'📊');
-      startAutoRefresh(); // reseta o timer ao atualizar manualmente
+      startAutoRefresh();
+    loadFaturamento(false); loadAgregadores(false);
+    loadFinanceiro(false); loadPagamentos(false);
+    loadContratos(false); loadServicos(false); loadProdutos(false);
+    // Timeout de segurança: some a loading screen após 15s no máximo
+    setTimeout(() => {
+      ['_kaizFatOk','_kaizAggOk','_kaizFinOk','_kaizPagOk','_kaizCntOk','_kaizSrvOk','_kaizPrdOk']
+        .forEach(f => { if(!window[f]) window[f]=true; });
+      _kaizCheckLoaded();
+    }, 5000); // reseta o timer ao atualizar manualmente
     }
 
   } catch(err) {
+    window._kaizFinOk=true; kzStatusUpdate('kzs-fin','loading','erro'); _kaizCheckLoaded();
     console.error(err);
     finLoaded = false;
     document.getElementById('fin-sub').textContent  = 'Erro ao carregar dados';
@@ -4364,9 +4360,9 @@ const APPS_SCRIPT_FAT_URL = APPS_SCRIPT_URL + '?sheet=Base_de_Dados';
 let fatData       = [];
 let fatLoaded     = false;
 let cntLoaded=false, srvLoaded=false, prdLoaded=false, pagLoaded=false;
+let cntData=[], srvData=[], prdData=[];
 let pagData=[], pagChartDonut=null, pagChartStone=null;
 let geralMesSel='', geralChartCat=null;
-let cntData=[], srvData=[], prdData=[];
 let chartFatEvol  = null;
 let chartFatCat   = null;
 let chartFatBar   = null;
@@ -4396,15 +4392,9 @@ async function loadFaturamento(force) {
     if (!rows.length) throw new Error('Base_de_Dados sem dados');
 
     fatData   = rows;
-    fatLoaded = true;
-    window._kaizFatOk = true;
-    kzStatusUpdate('kzs-fat','done','conectado');
-    _kaizCheckLoaded();
-    // Atualizar abas dependentes se ativas
+    fatLoaded=true; window._kaizFatOk=true; kzStatusUpdate('kzs-fat','done','ok'); _kaizCheckLoaded();
     if(document.getElementById('tab-fin-lucro')?.classList.contains('active')) renderLucro();
     if(document.getElementById('tab-vnd-geral')?.classList.contains('active')) geralRender();
-    if(document.getElementById('tab-vnd-geral')?.classList.contains('active')) geralRender();
-
     document.getElementById('fat-sub').textContent   = `Base_de_Dados · ${rows.length} registros`;
     document.getElementById('fat-badge').style.display='inline-block';
     document.getElementById('fat-empty').style.display='none';
@@ -4413,6 +4403,7 @@ async function loadFaturamento(force) {
     if (force) toast(`Faturamento: ${rows.length} registros carregados`, '📈');
 
   } catch(err) {
+    window._kaizFatOk=true; kzStatusUpdate('kzs-fat','loading','erro'); _kaizCheckLoaded();
     console.error('[Faturamento]', err);
     document.getElementById('fat-sub').textContent = 'Erro ao carregar — verifique o Apps Script';
     document.getElementById('fat-empty').querySelector('.fin-ph-desc').textContent =
@@ -4779,7 +4770,10 @@ function renderFaturamento(rows) {
 // ╚══════════════════════════════════════════════════════════╝
 function toggleDark() {
   const isDark = document.body.classList.toggle('dark');
-  document.getElementById('dark-toggle').textContent = isDark ? '☀️' : '🌙';
+  const icon = isDark ? '☀️' : '🌙';
+  ['dark-toggle','dark-toggle-top'].forEach(id => {
+    const b = document.getElementById(id); if (b) b.textContent = icon;
+  });
   localStorage.setItem('skyfit_dark', isDark ? '1' : '0');
 }
 
@@ -4798,44 +4792,10 @@ const DIAS_SEMANA_CNT = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
 // ============================================================
 // LOADING SCREEN
 // ============================================================
-function skyLoading(pct, msg) {
-  const bar = document.getElementById('loading-bar');
-  const glow = document.getElementById('kz-prog-glow');
-  const pctEl = document.getElementById('kz-prog-pct');
-  const msgEl = document.getElementById('loading-msg');
-  if (bar) bar.style.width = pct + '%';
-  if (glow) glow.style.right = (100-pct)+'%';
-  if (pctEl) pctEl.textContent = Math.round(pct) + '%';
-  if (msgEl) msgEl.textContent = msg || '';
-}
-function kzStatusUpdate(id, state, val) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.className = 'kz-status-item ' + state;
-  const v = el.querySelector('.kz-status-val');
-  if (v) v.textContent = val;
-}
-function _kaizCheckLoaded() {
-  const done = window._kaizFatOk && window._kaizAggOk &&
-               window._kaizFinOk && window._kaizPagOk;
-  // Atualizar progresso parcial
-  const cnt = [window._kaizFatOk, window._kaizAggOk,
-               window._kaizFinOk, window._kaizPagOk].filter(Boolean).length;
-  skyLoading(cnt * 25, done ? 'Todos os sistemas conectados' : 'Carregando bases de dados…');
-  if (done) {
-    kzStatusUpdate('kzs-fat', 'done', 'ok');
-    kzStatusUpdate('kzs-agg', 'done', 'ok');
-    kzStatusUpdate('kzs-fin', 'done', 'ok');
-    kzStatusUpdate('kzs-pag', 'done', 'ok');
-    setTimeout(skyLoadingHide, 700);
-  }
-}
-function skyLoadingHide() {
-  const el = document.getElementById('kaizen-loading');
-  if (!el) return;
-  el.classList.add('fade-out');
-  setTimeout(() => { el.style.display = 'none'; }, 450);
-}
+// skyLoading movida para o início
+
+// skyLoadingHide movida para o início
+
 
 // ============================================================
 // CONTRATOS — VD_Contratos
@@ -4882,7 +4842,7 @@ async function loadContratos(force){
         vendedor:String(r[kVend]||'').trim()||'Sem vendedor',
         origem:String(r[kOrig]||'').trim()||'Balcão'};
     }).filter(r=>r.dt&&r.valor>0);
-    cntLoaded=true;
+    cntLoaded=true; window._kaizCntOk=true; kzStatusUpdate('kzs-cnt','done','ok'); _kaizCheckLoaded();
     if(document.getElementById('tab-vnd-geral')?.classList.contains('active')) geralRender();
     document.getElementById('cnt-badge').style.display='inline-block';
     document.getElementById('cnt-empty').style.display='none';
@@ -4890,7 +4850,7 @@ async function loadContratos(force){
     if(tog&&!tog._listenerAdded){tog.addEventListener('change',()=>{cntPopularFiltros();cntRender();});tog._listenerAdded=true;}
     cntPopularFiltros();cntRender();
     if(force) toast('Contratos: '+cntData.length+' registros','📑');
-  }catch(err){console.error('[Contratos]',err);const s=document.getElementById('cnt-sub');if(s)s.textContent='Erro: '+err.message;toast('Erro VD_Contratos: '+err.message,'❌');}
+  }catch(err){window._kaizCntOk=true;kzStatusUpdate('kzs-cnt','loading','erro');_kaizCheckLoaded();console.error('[Contratos]',err);const s=document.getElementById('cnt-sub');if(s)s.textContent='Erro: '+err.message;toast('Erro VD_Contratos: '+err.message,'❌');}
 }
 
 function cntPopularFiltros(){
@@ -5008,11 +4968,12 @@ async function loadServicos(force){
     const linhasValidas=rows.filter(r=>{const t=String(r[kTipo]||'').trim().toUpperCase();return t==='CLIENTE'||t==='OPORTUNIDADE';});
     if(!linhasValidas.length)throw new Error('0 linhas CLIENTE/OPORTUNIDADE de '+rows.length);
     srvData=linhasValidas.map(r=>{const dt=srvParseData(r[kData]);return{tipo:String(r[kTipo]||'').trim().toUpperCase(),servico:String(r[kServ]||'').trim().toUpperCase(),qtd:Math.max(1,parseInt(r[kQtd])||1),valor:srvPV(r[kVal]),dt,mes:dt?MESES_FULL_CNT[dt.getMonth()]:'',mesN:dt?dt.getMonth():-1,ano:dt?String(dt.getFullYear()):'',diaSem:dt?DIAS_SEMANA_CNT[dt.getDay()]:'',diaSemN:dt?dt.getDay():-1,vendedor:String(r[kVend]||'').trim()||'Sem vendedor'};}).filter(r=>r.servico);
-    srvLoaded=true;document.getElementById('srv-badge').style.display='inline-block';document.getElementById('srv-empty').style.display='none';
+    srvLoaded=true; window._kaizSrvOk=true; kzStatusUpdate('kzs-srv','done','ok'); _kaizCheckLoaded();
     if(document.getElementById('tab-vnd-geral')?.classList.contains('active')) geralRender();
+    document.getElementById('srv-badge').style.display='inline-block';document.getElementById('srv-empty').style.display='none';
     const vEl=document.getElementById('srv-sel-vend');if(vEl&&!vEl._listenerAdded){vEl.addEventListener('change',srvRender);vEl._listenerAdded=true;}
     srvPopularFiltros();srvRender();if(force)toast('Servicos: '+srvData.length+' registros','🛎️');
-  }catch(err){console.error('[Servicos]',err);const s=document.getElementById('srv-sub');if(s)s.textContent='Erro: '+err.message;toast('Erro VD_Servicos: '+err.message,'❌');}
+  }catch(err){window._kaizSrvOk=true;kzStatusUpdate('kzs-srv','loading','erro');_kaizCheckLoaded();console.error('[Servicos]',err);const s=document.getElementById('srv-sub');if(s)s.textContent='Erro: '+err.message;toast('Erro VD_Servicos: '+err.message,'❌');}
 }
 function srvPopularFiltros(){
   const anos=[...new Set(srvData.map(r=>r.ano).filter(Boolean))].sort();
@@ -5101,10 +5062,11 @@ async function loadProdutos(force){
     const kData=fk(/data.*venda|venda.*data/i)||fk(/data/i),kVend=fk(/comiss/i);
     prdData=rows.map(r=>{const nome=String(r[kDesc]||'').trim().toUpperCase();const dt=prdParseData(r[kData]);return{produto:nome,qtd:Math.max(1,parseInt(r[kQtd])||1),valor:prdPV(r[kVal]),dt,mes:dt?MESES_FULL_CNT[dt.getMonth()]:'',mesN:dt?dt.getMonth():-1,ano:dt?String(dt.getFullYear()):'',diaSem:dt?DIAS_SEMANA_CNT[dt.getDay()]:'',diaSemN:dt?dt.getDay():-1,vendedor:String(r[kVend]||'').trim()||'Sem vendedor'};}).filter(r=>r.produto&&r.qtd>0);
     if(!prdData.length)throw new Error('0 registros validos');
-    prdLoaded=true;document.getElementById('prd-badge').style.display='inline-block';document.getElementById('prd-empty').style.display='none';
+    prdLoaded=true; window._kaizPrdOk=true; kzStatusUpdate('kzs-prd','done','ok'); _kaizCheckLoaded();
     if(document.getElementById('tab-vnd-geral')?.classList.contains('active')) geralRender();
+    document.getElementById('prd-badge').style.display='inline-block';document.getElementById('prd-empty').style.display='none';
     prdPopularFiltros();prdRender();if(force)toast('Produtos: '+prdData.length+' registros','🛍️');
-  }catch(err){console.error('[Produtos]',err);const s=document.getElementById('prd-sub');if(s)s.textContent='Erro: '+err.message;toast('Erro VD_Produtos: '+err.message,'❌');}
+  }catch(err){window._kaizPrdOk=true;kzStatusUpdate('kzs-prd','loading','erro');_kaizCheckLoaded();console.error('[Produtos]',err);const s=document.getElementById('prd-sub');if(s)s.textContent='Erro: '+err.message;toast('Erro VD_Produtos: '+err.message,'❌');}
 }
 function prdPopularFiltros(){
   const anos=[...new Set(prdData.map(r=>r.ano).filter(Boolean))].sort();
@@ -5267,13 +5229,11 @@ async function loadPagamentos(force){
     const kAno=fk(/^ano$/i),kMes=fk(/^m[eê]s$/i),kCat=fk(/categoria/i),kForma=fk(/forma/i),kVal=fk(/valor/i);
     console.log('[Pagamentos] Mapeamento:',{kAno,kMes,kCat,kForma,kVal});
     pagData=rows.map(r=>({ano:String(r[kAno]||'').trim(),mes:String(r[kMes]||'').trim().toLowerCase(),cat:String(r[kCat]||'').trim(),forma:String(r[kForma]||'').trim(),valor:pagPV2(r[kVal])})).filter(r=>r.valor>0&&r.forma);
-    pagLoaded=true;
-    window._kaizPagOk = true; _kaizCheckLoaded();
-    kzStatusUpdate('kzs-pag','done','conectado');
+    pagLoaded=true; window._kaizPagOk=true; kzStatusUpdate('kzs-pag','done','ok'); _kaizCheckLoaded();
     document.getElementById('pag-badge').style.display='inline-block';document.getElementById('pag-empty').style.display='none';
     const tog=document.getElementById('pag-toggle-stone');if(tog&&!tog._listenerAdded){tog.addEventListener('change',()=>renderPagamentos());tog._listenerAdded=true;}
     pagPopularFiltros();renderPagamentos();if(force)toast('Recebimentos: '+pagData.length+' registros','💳');
-  }catch(err){console.error('[Pagamentos]',err);const s=document.getElementById('pag-sub');if(s)s.textContent='Erro: '+err.message;toast('Erro BD_Recebimento: '+err.message,'❌');}
+  }catch(err){window._kaizPagOk=true;kzStatusUpdate('kzs-pag','loading','erro');_kaizCheckLoaded();console.error('[Pagamentos]',err);const s=document.getElementById('pag-sub');if(s)s.textContent='Erro: '+err.message;toast('Erro BD_Recebimento: '+err.message,'❌');}
 }
 function pagPopularFiltros(){
   const anos=[...new Set(pagData.map(r=>r.ano).filter(Boolean))].sort();
@@ -5333,11 +5293,35 @@ function pagRenderTabela(dados,formaMap,total){
 }
 
 
+
+// Loading screen functions
+function skyLoading(pct, msg) {
+  const bar=document.getElementById('loading-bar'),glow=document.getElementById('kz-prog-glow'),pctEl=document.getElementById('kz-prog-pct'),msgEl=document.getElementById('loading-msg');
+  if(bar)bar.style.width=pct+'%';if(glow)glow.style.right=(100-pct)+'%';if(pctEl)pctEl.textContent=Math.round(pct)+'%';if(msgEl)msgEl.textContent=msg||'';
+}
+// kzStatusUpdate movida para o início
+
+// _kaizCheckLoaded movida para o início
+
+function skyLoadingHide(){
+  const el=document.getElementById('kaizen-loading');
+  if(!el)return;el.classList.add('fade-out');setTimeout(()=>{el.style.display='none';},450);
+}
+
+// Mobile vendas sheet
+// mobVndToggle movida para o início
+
+// mobVndClose movida para o início
+
+// mobVndGo movida para o início
+
+
 document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('skyfit_dark') === '1') {
     document.body.classList.add('dark');
-    const btn = document.getElementById('dark-toggle');
-    if (btn) btn.textContent = '☀️';
+    ['dark-toggle','dark-toggle-top'].forEach(id => {
+      const b = document.getElementById(id); if (b) b.textContent = '☀️';
+    });
   }
 });
 
@@ -5544,8 +5528,6 @@ function resetAggFiltros() {
 async function loadAgregadores(force) {
   const subEl = document.getElementById('agg-sub');
   if (subEl) subEl.textContent = 'Conectando…';
-  kzStatusUpdate('kzs-agg','loading','conectando…');
-  skyLoading(60,'Conectando Agregadores…');
   try {
     const resp = await fetch(APPS_SCRIPT_AGG_URL);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -5553,13 +5535,7 @@ async function loadAgregadores(force) {
     const rows = json.rows || [];
     if (!rows.length) throw new Error('Aba Agregadores sem dados');
 
-    aggData   = rows;
-    aggLoaded = true;
-    window._kaizAggOk = true;
-    kzStatusUpdate('kzs-agg','done','conectado');
-    skyLoading(90,'Agregadores carregados…');
-    _kaizCheckLoaded();
-    // Atualizar aba Geral se estiver ativa
+    aggData=rows; aggLoaded=true; window._kaizAggOk=true; kzStatusUpdate('kzs-agg','done','ok'); _kaizCheckLoaded();
     if(document.getElementById('tab-vnd-geral')?.classList.contains('active')) geralRender();
 
     const badgeEl = document.getElementById('agg-badge');
@@ -5571,6 +5547,7 @@ async function loadAgregadores(force) {
     renderAgregadores();
     if (force) toast(`Agregadores: ${rows.length} registros`, '🔗');
   } catch(err) {
+    window._kaizAggOk=true; kzStatusUpdate('kzs-agg','loading','erro'); _kaizCheckLoaded();
     console.error('[Agregadores]', err);
     if (subEl) subEl.textContent = 'Erro: ' + err.message;
     toast('Erro Agregadores: ' + err.message, '❌');
@@ -6267,11 +6244,6 @@ window.addEventListener('unhandledrejection', function(e) {
 });
 
 document.addEventListener('DOMContentLoaded', function() {
-  // Auto-carregar TODAS as bases ao iniciar
-  loadFaturamento(false);
-  loadAgregadores(false);
-  loadFinanceiro(false);
-  loadPagamentos(false);
   try {
     document.getElementById('topbar-date').textContent =
       new Date().toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
@@ -6282,5 +6254,19 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 </script>
+<!-- ═══ MOBILE VENDAS SUB-MENU ═══ -->
+<div id="mob-vnd-sheet" class="mob-vnd-sheet">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 20px 6px;opacity:.5;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-mid)">
+    Vendas <button onclick="mobVndClose()" style="background:none;border:none;color:var(--text-mid);cursor:pointer;font-size:18px;line-height:1">×</button>
+  </div>
+  <div class="mob-vnd-item" onclick="mobVndGo('vnd-geral')"><span class="mob-vnd-dot"></span>Geral</div>
+  <div class="mob-vnd-item" onclick="mobVndGo('vnd-contratos')"><span class="mob-vnd-dot"></span>Contratos</div>
+  <div class="mob-vnd-item" onclick="mobVndGo('vnd-servicos')"><span class="mob-vnd-dot"></span>Serviços</div>
+  <div class="mob-vnd-item" onclick="mobVndGo('vnd-produtos')"><span class="mob-vnd-dot"></span>Produtos</div>
+</div>
+<div id="mob-vnd-overlay" onclick="mobVndClose()"
+  style="display:none;position:fixed;inset:0;z-index:899;background:rgba(0,0,0,.4)"></div>
+
+
 </body>
 </html>
