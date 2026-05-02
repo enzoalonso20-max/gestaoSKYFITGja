@@ -134,6 +134,82 @@
   .mob-vnd-dot { width:7px;height:7px;border-radius:50%;background:#1e6fe8;flex-shrink:0; }
   @media (min-width:769px) { .mob-vnd-sheet { display:none !important; } }
 
+  /* ── Filtros Compactos ─────────────────────────── */
+  .filter-panel { background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-bottom:16px; }
+  .filter-row { display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end; }
+  .filter-group { display:flex;flex-direction:column;gap:3px; }
+  .filter-label { font-size:10px;font-weight:700;color:var(--text-light);letter-spacing:.05em;text-transform:uppercase; }
+  .filter-btns { display:flex;gap:3px;flex-wrap:wrap; }
+  .filter-btn {
+    padding:4px 9px;border-radius:6px;border:1px solid var(--border);
+    font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font);
+    background:var(--bg-card);color:var(--text-dark);transition:all .15s;white-space:nowrap;
+  }
+  .filter-btn.active { background:#1e6fe8;color:#fff;border-color:#1e6fe8; }
+  .filter-btn:hover:not(.active) { border-color:#1e6fe8;color:#1e6fe8; }
+  .filter-select {
+    padding:4px 8px;border:1px solid var(--border);border-radius:6px;
+    font-family:var(--font);font-size:11px;background:var(--bg-card);
+    color:var(--text-dark);outline:none;min-height:70px;max-height:90px;overflow-y:auto;
+  }
+  @media (max-width:768px) {
+    .filter-row { gap:6px; }
+    .filter-select { min-width:140px; }
+  }
+
+  /* ── Mobile Responsivo ─────────────────────── */
+  @media (max-width: 768px) {
+    /* Layout */
+    .sidebar { transform:translateX(-100%); transition:.3s; position:fixed; z-index:800; height:100vh; }
+    .sidebar.open { transform:translateX(0); }
+    .main { margin-left:0 !important; }
+    .topbar { padding:0 12px; }
+    .topbar-date { display:none; }
+    .topbar-title { font-size:13px; }
+    .topbar-meta  { display:none; }
+
+    /* Cards grid responsivo */
+    .cards-grid { grid-template-columns:1fr 1fr !important; gap:10px; }
+    .kpi-value  { font-size:18px !important; }
+
+    /* Conteúdo */
+    .content { padding:12px !important; }
+    .section-header { flex-direction:column; gap:8px; align-items:flex-start; }
+    .section-title  { font-size:18px; }
+
+    /* Filtros */
+    .filter-panel { padding:10px 12px; }
+    .filter-row { gap:8px; }
+    .filter-btns { gap:3px; }
+    .filter-btn { padding:3px 7px; font-size:10px; }
+    .filter-select { min-width:120px !important; min-height:60px; max-height:80px; }
+
+    /* Charts */
+    .chart-grid { grid-template-columns:1fr !important; }
+    .chart-wrap { height:200px !important; }
+
+    /* Tables */
+    .table-wrapper { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    table { min-width:500px; }
+
+    /* Panels */
+    .panel-header { flex-wrap:wrap; gap:6px; }
+    .panel-body { padding:12px; }
+
+    /* Bottom nav */
+    .bottom-nav { display:flex !important; }
+
+    /* Topbar buttons */
+    .topbar-right button span { display:none; }
+  }
+
+  @media (max-width: 480px) {
+    .cards-grid { grid-template-columns:1fr !important; }
+    .kpi-card { padding:14px; }
+    .kpi-value { font-size:20px !important; }
+    .chart-grid { grid-template-columns:1fr !important; }
+  }
+
   html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text-dark); font-size: 15px; }
   .app { display: flex; height: 100vh; overflow: hidden; }
 
@@ -279,7 +355,7 @@
     font-size: 14px; color: #fff; font-weight: 700; cursor: pointer; flex-shrink: 0;
   }
 
-  .content { flex: 1; overflow-y: auto; padding: 28px; }
+  .content { flex: 1; overflow-y: auto !important; overflow-x: hidden; padding: 28px; scroll-behavior: smooth; }
 
   /* ── TABS ── */
   .tab-pane { display: none; animation: fadeIn .2s ease; }
@@ -965,7 +1041,7 @@
   <div class="content">
 
     <!-- ════ ABA: VENDAS ════ -->
-    <div class="tab-pane active" id="tab-vendas">
+    <div class="tab-pane" id="tab-vendas">
       <div class="section-header">
         <div><div class="section-title">Vendas</div><div class="section-sub">Carregue uma planilha para visualizar os dados</div></div>
         <label for="upload-vendas" class="btn btn-primary">⬆️ Importar Planilha</label>
@@ -1019,153 +1095,6 @@
       </div>
     </div>
 
-    <!-- ════ ABA: AGREGADORES ════ -->
-ab-agregadores">
-      <div class="section-header">
-        <div>
-          <div class="section-title">🔗 Agregadores</div>
-          <div class="section-sub" id="agg-sub">Carregando dados do Google Sheets…</div>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <button class="btn btn-secondary" onclick="loadAgregadores(true)">🔄 Atualizar</button>
-          <button class="btn btn-primary" id="agg-btn-pdf" onclick="exportarAgregadoresPDF()" style="display:none">📄 Baixar PDF</button>
-          <span class="badge badge-green" id="agg-badge" style="display:none">● Google Sheets</span>
-        </div>
-      </div>
-
-      <!-- FILTROS -->
-      <div class="panel" id="agg-filtros" style="display:none">
-        <div class="panel-body" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end">
-          <div style="display:flex;flex-direction:column;gap:5px">
-            <label class="filter-label">Ano</label>
-            <select id="agg-sel-ano" onchange="renderAgregadores()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none">
-              <option value="">Todos</option>
-            </select>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:5px">
-            <label class="filter-label">Mês</label>
-            <select id="agg-sel-mes" onchange="renderAgregadores()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none">
-              <option value="">Todos</option>
-            </select>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:5px">
-            <label class="filter-label">Agregador</label>
-            <select id="agg-sel-agr" onchange="renderAgregadores()" style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);outline:none">
-              <option value="">Todos</option>
-            </select>
-          </div>
-          <button class="btn btn-secondary" onclick="resetAggFiltros()">🔄 Limpar</button>
-        </div>
-      </div>
-
-      <!-- KPIs estratégicos -->
-      <div class="cards-grid" id="agg-kpis" style="display:none">
-        <div class="kpi-card green">
-          <div class="kpi-icon">💰</div>
-          <div class="kpi-label">Faturamento Total</div>
-          <div class="kpi-value" id="agg-fat">—</div>
-          <div class="kpi-delta" id="agg-fat-sub"></div>
-          <div class="progress-bar"><div class="progress-fill" id="agg-fat-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon">💰</div>
-          <div class="kpi-label">Valor Médio / Visita</div>
-          <div class="kpi-value" id="agg-vmv">—</div>
-          <div class="kpi-delta" id="agg-vmv-sub"></div>
-        </div>
-        <div class="kpi-card amber">
-          <div class="kpi-icon">🎟️</div>
-          <div class="kpi-label">Ticket Médio Mensal</div>
-          <div class="kpi-value" id="agg-tmm">—</div>
-          <div class="kpi-delta" id="agg-tmm-sub"></div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon">🏃</div>
-          <div class="kpi-label">Frequência Média</div>
-          <div class="kpi-value" id="agg-freq">—</div>
-          <div class="kpi-delta" id="agg-freq-sub"></div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon">👥</div>
-          <div class="kpi-label">Usuários Únicos</div>
-          <div class="kpi-value" id="agg-users">—</div>
-          <div class="kpi-delta" id="agg-users-sub"></div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-icon">📋</div>
-          <div class="kpi-label">Check-ins</div>
-          <div class="kpi-value" id="agg-checkins">—</div>
-          <div class="kpi-delta" id="agg-checkins-sub"></div>
-        </div>
-        <div class="kpi-card" id="agg-mom-card">
-          <div class="kpi-icon">📈</div>
-          <div class="kpi-label">Crescimento MoM</div>
-          <div class="kpi-value" id="agg-mom">—</div>
-          <div class="kpi-delta" id="agg-mom-sub"></div>
-        </div>
-      </div>
-
-      <!-- Gráficos -->
-      <div class="chart-grid" id="agg-charts-1" style="display:none">
-        <div class="panel" style="grid-column:1/-1">
-          <div class="panel-header"><span class="panel-title">📈 Evolução do Faturamento por Agregador</span></div>
-          <div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="chart-agg-fat"></canvas></div></div>
-        </div>
-      </div>
-      <div class="chart-grid" id="agg-charts-2" style="display:none">
-        <div class="panel">
-          <div class="panel-header"><span class="panel-title">🏃 Check-ins por Mês</span></div>
-          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-agg-checkins"></canvas></div></div>
-        </div>
-        <div class="panel">
-          <div class="panel-header"><span class="panel-title">💰 Valor Médio / Visita</span></div>
-          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-agg-vmv"></canvas></div></div>
-        </div>
-      </div>
-      <div class="chart-grid" id="agg-charts-3" style="display:none">
-        <div class="panel">
-          <div class="panel-header"><span class="panel-title">🍩 Participação por Agregador</span></div>
-          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-agg-pie"></canvas></div></div>
-        </div>
-        <div class="panel">
-          <div class="panel-header"><span class="panel-title">🎟️ Ticket Médio Mensal</span></div>
-          <div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="chart-agg-ticket"></canvas></div></div>
-        </div>
-      </div>
-
-      <!-- Resumo estratégico automático -->
-      <div class="panel" id="agg-resumo-panel" style="display:none">
-        <div class="panel-header"><span class="panel-title">🧠 Resumo Estratégico</span></div>
-        <div class="panel-body" id="agg-resumo-body" style="font-size:14px;line-height:1.7;color:var(--text-dark)"></div>
-      </div>
-
-      <!-- Tabela detalhada -->
-      <div class="panel" id="agg-table-panel" style="display:none">
-        <div class="panel-header">
-          <span class="panel-title">📋 Dados Detalhados</span>
-          <span class="badge badge-green" id="agg-table-badge">● Google Sheets</span>
-        </div>
-        <div class="panel-body" id="agg-table-wrap"></div>
-      </div>
-
-      <!-- Empty state -->
-      <div id="agg-empty" class="fin-placeholder-wrap">
-        <div class="fin-ph-icon">🔗</div>
-        <div class="fin-ph-title">Agregadores</div>
-        <div class="fin-ph-desc">Os dados serão carregados automaticamente via Google Sheets (aba Agregadores)</div>
-        <div class="feature-chips" style="justify-content:center;margin-top:16px">
-          <span class="chip">💰 Valor médio por visita</span>
-          <span class="chip">🎟️ Ticket médio mensal</span>
-          <span class="chip">🏃 Frequência média</span>
-          <span class="chip">📈 Crescimento MoM</span>
-          <span class="chip">🔍 Filtro por ano · mês · agregador</span>
-        </div>
-      </div>
-    </div>
-    <!-- ════ ABA: FINANCEIRO ════ -->
-
-    <!-- ════ ABA: AGREGADORES ════ -->
-    <div class="tab-pane" id="t
     <!-- ════ ABA: AGREGADORES ════ -->
     <div class="tab-pane" id="tab-agregadores">
       <div class="section-header">
@@ -2168,10 +2097,10 @@ ab-agregadores">
     </div>
 
     <!-- GERAL -->
-    <div class="tab-pane" id="tab-vnd-geral">
+    <div class="tab-pane active" id="tab-vnd-geral">
       <div class="section-header">
         <div><div class="section-title">📈 Visão Geral de Vendas</div><div class="section-sub" id="ger-sub">Consolidado</div></div>
-        <button class="btn btn-secondary" onclick="exportarGeralPDF()">📄 Exportar PDF</button>
+        <button class="btn btn-secondary" onclick="geralPDFPreview()" style="gap:6px">📄 Exportar PDF</button>
       </div>
       <div class="panel" style="margin-bottom:16px"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
         <label class="filter-label" style="margin:0">Mês:</label>
@@ -2203,16 +2132,16 @@ ab-agregadores">
     <!-- CONTRATOS -->
     <div class="tab-pane" id="tab-vnd-contratos">
       <div class="section-header"><div><div class="section-title">📑 Contratos</div><div class="section-sub" id="cnt-sub">Carregando...</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="loadContratos(true)">🔄</button><span class="badge badge-green" id="cnt-badge" style="display:none">● VD_Contratos</span></div></div>
-      <div id="cnt-filtros" style="display:none;margin-bottom:16px"><div class="panel"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Ano</label><div id="cnt-anos-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Mês</label><div id="cnt-meses-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Dia</label><div id="cnt-dias-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Vendedor</label><select id="cnt-sel-vend" multiple onchange="cntRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;min-width:160px;min-height:100px;max-height:130px;overflow-y:auto"></select></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Plano</label><select id="cnt-sel-plano" multiple onchange="cntRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;min-width:230px;min-height:100px;max-height:130px;overflow-y:auto"></select></div>
-        <label style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-dark)"><input type="checkbox" id="cnt-toggle-online" style="width:16px;height:16px;accent-color:#1e6fe8">🌐 Somar Online</label>
-        <button class="btn btn-secondary" style="align-self:flex-end" onclick="cntResetFiltros()">↺</button>
-      </div></div></div>
-      <div class="cards-grid" id="cnt-kpis" style="display:none">
+      <div id="cnt-filtros" style="display:none"><div class="filter-panel"><div class="filter-row">
+        <div class="filter-group"><label class="filter-label">Ano</label><div class="filter-btns" id="cnt-anos-btns"></div></div>
+        <div class="filter-group"><label class="filter-label">Mês</label><div class="filter-btns" id="cnt-meses-btns"></div></div>
+        <div class="filter-group"><label class="filter-label">Dia</label><div class="filter-btns" id="cnt-dias-btns"></div></div>
+        <div class="filter-group"><label class="filter-label">Vendedor</label><select id="cnt-sel-vend" multiple onchange="cntRender()" class="filter-select" style="min-width:130px"></select></div>
+        <div class="filter-group"><label class="filter-label">Plano</label><select id="cnt-sel-plano" multiple onchange="cntRender()" class="filter-select" style="min-width:160px"></select></div>
+        <div class="filter-group" style="align-self:flex-end"><label style="display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;color:var(--text-dark)"><input type="checkbox" id="cnt-toggle-online" style="width:14px;height:14px;accent-color:#1e6fe8">🌐 Online</label></div>
+        <button class="filter-btn" style="align-self:flex-end" onclick="cntResetFiltros()">↺ Reset</button>
+      </div></div>
+      id="cnt-kpis" style="display:none">
         <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Faturamento</div><div class="kpi-value" id="cnt-kpi-fat">—</div><div class="kpi-delta" id="cnt-kpi-fat-sub"></div><div class="progress-bar"><div class="progress-fill" id="cnt-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
         <div class="kpi-card"><div class="kpi-icon">📋</div><div class="kpi-label">Total Contratos</div><div class="kpi-value" id="cnt-kpi-qtd">—</div><div class="kpi-delta" id="cnt-kpi-qtd-sub"></div></div>
         <div class="kpi-card amber"><div class="kpi-icon">🎟️</div><div class="kpi-label">Ticket Médio</div><div class="kpi-value" id="cnt-kpi-ticket">—</div><div class="kpi-delta" id="cnt-kpi-ticket-sub"></div></div>
@@ -2231,15 +2160,15 @@ ab-agregadores">
     <!-- SERVICOS -->
     <div class="tab-pane" id="tab-vnd-servicos">
       <div class="section-header"><div><div class="section-title">🛎️ Serviços</div><div class="section-sub" id="srv-sub">Carregando...</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="loadServicos(true)">🔄</button><span class="badge badge-green" id="srv-badge" style="display:none">● VD_Serviços</span></div></div>
-      <div id="srv-filtros" style="display:none;margin-bottom:16px"><div class="panel"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Ano</label><div id="srv-anos-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Mês</label><div id="srv-meses-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Tipo</label><div id="srv-tipos-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Serviço</label><select id="srv-sel-serv" multiple onchange="srvRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;width:200px;min-height:90px;max-height:120px;overflow-y:auto"></select></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Vendedor</label><select id="srv-sel-vend" multiple onchange="srvRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;width:170px;min-height:90px;max-height:120px;overflow-y:auto"></select></div>
-        <button class="btn btn-secondary" style="align-self:flex-end" onclick="srvResetFiltros()">↺</button>
-      </div></div></div>
-      <div class="cards-grid" id="srv-kpis" style="display:none">
+      <div id="srv-filtros" style="display:none"><div class="filter-panel"><div class="filter-row">
+        <div class="filter-group"><label class="filter-label">Ano</label><div class="filter-btns" id="srv-anos-btns"></div></div>
+        <div class="filter-group"><label class="filter-label">Mês</label><div class="filter-btns" id="srv-meses-btns"></div></div>
+        <div class="filter-group"><label class="filter-label">Tipo</label><div class="filter-btns" id="srv-tipos-btns"></div></div>
+        <div class="filter-group"><label class="filter-label">Serviço</label><select id="srv-sel-serv" multiple onchange="srvRender()" class="filter-select" style="min-width:150px"></select></div>
+        <div class="filter-group"><label class="filter-label">Vendedor</label><select id="srv-sel-vend" multiple onchange="srvRender()" class="filter-select" style="min-width:130px"></select></div>
+        <button class="filter-btn" style="align-self:flex-end" onclick="srvResetFiltros()">↺ Reset</button>
+      </div></div>
+      id="srv-kpis" style="display:none">
         <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Faturamento</div><div class="kpi-value" id="srv-kpi-fat">—</div><div class="kpi-delta" id="srv-kpi-fat-sub"></div><div class="progress-bar"><div class="progress-fill" id="srv-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
         <div class="kpi-card"><div class="kpi-icon">🛎️</div><div class="kpi-label">Total Serviços</div><div class="kpi-value" id="srv-kpi-qtd">—</div><div class="kpi-delta" id="srv-kpi-qtd-sub"></div></div>
         <div class="kpi-card amber"><div class="kpi-icon">🎟️</div><div class="kpi-label">Ticket Médio</div><div class="kpi-value" id="srv-kpi-ticket">—</div><div class="kpi-delta" id="srv-kpi-ticket-sub"></div></div>
@@ -2257,15 +2186,15 @@ ab-agregadores">
     <!-- PRODUTOS -->
     <div class="tab-pane" id="tab-vnd-produtos">
       <div class="section-header"><div><div class="section-title">🛍️ Produtos</div><div class="section-sub" id="prd-sub">Carregando...</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="loadProdutos(true)">🔄</button><span class="badge badge-green" id="prd-badge" style="display:none">● VD_Produtos</span></div></div>
-      <div id="prd-filtros" style="display:none;margin-bottom:16px"><div class="panel"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start">
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Ano</label><div id="prd-anos-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Mês</label><div id="prd-meses-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Dia</label><div id="prd-dias-btns" style="display:flex;gap:4px;flex-wrap:wrap"></div></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Produto</label><select id="prd-sel-prod" multiple onchange="prdRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;width:220px;min-height:120px;overflow-y:auto"><option value="">Todos</option></select></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Vendedor</label><select id="prd-sel-vend" multiple onchange="prdRender()" style="padding:5px 8px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:12px;background:var(--bg-card);color:var(--text-dark);outline:none;width:180px;min-height:120px;overflow-y:auto"><option value="">Todos</option></select></div>
-        <button class="btn btn-secondary" style="align-self:flex-end" onclick="prdResetFiltros()">↺</button>
-      </div></div></div>
-      <div class="cards-grid" id="prd-kpis" style="display:none">
+      <div id="prd-filtros" style="display:none"><div class="filter-panel"><div class="filter-row">
+        <div class="filter-group"><label class="filter-label">Ano</label><div class="filter-btns" id="prd-anos-btns"></div></div>
+        <div class="filter-group"><label class="filter-label">Mês</label><div class="filter-btns" id="prd-meses-btns"></div></div>
+        <div class="filter-group"><label class="filter-label">Dia</label><div class="filter-btns" id="prd-dias-btns"></div></div>
+        <div class="filter-group"><label class="filter-label">Produto</label><select id="prd-sel-prod" multiple onchange="prdRender()" class="filter-select" style="min-width:160px"><option value="">Todos</option></select></div>
+        <div class="filter-group"><label class="filter-label">Vendedor</label><select id="prd-sel-vend" multiple onchange="prdRender()" class="filter-select" style="min-width:130px"><option value="">Todos</option></select></div>
+        <button class="filter-btn" style="align-self:flex-end" onclick="prdResetFiltros()">↺ Reset</button>
+      </div></div>
+      id="prd-kpis" style="display:none">
         <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Total Faturado</div><div class="kpi-value" id="prd-kpi-fat">—</div><div class="kpi-delta" id="prd-kpi-fat-sub"></div><div class="progress-bar"><div class="progress-fill" id="prd-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
         <div class="kpi-card amber"><div class="kpi-icon">📦</div><div class="kpi-label">Total Itens</div><div class="kpi-value" id="prd-kpi-itens">—</div><div class="kpi-delta" id="prd-kpi-itens-sub"></div></div>
         <div class="kpi-card"><div class="kpi-icon">🎟️</div><div class="kpi-label">Ticket Médio</div><div class="kpi-value" id="prd-kpi-ticket">—</div><div class="kpi-delta" id="prd-kpi-ticket-sub"></div></div>
@@ -2282,13 +2211,13 @@ ab-agregadores">
     <!-- PAGAMENTOS -->
     <div class="tab-pane" id="tab-fin-pagamentos">
       <div class="section-header"><div><div class="section-title">💳 Formas de Pagamento</div><div class="section-sub" id="pag-sub">Carregando...</div></div><div style="display:flex;gap:8px"><button class="btn btn-secondary" onclick="loadPagamentos(true)">🔄</button><span class="badge badge-green" id="pag-badge" style="display:none">● BD_Recebimento</span></div></div>
-      <div id="pag-filtros" style="display:none;margin-bottom:16px"><div class="panel"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Ano</label><div style="display:flex;gap:4px;flex-wrap:wrap" id="pag-anos-btns"></div></div>
-        <div style="display:flex;flex-direction:column;gap:5px"><label class="filter-label">Mês</label><div style="display:flex;gap:4px;flex-wrap:wrap" id="pag-meses-btns"></div></div>
-        <label style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text-dark);white-space:nowrap;align-self:flex-end"><input type="checkbox" id="pag-toggle-stone" style="width:16px;height:16px;accent-color:#ef4444;cursor:pointer">🔴 Validar SEM STONE</label>
-        <button class="btn btn-secondary" style="align-self:flex-end" onclick="pagResetFiltros()">↺</button>
-      </div></div></div>
-      <div class="cards-grid" id="pag-kpis" style="display:none">
+      <div id="pag-filtros" style="display:none"><div class="filter-panel"><div class="filter-row">
+        <div class="filter-group"><label class="filter-label">Ano</label><div class="filter-btns" id="pag-anos-btns"></div></div>
+        <div class="filter-group"><label class="filter-label">Mês</label><div class="filter-btns" id="pag-meses-btns"></div></div>
+        <div class="filter-group" style="align-self:flex-end"><label style="display:flex;align-items:center;gap:6px;padding:5px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;color:var(--text-dark)"><input type="checkbox" id="pag-toggle-stone" style="width:14px;height:14px;accent-color:#ef4444">🔴 SEM STONE</label></div>
+        <button class="filter-btn" style="align-self:flex-end" onclick="pagResetFiltros()">↺ Reset</button>
+      </div></div>
+      id="pag-kpis" style="display:none">
         <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label">Total Recebido</div><div class="kpi-value" id="pag-kpi-total">—</div><div class="kpi-delta" id="pag-kpi-total-sub"></div><div class="progress-bar"><div class="progress-fill" id="pag-prog" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
         <div class="kpi-card" style="border:2px solid #ef4444"><div class="kpi-icon">⚠️</div><div class="kpi-label" style="color:#ef4444;font-weight:700">SEM STONE (Risco)</div><div class="kpi-value" id="pag-kpi-semstone" style="color:#ef4444">—</div><div class="kpi-delta" id="pag-kpi-semstone-sub"></div></div>
         <div class="kpi-card"><div class="kpi-icon">📱</div><div class="kpi-label">PIX</div><div class="kpi-value" id="pag-kpi-pix">—</div><div class="kpi-delta" id="pag-kpi-pix-sub"></div></div>
@@ -2850,15 +2779,7 @@ async function loadFinanceiro(force) {
     if (force) {
       toast(`${rows.length} registros carregados -- ${periodLabelText()}`,'📊');
       startAutoRefresh();
-    loadFaturamento(false); loadAgregadores(false);
-    loadFinanceiro(false); loadPagamentos(false);
-    loadContratos(false); loadServicos(false); loadProdutos(false);
-    // Timeout de segurança: some a loading screen após 15s no máximo
-    setTimeout(() => {
-      ['_kaizFatOk','_kaizAggOk','_kaizFinOk','_kaizPagOk','_kaizCntOk','_kaizSrvOk','_kaizPrdOk']
-        .forEach(f => { if(!window[f]) window[f]=true; });
-      _kaizCheckLoaded();
-    }, 5000); // reseta o timer ao atualizar manualmente
+    // auto-load movido para DOMContentLoaded
     }
 
   } catch(err) {
@@ -4813,7 +4734,7 @@ const cntParseData = v => {
 let cntAnoSel='',cntMesSel='',cntDiaSel='',cntBarView='dia';
 let cntChartBar=null,cntChartDonut=null;
 
-function cntBtnStyle(a){return 'padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;background:'+(a?'#1e6fe8':'var(--bg-card)')+';color:'+(a?'#fff':'var(--text-dark)');}
+function cntBtnStyle(a){return 'filter-btn'+(a?' active':'');}
 
 async function loadContratos(force){
   const sub=document.getElementById('cnt-sub');
@@ -4862,11 +4783,11 @@ function cntPopularFiltros(){
   const normP=p=>somarOnline?p.replace(/\s*\(online\)\s*/i,'').trim():p;
   const planos=[...new Set(cntData.map(r=>normP(r.plano)).filter(Boolean))].sort();
   const aEl=document.getElementById('cnt-anos-btns');
-  if(aEl) aEl.innerHTML='<button style="'+cntBtnStyle(cntAnoSel==='')+'" onclick="cntSetF(\'ano\',\'\')">Todos</button>'+anos.map(a=>'<button style="'+cntBtnStyle(cntAnoSel===a)+'" onclick="cntSetF(\'ano\',\''+a+'\')">'+a+'</button>').join('');
+  if(aEl) aEl.innerHTML='<button class="'+cntBtnStyle(cntAnoSel==='')+'" onclick="cntSetF(\'ano\',\'\')">Todos</button>'+anos.map(a=>'<button class="'+cntBtnStyle(cntAnoSel===a)+'" onclick="cntSetF(\'ano\',\''+a+'\')">'+a+'</button>').join('');
   const mEl=document.getElementById('cnt-meses-btns');
-  if(mEl) mEl.innerHTML='<button style="'+cntBtnStyle(cntMesSel==='')+'" onclick="cntSetF(\'mes\',\'\')">Todos</button>'+meses.map(m=>'<button style="'+cntBtnStyle(cntMesSel===m)+'" onclick="cntSetF(\'mes\',\''+m+'\')">'+m.charAt(0).toUpperCase()+m.slice(1,3)+'</button>').join('');
+  if(mEl) mEl.innerHTML='<button class="'+cntBtnStyle(cntMesSel==='')+'" onclick="cntSetF(\'mes\',\'\')">Todos</button>'+meses.map(m=>'<button class="'+cntBtnStyle(cntMesSel===m)+'" onclick="cntSetF(\'mes\',\''+m+'\')">'+m.charAt(0).toUpperCase()+m.slice(1,3)+'</button>').join('');
   const dEl=document.getElementById('cnt-dias-btns');
-  if(dEl) dEl.innerHTML='<button style="'+cntBtnStyle(cntDiaSel==='')+'" onclick="cntSetF(\'dia\',\'\')">Todos</button>'+dias.map(d=>'<button style="'+cntBtnStyle(cntDiaSel===d)+'" onclick="cntSetF(\'dia\',\''+d+'\')">'+d+'</button>').join('');
+  if(dEl) dEl.innerHTML='<button class="'+cntBtnStyle(cntDiaSel==='')+'" onclick="cntSetF(\'dia\',\'\')">Todos</button>'+dias.map(d=>'<button class="'+cntBtnStyle(cntDiaSel===d)+'" onclick="cntSetF(\'dia\',\''+d+'\')">'+d+'</button>').join('');
   const vEl=document.getElementById('cnt-sel-vend');
   if(vEl){const selV=new Set([...vEl.selectedOptions].map(o=>o.value));vEl.innerHTML=vends.map(v=>'<option value="'+v+'"'+(selV.has(v)?' selected':'')+'>'+v+'</option>').join('');}
   const pEl=document.getElementById('cnt-sel-plano');
@@ -4953,7 +4874,7 @@ const srvParseData=v=>{if(!v)return null;if(v instanceof Date)return isNaN(v.get
 let srvAnoSel='',srvMesSel='',srvTipoSel='';
 let srvChartDonut=null,srvChartDia=null;
 
-function srvBtnStyle(a){return 'padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;background:'+(a?'#1e6fe8':'var(--bg-card)')+';color:'+(a?'#fff':'var(--text-dark)');}
+function srvBtnStyle(a){return 'filter-btn'+(a?' active':'');}
 
 async function loadServicos(force){
   const sub=document.getElementById('srv-sub');if(sub)sub.textContent='Conectando…';
@@ -4981,9 +4902,9 @@ function srvPopularFiltros(){
   const tipos=[...new Set(srvData.map(r=>r.tipo).filter(Boolean))].sort();
   const vends=[...new Set(srvData.map(r=>r.vendedor).filter(Boolean))].sort();
   const servicos=[...new Set(srvData.map(r=>r.servico).filter(Boolean))].sort();
-  const aEl=document.getElementById('srv-anos-btns');if(aEl)aEl.innerHTML='<button style="'+srvBtnStyle(srvAnoSel==='')+'" onclick="srvSetF(\'ano\',\'\')">Todos</button>'+anos.map(a=>'<button style="'+srvBtnStyle(srvAnoSel===a)+'" onclick="srvSetF(\'ano\',\''+a+'\')">'+a+'</button>').join('');
-  const mEl=document.getElementById('srv-meses-btns');if(mEl)mEl.innerHTML='<button style="'+srvBtnStyle(srvMesSel==='')+'" onclick="srvSetF(\'mes\',\'\')">Todos</button>'+meses.map(m=>'<button style="'+srvBtnStyle(srvMesSel===m)+'" onclick="srvSetF(\'mes\',\''+m+'\')">'+m.charAt(0).toUpperCase()+m.slice(1,3)+'</button>').join('');
-  const tEl=document.getElementById('srv-tipos-btns');if(tEl)tEl.innerHTML='<button style="'+srvBtnStyle(srvTipoSel==='')+'" onclick="srvSetF(\'tipo\',\'\')">Todos</button>'+tipos.map(t=>'<button style="'+srvBtnStyle(srvTipoSel===t)+'" onclick="srvSetF(\'tipo\',\''+t+'\')">'+t+'</button>').join('');
+  const aEl=document.getElementById('srv-anos-btns');if(aEl)aEl.innerHTML='<button class="'+srvBtnStyle(srvAnoSel==='')+'" onclick="srvSetF(\'ano\',\'\')">Todos</button>'+anos.map(a=>'<button class="'+srvBtnStyle(srvAnoSel===a)+'" onclick="srvSetF(\'ano\',\''+a+'\')">'+a+'</button>').join('');
+  const mEl=document.getElementById('srv-meses-btns');if(mEl)mEl.innerHTML='<button class="'+srvBtnStyle(srvMesSel==='')+'" onclick="srvSetF(\'mes\',\'\')">Todos</button>'+meses.map(m=>'<button class="'+srvBtnStyle(srvMesSel===m)+'" onclick="srvSetF(\'mes\',\''+m+'\')">'+m.charAt(0).toUpperCase()+m.slice(1,3)+'</button>').join('');
+  const tEl=document.getElementById('srv-tipos-btns');if(tEl)tEl.innerHTML='<button class="'+srvBtnStyle(srvTipoSel==='')+'" onclick="srvSetF(\'tipo\',\'\')">Todos</button>'+tipos.map(t=>'<button class="'+srvBtnStyle(srvTipoSel===t)+'" onclick="srvSetF(\'tipo\',\''+t+'\')">'+t+'</button>').join('');
   const sEl=document.getElementById('srv-sel-serv');if(sEl){const selS=new Set([...sEl.selectedOptions].map(o=>o.value));sEl.innerHTML=servicos.map(s=>'<option value="'+s+'"'+(selS.has(s)?' selected':'')+'>'+s+'</option>').join('');}
   const vEl=document.getElementById('srv-sel-vend');if(vEl){const selV=new Set([...vEl.selectedOptions].map(o=>o.value));vEl.innerHTML=vends.map(v=>'<option value="'+v+'"'+(selV.has(v)?' selected':'')+'>'+v+'</option>').join('');}
   document.getElementById('srv-filtros').style.display='block';
@@ -5049,32 +4970,14 @@ const prdParseData=v=>{if(!v)return null;if(v instanceof Date)return isNaN(v.get
 let prdAnoSel='',prdMesSel='',prdDiaSel='';
 let prdChartVend=null,prdChartTop10=null;
 
-function prdBtnStyle(a){return 'padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;background:'+(a?'#1e6fe8':'var(--bg-card)')+';color:'+(a?'#fff':'var(--text-dark)');}
-
-async function loadProdutos(force){
-  const sub=document.getElementById('prd-sub');if(sub)sub.textContent='Conectando…';
-  try{
-    const resp=await fetch(APPS_SCRIPT_PRD_URL);if(!resp.ok)throw new Error('HTTP '+resp.status);
-    const json=await resp.json();const rows=json.rows||[];if(!rows.length)throw new Error('VD_Produtos sem dados');
-    const sample=rows[0]||{};const allKeys=Object.keys(sample);
-    const fk=pat=>allKeys.find(k=>pat.test(String(k).trim()))||'';
-    const kDesc=fk(/descri/i),kQtd=fk(/quant/i),kVal=fk(/valor/i);
-    const kData=fk(/data.*venda|venda.*data/i)||fk(/data/i),kVend=fk(/comiss/i);
-    prdData=rows.map(r=>{const nome=String(r[kDesc]||'').trim().toUpperCase();const dt=prdParseData(r[kData]);return{produto:nome,qtd:Math.max(1,parseInt(r[kQtd])||1),valor:prdPV(r[kVal]),dt,mes:dt?MESES_FULL_CNT[dt.getMonth()]:'',mesN:dt?dt.getMonth():-1,ano:dt?String(dt.getFullYear()):'',diaSem:dt?DIAS_SEMANA_CNT[dt.getDay()]:'',diaSemN:dt?dt.getDay():-1,vendedor:String(r[kVend]||'').trim()||'Sem vendedor'};}).filter(r=>r.produto&&r.qtd>0);
-    if(!prdData.length)throw new Error('0 registros validos');
-    prdLoaded=true; window._kaizPrdOk=true; kzStatusUpdate('kzs-prd','done','ok'); _kaizCheckLoaded();
-    if(document.getElementById('tab-vnd-geral')?.classList.contains('active')) geralRender();
-    document.getElementById('prd-badge').style.display='inline-block';document.getElementById('prd-empty').style.display='none';
-    prdPopularFiltros();prdRender();if(force)toast('Produtos: '+prdData.length+' registros','🛍️');
-  }catch(err){window._kaizPrdOk=true;kzStatusUpdate('kzs-prd','loading','erro');_kaizCheckLoaded();console.error('[Produtos]',err);const s=document.getElementById('prd-sub');if(s)s.textContent='Erro: '+err.message;toast('Erro VD_Produtos: '+err.message,'❌');}
-}
+function prdBtnStyle(a){return 'filter-btn'+(a?' active':'');}
 function prdPopularFiltros(){
   const anos=[...new Set(prdData.map(r=>r.ano).filter(Boolean))].sort();
   const meses=[...new Set(prdData.map(r=>r.mes).filter(Boolean))].sort((a,b)=>MESES_FULL_CNT.indexOf(a)-MESES_FULL_CNT.indexOf(b));
   const dias=DIAS_SEMANA_CNT.filter(d=>prdData.some(r=>r.diaSem===d));
   const prods=[...new Set(prdData.map(r=>r.produto).filter(Boolean))].sort();
   const vends=[...new Set(prdData.map(r=>r.vendedor).filter(Boolean))].sort();
-  const mkBtn=(label,ativo,fn)=>'<button style="'+prdBtnStyle(ativo)+'" onclick="'+fn+'">'+label+'</button>';
+  const mkBtn=(label,ativo,fn)=>'<button class="'+prdBtnStyle(ativo)+'" onclick="'+fn+'">'+label+'</button>';
   const aEl=document.getElementById('prd-anos-btns');if(aEl)aEl.innerHTML=mkBtn('Todos',prdAnoSel==='',"prdSetF('ano','')")+anos.map(a=>mkBtn(a,prdAnoSel===a,"prdSetF('ano','"+a+"')")).join('');
   const mEl=document.getElementById('prd-meses-btns');if(mEl)mEl.innerHTML=mkBtn('Todos',prdMesSel==='',  "prdSetF('mes','')")+meses.map(m=>mkBtn(m.charAt(0).toUpperCase()+m.slice(1,3),prdMesSel===m,"prdSetF('mes','"+m+"')")).join('');
   const dEl=document.getElementById('prd-dias-btns');if(dEl)dEl.innerHTML=mkBtn('Todos',prdDiaSel==='',  "prdSetF('dia','')")+dias.map(d=>mkBtn(d,prdDiaSel===d,"prdSetF('dia','"+d+"')")).join('');
@@ -5238,9 +5141,9 @@ async function loadPagamentos(force){
 function pagPopularFiltros(){
   const anos=[...new Set(pagData.map(r=>r.ano).filter(Boolean))].sort();
   const meses=[...new Set(pagData.map(r=>r.mes).filter(Boolean))].sort((a,b)=>MESES_ORD_PAG.indexOf(a)-MESES_ORD_PAG.indexOf(b));
-  const btnSt=(a)=>'padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;background:'+(a?'#1e6fe8':'var(--bg-card)')+';color:'+(a?'#fff':'var(--text-dark)');
-  const aEl=document.getElementById('pag-anos-btns');if(aEl)aEl.innerHTML='<button style="'+btnSt(pagAnoSel2==='')+'" onclick="pagSetAno(\'\')">Todos</button>'+anos.map(a=>'<button style="'+btnSt(pagAnoSel2===a)+'" onclick="pagSetAno(\''+a+'\')">'+a+'</button>').join('');
-  const mEl=document.getElementById('pag-meses-btns');if(mEl)mEl.innerHTML='<button style="'+btnSt(pagMesSel2==='')+'" onclick="pagSetMes(\'\')">Todos</button>'+meses.map(m=>'<button style="'+btnSt(pagMesSel2===m)+'" onclick="pagSetMes(\''+m+'\')">'+m.charAt(0).toUpperCase()+m.slice(1,3)+'</button>').join('');
+  const btnSt=(a)=>'filter-btn'+(a?' active':'');
+  const aEl=document.getElementById('pag-anos-btns');if(aEl)aEl.innerHTML='<button class="'+btnSt(pagAnoSel2==='')+'" onclick="pagSetAno(\'\')">Todos</button>'+anos.map(a=>'<button class="'+btnSt(pagAnoSel2===a)+'" onclick="pagSetAno(\''+a+'\')">'+a+'</button>').join('');
+  const mEl=document.getElementById('pag-meses-btns');if(mEl)mEl.innerHTML='<button class="'+btnSt(pagMesSel2==='')+'" onclick="pagSetMes(\'\')">Todos</button>'+meses.map(m=>'<button class="'+btnSt(pagMesSel2===m)+'" onclick="pagSetMes(\''+m+'\')">'+m.charAt(0).toUpperCase()+m.slice(1,3)+'</button>').join('');
   document.getElementById('pag-filtros').style.display='block';
 }
 function pagSetAno(a){pagAnoSel2=a;pagPopularFiltros();renderPagamentos();}
@@ -5316,6 +5219,262 @@ function skyLoadingHide(){
 // mobVndGo movida para o início
 
 
+
+// ── Preview + Export PDF Geral ────────────────────────────
+function geralPDFPreview() {
+  const modal = document.getElementById('ger-pdf-modal');
+  if (!modal) return;
+  // Preencher preview
+  const todos  = geralGetTodos();
+  const dados  = geralGetFiltered(todos);
+  const fatF   = geralFatFiltrado(geralMesSel);
+  const aggF   = geralAggFiltrado(geralMesSel);
+  const mesLbl = geralMesSel ? geralMesSel.charAt(0).toUpperCase()+geralMesSel.slice(1) : 'Todos os meses';
+  const volTotal = dados.reduce((s,r)=>s+r.valor,0);
+  const porTipo  = dados.reduce((a,r)=>{a[r.tipo]=(a[r.tipo]||0)+r.valor;return a;},{});
+  const pv = v => typeof v==='number'?v:parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;
+  const fatBase  = fatF.reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0);
+
+  const porPlano = dados.filter(r=>r.tipo==='Contratos').reduce((a,r)=>{
+    const k=r.plano.replace(/\s*\(online\)\s*/i,'').trim(); if(!k) return a;
+    if(!a[k]) a[k]={qtd:0,fat:0}; a[k].qtd++; a[k].fat+=r.valor; return a;
+  },{});
+  const top5 = Object.entries(porPlano).sort((a,b)=>b[1].qtd-a[1].qtd).slice(0,5);
+
+  const wrap = document.getElementById('ger-pdf-preview');
+  if (!wrap) return;
+  wrap.innerHTML = `
+    <div style="font-family:'Courier New',monospace;color:#0d1b2a;padding:24px;background:#fff;min-height:500px">
+      <div style="background:#0d1b2a;margin:-24px -24px 20px;padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:20px;font-weight:900;letter-spacing:.3em;color:#00f5c4">KAIZEN</div>
+          <div style="font-size:9px;letter-spacing:.25em;color:rgba(0,245,196,.6);margin-top:2px">PERFORMANCE by KANAWA</div>
+        </div>
+        <div style="text-align:right;font-size:10px;color:rgba(255,255,255,.5)">
+          <div>Período: ${mesLbl}</div>
+          <div>${new Date().toLocaleDateString('pt-BR')}</div>
+        </div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:#1e6fe8;letter-spacing:.05em;border-bottom:2px solid #1e6fe8;padding-bottom:4px;margin-bottom:12px">VENDAS</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+        ${[
+          {l:'Volume Total',v:fmtBRL(volTotal),c:'#7c3aed'},
+          {l:'Maior Fonte',v:(Object.entries(porTipo).sort((a,b)=>b[1]-a[1])[0]||['—'])[0],c:'#1e6fe8'},
+          {l:'Faturamento Base',v:fmtBRL(fatBase),c:'#22c55e'},
+        ].map(k=>`<div style="border-left:3px solid ${k.c};padding:8px 10px;background:#f8fafc;border-radius:0 6px 6px 0">
+          <div style="font-size:9px;color:#6b7280;font-weight:700;text-transform:uppercase">${k.l}</div>
+          <div style="font-size:14px;font-weight:800;color:${k.c};margin-top:2px">${k.v}</div>
+        </div>`).join('')}
+      </div>
+      <div style="font-size:11px;font-weight:700;color:#1e6fe8;letter-spacing:.05em;border-bottom:2px solid #1e6fe8;padding-bottom:4px;margin:16px 0 10px">TOP 5 PLANOS</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr style="background:#f1f5f9">
+          <th style="padding:6px 8px;text-align:left;color:#6b7280">#</th>
+          <th style="padding:6px 8px;text-align:left;color:#6b7280">Plano</th>
+          <th style="padding:6px 8px;text-align:center;color:#6b7280">Qtd</th>
+          <th style="padding:6px 8px;text-align:right;color:#6b7280">Faturamento</th>
+        </tr></thead>
+        <tbody>${top5.map(([p,d],i)=>`
+          <tr style="border-bottom:1px solid #e5e7eb">
+            <td style="padding:6px 8px;font-weight:800;color:${['#7c3aed','#1e6fe8','#22c55e','#f59e0b','#ec4899'][i]}">${i+1}</td>
+            <td style="padding:6px 8px;font-weight:600">${p.length>40?p.slice(0,40)+'…':p}</td>
+            <td style="padding:6px 8px;text-align:center;font-weight:700">${d.qtd}</td>
+            <td style="padding:6px 8px;text-align:right;color:#16a34a;font-weight:700">${fmtBRL(d.fat)}</td>
+          </tr>`).join('')}</tbody>
+      </table>
+      <div style="margin-top:20px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:9px;color:#9ca3af;display:flex;justify-content:space-between">
+        <span>KAIZEN PERFORMANCE by KANAWA — Relatorio Confidencial</span>
+        <span>${new Date().toLocaleDateString('pt-BR')}</span>
+      </div>
+    </div>`;
+  modal.style.display = 'flex';
+}
+
+async function exportarGeralPDF() {
+  if (typeof jspdf === 'undefined') {
+    toast('Biblioteca PDF nao carregada. Recarregue a pagina.', '❌'); return;
+  }
+  toast('Gerando PDF...', '⏳');
+  try {
+    const { jsPDF } = jspdf;
+    const pdf = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const W=pdf.internal.pageSize.getWidth(), H=pdf.internal.pageSize.getHeight();
+    const MAR=12, CW=W-MAR*2;
+    let Y=MAR;
+    const TEAL=[0,205,164], AZUL=[30,111,232], VERDE=[34,197,94], VERM=[239,68,68], ESCURO=[13,27,42], CINZA=[100,120,140];
+
+    function hLine(y){pdf.setDrawColor(220,228,240);pdf.setLineWidth(0.2);pdf.line(MAR,y,W-MAR,y);}
+    function checkPage(n){if(Y+n>H-MAR){pdf.addPage();Y=MAR;}}
+
+    // Capa
+    pdf.setFillColor(...ESCURO); pdf.rect(0,0,W,52,'F');
+    pdf.setFillColor(...TEAL);   pdf.rect(0,52,W,1.5,'F');
+    // Logo K
+    const hx=MAR+10, hy=14;
+    const pts=[]; for(let i=0;i<6;i++){const a=Math.PI/180*(60*i-30);pts.push([hx+8*Math.cos(a),hy+8*Math.sin(a)]);}
+    pdf.setDrawColor(...TEAL); pdf.setLineWidth(0.8);
+    for(let i=0;i<6;i++){const n=(i+1)%6;pdf.line(pts[i][0],pts[i][1],pts[n][0],pts[n][1]);}
+    pdf.setLineWidth(0.6);
+    pdf.line(hx-3,hy-5,hx-3,hy+5); pdf.line(hx-3,hy,hx+4,hy-5); pdf.line(hx-3,hy,hx+4,hy+5);
+    // Marca
+    pdf.setFontSize(18); pdf.setTextColor(0,205,164); pdf.setFont(undefined,'bold'); pdf.text('KAIZEN',MAR+22,hy-1);
+    pdf.setFontSize(8);  pdf.setTextColor(180,200,220); pdf.setFont(undefined,'normal'); pdf.text('PERFORMANCE  by  KANAWA',MAR+22,hy+5);
+    const mesLabel = geralMesSel ? geralMesSel.charAt(0).toUpperCase()+geralMesSel.slice(1) : 'Todos os meses';
+    const dataHoje = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+    pdf.setFontSize(8); pdf.setTextColor(180,200,220);
+    pdf.text('Emitido em '+dataHoje,W-MAR,hy-1,{align:'right'});
+    pdf.text('Periodo: '+mesLabel,W-MAR,hy+5,{align:'right'});
+    pdf.setFontSize(14); pdf.setTextColor(255,255,255); pdf.setFont(undefined,'bold');
+    pdf.text('Relatorio de Gestao - Visao Geral',MAR,40);
+    pdf.setFontSize(8); pdf.setFont(undefined,'normal'); pdf.setTextColor(180,200,220);
+    pdf.text('Consolidado de Vendas | Faturamento | Check-ins | Top Planos',MAR,46);
+    Y=60;
+
+    // KPIs Vendas
+    pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(...TEAL);
+    pdf.text('VENDAS (CONTRATOS | SERVICOS | PRODUTOS)',MAR,Y);
+    Y+=4; hLine(Y); Y+=5;
+    const todos=geralGetTodos(), dados=geralGetFiltered(todos);
+    const volTotal=dados.reduce((s,r)=>s+r.valor,0);
+    const porTipo=dados.reduce((a,r)=>{a[r.tipo]=(a[r.tipo]||0)+r.valor;return a;},{});
+    const maiorFonte=Object.entries(porTipo).sort((a,b)=>b[1]-a[1])[0];
+    const porVend=dados.reduce((a,r)=>{if(!r.vendedor||/online|site|sem vendedor/i.test(r.vendedor))return a;a[r.vendedor]=(a[r.vendedor]||0)+r.valor;return a;},{});
+    const topVend=Object.entries(porVend).sort((a,b)=>b[1]-a[1])[0];
+    const kpiW=CW/3-3, kpiH=22;
+    [{label:'Volume Total de Vendas',val:fmtBRL(volTotal),sub:'',cor:TEAL},
+     {label:'Maior Fonte de Venda',val:maiorFonte?maiorFonte[0]:'---',sub:maiorFonte?fmtBRL(maiorFonte[1]):'',cor:AZUL},
+     {label:'Maior Vendedor',val:topVend?topVend[0].split(' ')[0]:'---',sub:topVend?fmtBRL(topVend[1]):'',cor:VERDE}
+    ].forEach((k,i)=>{
+      const x=MAR+i*(kpiW+3);
+      pdf.setFillColor(245,248,252); pdf.roundedRect(x,Y,kpiW,kpiH,2,2,'F');
+      pdf.setFillColor(...k.cor); pdf.rect(x,Y,2,kpiH,'F');
+      pdf.setFontSize(6.5); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA); pdf.text(k.label.toUpperCase(),x+4,Y+5);
+      pdf.setFontSize(11); pdf.setFont(undefined,'bold'); pdf.setTextColor(...ESCURO); pdf.text(k.val,x+4,Y+12);
+      if(k.sub){pdf.setFontSize(7); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA); pdf.text(k.sub,x+4,Y+18);}
+    });
+    Y+=kpiH+8;
+
+    // KPIs Fat base
+    checkPage(40);
+    pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(...TEAL);
+    pdf.text('FATURAMENTO REAL (EVO | TOTALPASS | WELLHUB)',MAR,Y);
+    Y+=4; hLine(Y); Y+=5;
+    const pv=v=>typeof v==='number'?v:parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;
+    const fatF=geralFatFiltrado(geralMesSel);
+    const fatBase=fatF.reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0);
+    const porSis=['EVO','WellHub','TotalPass'].reduce((a,s)=>{a[s]=fatF.reduce((sum,r)=>sum+(String(r['Sistema']||'').toLowerCase()===s.toLowerCase()?pv(r['Faturamento']||r['Valor']||0):0),0);return a;},{});
+    const maiorSis=Object.entries(porSis).sort((a,b)=>b[1]-a[1])[0];
+    let tendText='---', tendCor=CINZA;
+    if(geralMesSel&&(fatData||[]).length){
+      const mi=['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'].indexOf(geralMesSel.toLowerCase());
+      const mAnt=mi>0?['janeiro','fevereiro','marco','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'][mi-1]:null;
+      if(mAnt){const fAnt=geralFatFiltrado(mAnt).reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0);if(fAnt>0){const pct=(fatBase-fAnt)/fAnt*100;tendText=(pct>=0?'(+':'(-')+Math.abs(pct).toFixed(1)+'%) vs '+mAnt.slice(0,3);tendCor=pct>=0?VERDE:VERM;}}
+    }
+    [{label:'Faturamento Total',val:fmtBRL(fatBase),sub:fatF.length+' registros',cor:VERDE},
+     {label:'Maior Fonte',val:maiorSis?maiorSis[0]:'---',sub:maiorSis?fmtBRL(maiorSis[1]):'',cor:AZUL},
+     {label:'Tendencia vs Anterior',val:tendText,sub:'comparativo mensal',cor:tendCor}
+    ].forEach((k,i)=>{
+      const x=MAR+i*(kpiW+3);
+      pdf.setFillColor(245,248,252); pdf.roundedRect(x,Y,kpiW,kpiH,2,2,'F');
+      pdf.setFillColor(...k.cor); pdf.rect(x,Y,2,kpiH,'F');
+      pdf.setFontSize(6.5); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA); pdf.text(k.label.toUpperCase(),x+4,Y+5);
+      pdf.setFontSize(11); pdf.setFont(undefined,'bold'); pdf.setTextColor(...k.cor); pdf.text(k.val,x+4,Y+12);
+      if(k.sub){pdf.setFontSize(7); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA); pdf.text(k.sub,x+4,Y+18);}
+    });
+    Y+=kpiH+8;
+
+    // Check-ins
+    const aggF=geralAggFiltrado(geralMesSel);
+    if(aggF.length){
+      checkPage(35);
+      pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(...TEAL);
+      pdf.text('CHECK-INS POR AGREGADOR',MAR,Y); Y+=4; hLine(Y); Y+=5;
+      const ckMap=aggF.reduce((a,r)=>{const ag=String(r['Agregador']||'').trim();if(!ag)return a;if(!a[ag])a[ag]={ck:0,fat:0};a[ag].ck+=parseInt(r['Check-ins'])||0;a[ag].fat+=pv(r['Faturamento']||0);return a;},{});
+      const agrs=Object.entries(ckMap).sort((a,b)=>b[1].ck-a[1].ck);
+      const agW=CW/Math.min(agrs.length,3)-3;
+      agrs.slice(0,3).forEach(([ag,d],i)=>{
+        const x=MAR+i*(agW+3), cor=ag.includes('Total')?VERDE:ag.toLowerCase().includes('well')?[236,72,153]:AZUL;
+        pdf.setFillColor(245,248,252); pdf.roundedRect(x,Y,agW,20,2,2,'F');
+        pdf.setFillColor(...cor); pdf.rect(x,Y,2,20,'F');
+        pdf.setFontSize(6.5); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA); pdf.text(ag.toUpperCase(),x+4,Y+5);
+        pdf.setFontSize(14); pdf.setFont(undefined,'bold'); pdf.setTextColor(...cor); pdf.text(d.ck.toLocaleString('pt-BR'),x+4,Y+13);
+        pdf.setFontSize(7); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA); pdf.text('check-ins | '+fmtBRL(d.fat),x+4,Y+18);
+      });
+      Y+=28;
+    }
+
+    // Top 5 Planos
+    checkPage(60);
+    const porPlano=dados.filter(r=>r.tipo==='Contratos').reduce((a,r)=>{const k=r.plano.replace(/\s*\(online\)\s*/i,'').trim();if(!k)return a;if(!a[k])a[k]={qtd:0,fat:0};a[k].qtd++;a[k].fat+=r.valor;return a;},{});
+    const top5=Object.entries(porPlano).sort((a,b)=>b[1].qtd-a[1].qtd).slice(0,5);
+    pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(...TEAL);
+    pdf.text('TOP 5 PLANOS MAIS VENDIDOS',MAR,Y); Y+=4; hLine(Y); Y+=3;
+    pdf.setFillColor(235,240,246); pdf.rect(MAR,Y,CW,7,'F');
+    pdf.setFontSize(7.5); pdf.setFont(undefined,'bold'); pdf.setTextColor(...CINZA);
+    pdf.text('#',MAR+3,Y+5); pdf.text('Plano',MAR+10,Y+5);
+    pdf.text('Qtd',W-MAR-35,Y+5,{align:'right'}); pdf.text('Faturamento',W-MAR-3,Y+5,{align:'right'});
+    Y+=7;
+    const CORES_R=[[0,205,164],[30,111,232],[34,197,94],[245,158,11],[236,72,153]];
+    top5.forEach(([p,d],i)=>{
+      pdf.setFillColor(i%2===0?250:245,i%2===0?252:248,i%2===0?255:252); pdf.rect(MAR,Y,CW,8,'F');
+      pdf.setFontSize(7); pdf.setFont(undefined,'bold'); pdf.setTextColor(...CORES_R[i]); pdf.text(String(i+1),MAR+3,Y+5.5);
+      pdf.setFont(undefined,'normal'); pdf.setTextColor(...ESCURO); pdf.text(p.length>48?p.slice(0,48)+'...':p,MAR+10,Y+5.5);
+      pdf.setFont(undefined,'bold'); pdf.setTextColor(...CORES_R[i]); pdf.text(String(d.qtd),W-MAR-35,Y+5.5,{align:'right'});
+      pdf.setTextColor(34,197,94); pdf.text(fmtBRL(d.fat),W-MAR-3,Y+5.5,{align:'right'}); Y+=8;
+    });
+    Y+=6;
+
+    // Grafico barras nativas
+    checkPage(40);
+    pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(...TEAL);
+    pdf.text('VENDAS POR CATEGORIA',MAR,Y); Y+=4; hLine(Y); Y+=5;
+    const cats=['Contratos','Servicos','Produtos'], catLabels=['Contratos','Servicos','Produtos'];
+    const catVals=[porTipo['Contratos']||0,porTipo['Serviços']||0,porTipo['Produtos']||0];
+    const catCores=[TEAL,AZUL,VERDE], catMax=Math.max(...catVals)||1, barH=10, barGap=6, barTrackW=CW-55;
+    catVals.forEach((val,i)=>{
+      const barW=Math.max((val/catMax)*barTrackW,val>0?2:0), x=MAR, y=Y+i*(barH+barGap);
+      pdf.setFontSize(7.5); pdf.setFont(undefined,'bold'); pdf.setTextColor(...catCores[i]); pdf.text(catLabels[i],x,y+barH*.7);
+      pdf.setFillColor(235,240,246); pdf.roundedRect(x+28,y,barTrackW,barH,1.5,1.5,'F');
+      if(barW>0){pdf.setFillColor(...catCores[i]); pdf.roundedRect(x+28,y,barW,barH,1.5,1.5,'F');}
+      pdf.setFontSize(8); pdf.setFont(undefined,'bold'); pdf.setTextColor(...catCores[i]); pdf.text(fmtBRL(val),W-MAR,y+barH*.7,{align:'right'});
+    });
+    Y+=cats.length*(barH+barGap)+4;
+
+    // Rodape
+    const totalPages=pdf.internal.getNumberOfPages();
+    for(let p=1;p<=totalPages;p++){
+      pdf.setPage(p); pdf.setFillColor(...ESCURO); pdf.rect(0,H-10,W,10,'F');
+      pdf.setFillColor(...TEAL); pdf.rect(0,H-10,W,0.8,'F');
+      pdf.setFontSize(7); pdf.setTextColor(180,200,220);
+      pdf.text('KAIZEN PERFORMANCE by KANAWA - Relatorio Confidencial',MAR,H-4);
+      pdf.text('Pagina '+p+' / '+totalPages+' | '+dataHoje,W-MAR,H-4,{align:'right'});
+    }
+    const nomeArq='Kaizen_Geral_'+mesLabel.replace(/ /g,'_')+'_'+new Date().getFullYear()+'.pdf';
+    pdf.save(nomeArq);
+    toast('PDF exportado!', '✅');
+    document.getElementById('ger-pdf-modal').style.display='none';
+  } catch(err) {
+    console.error('[PDF Geral]', err);
+    toast('Erro ao gerar PDF: '+err.message, '❌');
+  }
+}
+
+
+async function loadProdutos(force){
+  const sub=document.getElementById('prd-sub');if(sub)sub.textContent='Conectando…';
+  try{
+    const resp=await fetch(APPS_SCRIPT_PRD_URL);if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const json=await resp.json();const rows=json.rows||[];if(!rows.length)throw new Error('VD_Produtos sem dados');
+    const sample=rows[0]||{};const allKeys=Object.keys(sample);
+    const fk=pat=>allKeys.find(k=>pat.test(String(k).trim()))||'';
+    const kDesc=fk(/descri/i),kQtd=fk(/quant/i),kVal=fk(/valor/i);
+    const kData=fk(/data.*venda|venda.*data/i)||fk(/data/i),kVend=fk(/comiss/i);
+    prdData=rows.map(r=>{const nome=String(r[kDesc]||'').trim().toUpperCase();const dt=prdParseData(r[kData]);return{produto:nome,qtd:Math.max(1,parseInt(r[kQtd])||1),valor:prdPV(r[kVal]),dt,mes:dt?MESES_FULL_CNT[dt.getMonth()]:'',mesN:dt?dt.getMonth():-1,ano:dt?String(dt.getFullYear()):'',diaSem:dt?DIAS_SEMANA_CNT[dt.getDay()]:'',diaSemN:dt?dt.getDay():-1,vendedor:String(r[kVend]||'').trim()||'Sem vendedor'};}).filter(r=>r.produto&&r.qtd>0);
+    if(!prdData.length)throw new Error('0 registros validos');
+    prdLoaded=true;document.getElementById('prd-badge').style.display='inline-block';document.getElementById('prd-empty').style.display='none';
+    prdPopularFiltros();prdRender();if(force)toast('Produtos: '+prdData.length+' registros','🛍️');
+  }catch(err){console.error('[Produtos]',err);const s=document.getElementById('prd-sub');if(s)s.textContent='Erro: '+err.message;toast('Erro VD_Produtos: '+err.message,'❌');}
+}
 document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('skyfit_dark') === '1') {
     document.body.classList.add('dark');
@@ -6249,6 +6408,21 @@ document.addEventListener('DOMContentLoaded', function() {
       new Date().toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
     startAutoRefresh();
     console.log('[SkyFit] Inicializado com sucesso');
+    switchTab('vnd-geral', document.querySelector(".nav-sub"));
+    // Auto-carregar TODAS as bases ao iniciar
+    loadFaturamento(false);
+    loadAgregadores(false);
+    loadFinanceiro(false);
+    loadPagamentos(false);
+    loadContratos(false);
+    loadServicos(false);
+    loadProdutos(false);
+    // Timeout de segurança: some a loading após 5s mesmo com erro
+    setTimeout(() => {
+      ['_kaizFatOk','_kaizAggOk','_kaizFinOk','_kaizPagOk','_kaizCntOk','_kaizSrvOk','_kaizPrdOk']
+        .forEach(f => { if(!window[f]) window[f]=true; });
+      _kaizCheckLoaded();
+    }, 5000);
   } catch(e) {
     console.error('[SkyFit INIT Error]', e);
   }
@@ -6266,6 +6440,28 @@ document.addEventListener('DOMContentLoaded', function() {
 </div>
 <div id="mob-vnd-overlay" onclick="mobVndClose()"
   style="display:none;position:fixed;inset:0;z-index:899;background:rgba(0,0,0,.4)"></div>
+
+
+<!-- Modal Preview PDF Geral -->
+<div id="ger-pdf-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--bg-card);border-radius:16px;max-width:700px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--text-dark)">📄 Preview do Relatório</div>
+        <div style="font-size:12px;color:var(--text-light);margin-top:2px">Revise antes de exportar</div>
+      </div>
+      <button onclick="document.getElementById('ger-pdf-modal').style.display='none'"
+        style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;color:var(--text-dark);font-size:13px">✕ Fechar</button>
+    </div>
+    <div id="ger-pdf-preview" style="flex:1;overflow-y:auto;padding:0"></div>
+    <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0">
+      <button onclick="document.getElementById('ger-pdf-modal').style.display='none'"
+        style="padding:9px 20px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--bg);color:var(--text-dark);font-weight:600">Cancelar</button>
+      <button onclick="exportarGeralPDF()"
+        style="padding:9px 20px;border:none;border-radius:8px;cursor:pointer;background:#1e6fe8;color:#fff;font-weight:700;font-size:14px">⬇️ Baixar PDF</button>
+    </div>
+  </div>
+</div>
 
 
 </body>
