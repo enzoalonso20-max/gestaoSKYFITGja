@@ -2240,13 +2240,13 @@
   <div class="bn-item active" onclick="mobVndToggle(this)" data-tab="vendas">
     <span class="bn-icon">📊</span><span>Vendas</span>
   </div>
-  <div class="bn-item" onclick="switchTab('fin-faturamento',this)" data-tab="financeiro">
+  <div class="bn-item" onclick="mobFinToggle(this)" data-tab="financeiro">
     <span class="bn-icon">💰</span><span>Financeiro</span>
   </div>
   <div class="bn-item" onclick="switchTab('agregadores',this)" data-tab="agregadores">
     <span class="bn-icon">🔗</span><span>Parceiros</span>
   </div>
-  <div class="bn-item" onclick="switchTab('cham-expirados',this)" data-tab="chamados">
+  <div class="bn-item" onclick="mobChamToggle(this)" data-tab="chamados">
     <span class="bn-icon">📋</span><span>Chamados</span>
   </div>
 </nav>
@@ -2340,6 +2340,8 @@ function skyLoadingHide() {
 }
 
 function mobVndToggle(el){
+  ['mob-fin-sheet','mob-cham-sheet'].forEach(id=>{document.getElementById(id)?.classList.remove('open');});
+  ['mob-fin-overlay','mob-cham-overlay'].forEach(id=>{const o=document.getElementById(id);if(o)o.style.display='none';});
   const sheet=document.getElementById('mob-vnd-sheet'),ov=document.getElementById('mob-vnd-overlay');
   const isOpen=sheet&&sheet.classList.contains('open');
   if(sheet)sheet.classList.toggle('open');if(ov)ov.style.display=isOpen?'none':'block';
@@ -2348,6 +2350,40 @@ function mobVndToggle(el){
 function mobVndClose(){
   const sheet=document.getElementById('mob-vnd-sheet'),ov=document.getElementById('mob-vnd-overlay');
   if(sheet)sheet.classList.remove('open');if(ov)ov.style.display='none';
+}
+function mobFinToggle(el){
+  // Fechar Vendas se aberto
+  document.getElementById('mob-vnd-sheet')?.classList.remove('open');
+  document.getElementById('mob-vnd-overlay') && (document.getElementById('mob-vnd-overlay').style.display='none');
+  const sheet=document.getElementById('mob-fin-sheet'),ov=document.getElementById('mob-fin-overlay');
+  const isOpen=sheet&&sheet.classList.contains('open');
+  if(sheet)sheet.classList.toggle('open');if(ov)ov.style.display=isOpen?'none':'block';
+}
+function mobFinClose(){
+  const sheet=document.getElementById('mob-fin-sheet'),ov=document.getElementById('mob-fin-overlay');
+  if(sheet)sheet.classList.remove('open');if(ov)ov.style.display='none';
+}
+function mobChamToggle(el){
+  ['mob-vnd-sheet','mob-fin-sheet'].forEach(id=>{document.getElementById(id)?.classList.remove('open');});
+  ['mob-vnd-overlay','mob-fin-overlay'].forEach(id=>{const o=document.getElementById(id);if(o)o.style.display='none';});
+  const sheet=document.getElementById('mob-cham-sheet'),ov=document.getElementById('mob-cham-overlay');
+  const isOpen=sheet&&sheet.classList.contains('open');
+  if(sheet)sheet.classList.toggle('open');if(ov)ov.style.display=isOpen?'none':'block';
+}
+function mobChamClose(){
+  const sheet=document.getElementById('mob-cham-sheet'),ov=document.getElementById('mob-cham-overlay');
+  if(sheet)sheet.classList.remove('open');if(ov)ov.style.display='none';
+}
+function mobChamGo(tab){
+  mobChamClose();
+  switchTab(tab, document.querySelector('.bn-item[data-tab="chamados"]'));
+}
+function mobFinGo(tab){
+  mobFinClose();
+  switchTab(tab, document.querySelector('.bn-item[data-tab="financeiro"]'));
+  document.querySelectorAll('.mob-fin-item, #mob-fin-sheet .mob-vnd-item').forEach(el=>{
+    el.classList.toggle('active', el.getAttribute('onclick')&&el.getAttribute('onclick').includes(tab));
+  });
 }
 
 function mobVndGo(tab){
@@ -6462,6 +6498,33 @@ document.addEventListener('DOMContentLoaded', function() {
     </div>
   </div>
 </div>
+
+
+<!-- ═══ MOBILE FINANCEIRO SUB-MENU ═══ -->
+<div id="mob-fin-sheet" class="mob-vnd-sheet">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 20px 6px;opacity:.5;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-mid)">
+    Financeiro <button onclick="mobFinClose()" style="background:none;border:none;color:var(--text-mid);cursor:pointer;font-size:18px;line-height:1">×</button>
+  </div>
+  <div class="mob-vnd-item" onclick="mobFinGo('fin-faturamento')"><span class="mob-vnd-dot" style="background:#22c55e"></span>Receita</div>
+  <div class="mob-vnd-item" onclick="mobFinGo('fin-despesas')"><span class="mob-vnd-dot" style="background:#ef4444"></span>Despesas</div>
+  <div class="mob-vnd-item" onclick="mobFinGo('fin-lucro')"><span class="mob-vnd-dot" style="background:#7c3aed"></span>Lucro</div>
+  <div class="mob-vnd-item" onclick="mobFinGo('fin-pagamentos')"><span class="mob-vnd-dot" style="background:#1e6fe8"></span>Formas de Pagamento</div>
+</div>
+<div id="mob-fin-overlay" onclick="mobFinClose()"
+  style="display:none;position:fixed;inset:0;z-index:899;background:rgba(0,0,0,.4)"></div>
+
+
+<!-- ═══ MOBILE CHAMADOS SUB-MENU ═══ -->
+<div id="mob-cham-sheet" class="mob-vnd-sheet">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 20px 6px;opacity:.5;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-mid)">
+    Chamados <button onclick="mobChamClose()" style="background:none;border:none;color:var(--text-mid);cursor:pointer;font-size:18px;line-height:1">×</button>
+  </div>
+  <div class="mob-vnd-item" onclick="mobChamGo('cham-expirados')"><span class="mob-vnd-dot" style="background:#ef4444"></span>Expirados</div>
+  <div class="mob-vnd-item" onclick="mobChamGo('cham-inadimplencia')"><span class="mob-vnd-dot" style="background:#f59e0b"></span>Inadimplência</div>
+  <div class="mob-vnd-item" onclick="mobChamGo('cham-oportunidades')"><span class="mob-vnd-dot" style="background:#22c55e"></span>Oportunidades</div>
+</div>
+<div id="mob-cham-overlay" onclick="mobChamClose()"
+  style="display:none;position:fixed;inset:0;z-index:899;background:rgba(0,0,0,.4)"></div>
 
 
 </body>
