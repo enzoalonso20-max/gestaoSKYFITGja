@@ -2900,7 +2900,7 @@ async function loadFinanceiro(force) {
 
   try {
     // Usa o Apps Script como proxy para evitar bloqueio de CORS ao abrir via file://
-    const resp = await fetch(APPS_SCRIPT_URL + '&_t=' + Date.now(), {cache:'no-store'});
+    const resp = await fetch(APPS_SCRIPT_URL + '?sheet=Base_Despesas&_t=' + Date.now(), {cache:'no-store'});
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
     if (!json.ok) throw new Error(json.error || 'Resposta inválida do Apps Script');
@@ -5666,8 +5666,7 @@ async function loadWellHub(force) {
   if (sub) sub.textContent = 'Conectando…';
   kzStatusUpdate && kzStatusUpdate('kzs-wh','loading','conectando…');
   try {
-    const url = APPS_SCRIPT_URL.replace('?sheet=Base_Despesas','')
-      + '?sheet=WH&_t=' + Date.now();
+    const url = APPS_SCRIPT_URL + '?sheet=WH&_t=' + Date.now();
     const resp = await fetch(url, {cache:'no-store'});
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const json = await resp.json();
@@ -5675,25 +5674,66 @@ async function loadWellHub(force) {
     const rows = json.rows || [];
     if (!rows.length) throw new Error('Aba WH sem dados');
 
-    // Mapear colunas dinamicamente
-    const sample = rows[0];
-    const keys = Object.keys(sample);
-    const fk = pat => keys.find(k => pat.test(String(k).trim())) || '';
-    const kAno     = fk(/^ano$/i);
-    const kMes     = fk(/^m[eê]s$/i);
-    const kVisit   = fk(/visitante/i);
-    const kWhId    = fk(/id.*well|well.*id|id.*wh|wh.*id/i) || fk(/^id/i);
-    const kCheckin = fk(/check.?in|checkin/i);
-    const kPag     = fk(/pagamento|total.*pag|pag.*total/i);
+    // ── Mapear colunas com nome EXATO do header (trim preservado) ──
+    const sample  = rows[0];
+    const rawKeys = Object.keys(sample);                         // chaves originais sem trim
+    const normKey = k => String(k).trim().toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'');          // normaliza acentos
 
-    whData = rows.map(r => ({
-      ano:      String(r[kAno]  || '').trim(),
-      mes:      String(r[kMes]  || '').trim().toLowerCase(),
-      visitante:String(r[kVisit]|| '').trim(),
-      whId:     String(r[kWhId] || r[kVisit] || '').trim(),
-      checkins: parseInt(r[kCheckin]) || 0,
-      pagamento:typeof r[kPag]==='number'?r[kPag]:parseFloat(String(r[kPag]||'0').replace(/\./g,'').replace(',','.'))||0,
-    })).filter(r => r.visitante || r.whId);
+    const findKey = pat => rawKeys.find(k => pat.test(normKey(k))) || '';
+
+    const kAno     = findKey(/^ano$/);
+    const kMes     = findKey(/^mes$/);
+    const kVisit   = findKey(/visitante/);
+    const kCheckin = findKey(/check.?in/);
+    const kPag     = findKey(/pagamento|total.*pag|pag.*total/);
+
+    // ID do WellHub: busca específica para evitar pegar "ID da Unidade"
+    // Tenta: "ID do WellHub", "ID WellHub", "ID Wellhub", "ID_WH", etc.
+    const kWhId = findKey(/id\s*do\s*well|id\s*well/) ||
+                  findKey(/well.*id/) ||
+                  findKey(/^id\s*wh$/) ||
+                  '';
+
+    // Log diagnóstico — visível no console do browser
+    console.log('[WH] Colunas detectadas:', {kAno,kMes,kVisit,kWhId,kCheckin,kPag});
+    console.log('[WH] Colunas disponíveis:', rawKeys);
+
+    // Parse monetário blindado — nunca usa Number() no ID
+    const parsePag = v => {
+      if (typeof v === 'number') return isNaN(v) ? 0 : v;
+      const s = String(v||'0').trim()
+        .replace(/[^\d,.-]/g,'')
+        .replace(/\./g,'')
+        .replace(',','.');
+      const n = parseFloat(s);
+      return isNaN(n) ? 0 : n;
+    };
+
+    // Parse de check-ins — aceita número ou string com vírgula
+    const parseCk = v => {
+      if (typeof v === 'number') return Math.round(Math.abs(v));
+      const n = parseInt(String(v||'0').replace(/[^\d]/g,''));
+      return isNaN(n) ? 0 : n;
+    };
+
+    whData = rows.map(r => {
+      // ID do WellHub: extraído SEMPRE como string pura
+      // Nunca passa por Number/parseInt — preserva todos os dígitos
+      const rawId = kWhId ? r[kWhId] : null;
+      const whId  = rawId !== null && rawId !== undefined && String(rawId).trim() !== ''
+        ? String(rawId).trim()      // ← string pura, sem conversão numérica
+        : String(r[kVisit] || '').trim();  // fallback: nome do visitante
+
+      return {
+        ano:      String(r[kAno]  || '').trim(),
+        mes:      String(r[kMes]  || '').trim().toLowerCase(),
+        visitante:String(r[kVisit]|| '').trim(),
+        whId,                                   // string pura — chave primária
+        checkins: parseCk(r[kCheckin]),         // inteiro
+        pagamento:parsePag(r[kPag]),            // float blindado
+      };
+    }).filter(r => r.visitante || r.whId);
 
     whLoaded = true;
     document.getElementById('wh-badge').style.display = 'inline-block';
@@ -5760,13 +5800,14 @@ function whRender() {
   // Cada linha da planilha = 1 registro de 1 mês para 1 aluno
   // NÃO somar entre meses quando filtro "Todos" — cada mês é independente
   // Para check-ins: usar exatamente o valor da coluna, não contar linhas
+  // Agrupamento por NOME (visitante) — evita soma incorreta por IDs duplicados
   const porId = dados.reduce((acc, r) => {
-    const id = (r.whId || r.visitante || '').trim();
+    const id = (r.visitante || '').trim().toLowerCase(); // chave = nome normalizado
     if (!id) return acc;
     if (!acc[id]) acc[id] = {visitante: r.visitante, checkins: 0, pagamento: 0, meses: new Set()};
-    acc[id].checkins  += r.checkins;                    // soma estrita do campo Total de Check-ins
-    acc[id].pagamento += parsePag(r.pagamento);         // soma blindada contra NaN
-    acc[id].meses.add(r.mes + '|' + r.ano);            // rastrear meses distintos
+    acc[id].checkins  += r.checkins;
+    acc[id].pagamento += parsePag(r.pagamento);
+    acc[id].meses.add(r.mes + '|' + r.ano);
     return acc;
   }, {});
 
@@ -5816,7 +5857,7 @@ function whRender() {
     julho:31,agosto:31,setembro:30,outubro:31,novembro:30,dezembro:31
   };
   const porIdMes = dados.reduce((acc, r) => {
-    const id  = (r.whId || r.visitante || '').trim();
+    const id  = (r.visitante || '').trim().toLowerCase(); // por nome
     const key = id + '||' + (r.mes || '') + '||' + (r.ano || '');
     if (!acc[key]) acc[key] = {visitante:r.visitante, whId:id, mes:r.mes, ano:r.ano, checkins:0, pagamento:0};
     acc[key].checkins  += r.checkins;
