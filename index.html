@@ -974,8 +974,13 @@
 
     <!-- ══ AGREGADORES ══ -->
     <div class="nav-label" style="margin-top:8px">Parceiros</div>
-    <div class="nav-item" onclick="switchTab('agregadores',this)">
-      <span class="nav-icon">🔗</span>Agregadores
+    <div class="nav-item nav-parent" onclick="toggleNavGroup('agr-group')">
+      <span class="nav-icon">🔗</span>Parceiros
+      <span class="nav-chevron" id="agr-chevron">›</span>
+    </div>
+    <div class="nav-group" id="agr-group">
+      <div class="nav-sub" onclick="switchTab('agregadores',this)"><span class="nav-sub-dot">◉</span>Agregadores</div>
+      <div class="nav-sub" onclick="switchTab('wh-detalhado',this)"><span class="nav-sub-dot">◉</span>WellHub Detalhado</div>
     </div>
 
     <!-- ══ CHAMADOS ══ -->
@@ -2231,6 +2236,120 @@
       <div id="pag-empty" class="fin-placeholder-wrap"><div class="fin-ph-icon">💳</div><div class="fin-ph-title">Formas de Pagamento</div><div class="fin-ph-desc">Dados de <strong>BD_Recebimento</strong>.</div></div>
     </div>
 
+    <!-- ════ ABA: WH-DETALHADO ════ -->
+    <div class="tab-pane" id="tab-wh-detalhado">
+      <div class="section-header">
+        <div>
+          <div class="section-title">💜 WellHub Detalhado</div>
+          <div class="section-sub" id="wh-sub">Carregando — aba WH…</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-secondary" onclick="loadWellHub(true)">🔄 Atualizar</button>
+          <span class="badge badge-green" id="wh-badge" style="display:none">● WH</span>
+        </div>
+      </div>
+
+      <!-- Filtros -->
+      <div id="wh-filtros" style="display:none">
+        <div class="filter-panel">
+          <div class="filter-row">
+            <div class="filter-group">
+              <label class="filter-label">Ano</label>
+              <div class="filter-btns" id="wh-anos-btns"></div>
+            </div>
+            <div class="filter-group">
+              <label class="filter-label">Mês</label>
+              <div class="filter-btns" id="wh-meses-btns"></div>
+            </div>
+            <button class="filter-btn" style="align-self:flex-end" onclick="whResetFiltros()">↺ Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPIs -->
+      <div class="cards-grid" id="wh-kpis" style="display:none">
+        <div class="kpi-card green">
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-label">Receita WellHub</div>
+          <div class="kpi-value" id="wh-kpi-receita">—</div>
+          <div class="kpi-delta" id="wh-kpi-receita-sub"></div>
+          <div class="progress-bar"><div class="progress-fill" id="wh-prog" style="width:0%;background:linear-gradient(90deg,#ec4899,#7c3aed)"></div></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-icon">🏃</div>
+          <div class="kpi-label">Total de Check-ins</div>
+          <div class="kpi-value" id="wh-kpi-checkins">—</div>
+          <div class="kpi-delta" id="wh-kpi-checkins-sub"></div>
+        </div>
+        <div class="kpi-card" style="border-top:3px solid #ec4899">
+          <div class="kpi-icon">👤</div>
+          <div class="kpi-label">Alunos Únicos</div>
+          <div class="kpi-value" id="wh-kpi-unicos" style="color:#ec4899">—</div>
+          <div class="kpi-delta" id="wh-kpi-unicos-sub"></div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-icon">🎟️</div>
+          <div class="kpi-label">Ticket Médio / Check-in</div>
+          <div class="kpi-value" id="wh-kpi-ticket">—</div>
+          <div class="kpi-delta" id="wh-kpi-ticket-sub"></div>
+        </div>
+        <div class="kpi-card" style="border:2px solid #22c55e">
+          <div class="kpi-icon">💯</div>
+          <div class="kpi-label">Pagaram R$ 116,04 (Limite WH)</div>
+          <div class="kpi-value" id="wh-kpi-limite" style="color:#22c55e">—</div>
+          <div class="kpi-delta" id="wh-kpi-limite-sub"></div>
+        </div>
+        <div class="kpi-card" style="border:2px solid #7c3aed">
+          <div class="kpi-icon">📈</div>
+          <div class="kpi-label">% Alunos no Teto (R$ 116,04)</div>
+          <div class="kpi-value" id="wh-kpi-alertas" style="color:#7c3aed">—</div>
+          <div class="kpi-delta" id="wh-kpi-alertas-sub"></div>
+        </div>
+      </div>
+
+      <!-- Gráficos -->
+      <div class="chart-grid" id="wh-charts" style="display:none;margin-top:16px">
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">📊 Check-ins por Mês</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:240px"><canvas id="wh-chart-mes"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><span class="panel-title">🏆 Top 10 Visitantes (Check-ins)</span></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:240px"><canvas id="wh-chart-top"></canvas></div></div>
+        </div>
+      </div>
+
+      <!-- Tabela -->
+      <div class="panel" id="wh-table-panel" style="display:none;margin-top:16px">
+        <div class="panel-header">
+          <span class="panel-title">📋 Detalhamento por Visitante</span>
+          <span class="badge badge-blue" id="wh-table-badge"></span>
+        </div>
+        <div class="panel-body" id="wh-table-wrap"></div>
+      </div>
+
+      <!-- Alertas -->
+      <div class="panel" id="wh-alertas-panel" style="display:none;margin-top:16px;border:2px solid #ef4444">
+        <div class="panel-header" style="background:rgba(239,68,68,.08)">
+          <span class="panel-title" style="color:#ef4444">⚠️ Alertas — Check-ins Suspeitos</span>
+          <span class="badge" style="background:#ef4444;color:#fff;font-size:10px" id="wh-alertas-badge"></span>
+        </div>
+        <div class="panel-body">
+          <div style="font-size:12px;color:var(--text-light);margin-bottom:10px;padding:8px 12px;background:rgba(239,68,68,.06);border-radius:8px;border-left:3px solid #ef4444">
+            ⚠️ Alunos com mais check-ins do que os dias disponíveis no mês — possível erro de lançamento ou fraude.
+          </div>
+          <div id="wh-alertas-wrap"></div>
+        </div>
+      </div>
+
+      <!-- Empty -->
+      <div id="wh-empty" class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">💜</div>
+        <div class="fin-ph-title">WellHub Detalhado</div>
+        <div class="fin-ph-desc">Dados carregados da aba <strong>WH</strong> do Google Sheets.</div>
+      </div>
+    </div>
+
   </div><!-- /content -->
 </div><!-- /main -->
 </div><!-- /app -->
@@ -2243,7 +2362,7 @@
   <div class="bn-item" onclick="mobFinToggle(this)" data-tab="financeiro">
     <span class="bn-icon">💰</span><span>Financeiro</span>
   </div>
-  <div class="bn-item" onclick="switchTab('agregadores',this)" data-tab="agregadores">
+  <div class="bn-item" onclick="mobAgrToggle(this)" data-tab="agregadores">
     <span class="bn-icon">🔗</span><span>Parceiros</span>
   </div>
   <div class="bn-item" onclick="mobChamToggle(this)" data-tab="chamados">
@@ -2373,6 +2492,21 @@ function mobChamToggle(el){
 function mobChamClose(){
   const sheet=document.getElementById('mob-cham-sheet'),ov=document.getElementById('mob-cham-overlay');
   if(sheet)sheet.classList.remove('open');if(ov)ov.style.display='none';
+}
+function mobAgrToggle(el){
+  ['mob-vnd-sheet','mob-fin-sheet','mob-cham-sheet'].forEach(id=>{document.getElementById(id)?.classList.remove('open');});
+  ['mob-vnd-overlay','mob-fin-overlay','mob-cham-overlay'].forEach(id=>{const o=document.getElementById(id);if(o)o.style.display='none';});
+  const sheet=document.getElementById('mob-agr-sheet'),ov=document.getElementById('mob-agr-overlay');
+  const isOpen=sheet&&sheet.classList.contains('open');
+  if(sheet)sheet.classList.toggle('open');if(ov)ov.style.display=isOpen?'none':'block';
+}
+function mobAgrClose(){
+  const sheet=document.getElementById('mob-agr-sheet'),ov=document.getElementById('mob-agr-overlay');
+  if(sheet)sheet.classList.remove('open');if(ov)ov.style.display='none';
+}
+function mobAgrGo(tab){
+  mobAgrClose();
+  switchTab(tab, document.querySelector('.bn-item[data-tab="agregadores"]'));
 }
 function mobChamGo(tab){
   mobChamClose();
@@ -2543,7 +2677,7 @@ const tabMeta = {
 // Grupo financeiro aberto por padrão ao clicar em qualquer sub-aba financeira
 const VND_TABS   = ['vnd-geral','vnd-contratos','vnd-servicos','vnd-produtos'];
 const FIN_TABS   = ['fin-visao','fin-faturamento','fin-despesas','fin-lucro','fin-caixa','fin-pagamentos'];
-const AGR_TABS   = ['agregadores'];
+const AGR_TABS   = ['agregadores','wh-detalhado'];
 const CHAM_TABS  = ['cham-expirados','cham-inadimplencia','cham-oportunidades'];
 
 function switchTab(tab, el) {
@@ -2595,7 +2729,10 @@ function switchTab(tab, el) {
     if(tab==='fin-pagamentos' && !pagLoaded) loadPagamentos(false);
 
   } else if (AGR_TABS.includes(tab)) {
-    if(!aggLoaded) loadAgregadores(false);
+    const ag=document.getElementById('agr-group'), ac=document.getElementById('agr-chevron');
+    if(ag) ag.classList.add('open'); if(ac) ac.classList.add('open');
+    if(tab==='agregadores' && !aggLoaded) loadAgregadores(false);
+    if(tab==='wh-detalhado' && !whLoaded) loadWellHub(false);
 
   } else if (CHAM_TABS.includes(tab)) {
     const g=document.getElementById('cham-group'), c=document.getElementById('cham-chevron');
@@ -2763,7 +2900,7 @@ async function loadFinanceiro(force) {
 
   try {
     // Usa o Apps Script como proxy para evitar bloqueio de CORS ao abrir via file://
-    const resp = await fetch(APPS_SCRIPT_URL);
+    const resp = await fetch(APPS_SCRIPT_URL + '&_t=' + Date.now(), {cache:'no-store'});
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
     if (!json.ok) throw new Error(json.error || 'Resposta inválida do Apps Script');
@@ -4339,7 +4476,7 @@ async function loadFaturamento(force) {
   document.getElementById('fat-table-panel').style.display='none';
 
   try {
-    const resp = await fetch(APPS_SCRIPT_FAT_URL);
+    const resp = await fetch(APPS_SCRIPT_FAT_URL + '&_t=' + Date.now(), {cache:'no-store'});
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
 
@@ -4776,7 +4913,7 @@ async function loadContratos(force){
   const sub=document.getElementById('cnt-sub');
   if(sub) sub.textContent='Conectando…';
   try{
-    const resp=await fetch(APPS_SCRIPT_CNT_URL);
+    const resp=await fetch(APPS_SCRIPT_CNT_URL + '&_t=' + Date.now(), {cache:'no-store'});
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     const json=await resp.json();
     const rows=json.rows||[];
@@ -4915,7 +5052,7 @@ function srvBtnStyle(a){return 'filter-btn'+(a?' active':'');}
 async function loadServicos(force){
   const sub=document.getElementById('srv-sub');if(sub)sub.textContent='Conectando…';
   try{
-    const resp=await fetch(APPS_SCRIPT_SRV_URL);if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const resp=await fetch(APPS_SCRIPT_SRV_URL + '&_t=' + Date.now(), {cache:'no-store'});if(!resp.ok)throw new Error('HTTP '+resp.status);
     const json=await resp.json();const rows=json.rows||[];if(!rows.length)throw new Error('VD_Servicos sem dados');
     const sample=rows[0]||{};const allKeys=Object.keys(sample);
     const fk=pat=>allKeys.find(k=>pat.test(String(k).trim()))||'';
@@ -5161,7 +5298,7 @@ const pagPV2=v=>typeof v==='number'?v:parseFloat(String(v||'0').replace(/\./g,''
 async function loadPagamentos(force){
   const sub=document.getElementById('pag-sub');if(sub)sub.textContent='Conectando…';
   try{
-    const resp=await fetch(APPS_SCRIPT_PAG_URL);if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const resp=await fetch(APPS_SCRIPT_PAG_URL + '&_t=' + Date.now(), {cache:'no-store'});if(!resp.ok)throw new Error('HTTP '+resp.status);
     const json=await resp.json();const rows=json.rows||[];if(!rows.length)throw new Error('BD_Recebimento sem dados');
     const sample=rows[0]||{};const allKeys=Object.keys(sample);
     const fk=pat=>allKeys.find(k=>pat.test(String(k).trim()))||'';
@@ -5499,7 +5636,7 @@ async function exportarGeralPDF() {
 async function loadProdutos(force){
   const sub=document.getElementById('prd-sub');if(sub)sub.textContent='Conectando…';
   try{
-    const resp=await fetch(APPS_SCRIPT_PRD_URL);if(!resp.ok)throw new Error('HTTP '+resp.status);
+    const resp=await fetch(APPS_SCRIPT_PRD_URL + '&_t=' + Date.now(), {cache:'no-store'});if(!resp.ok)throw new Error('HTTP '+resp.status);
     const json=await resp.json();const rows=json.rows||[];if(!rows.length)throw new Error('VD_Produtos sem dados');
     const sample=rows[0]||{};const allKeys=Object.keys(sample);
     const fk=pat=>allKeys.find(k=>pat.test(String(k).trim()))||'';
@@ -5511,6 +5648,325 @@ async function loadProdutos(force){
     prdPopularFiltros();prdRender();if(force)toast('Produtos: '+prdData.length+' registros','🛍️');
   }catch(err){console.error('[Produtos]',err);const s=document.getElementById('prd-sub');if(s)s.textContent='Erro: '+err.message;toast('Erro VD_Produtos: '+err.message,'❌');}
 }
+
+// ╔══════════════════════════════════════════════════════════╗
+//  ABA: WELLHUB DETALHADO
+// ╚══════════════════════════════════════════════════════════╝
+let whData=[], whLoaded=false;
+let whAnoSel='', whMesSel='';
+let whChartMes=null, whChartTop=null;
+
+const MESES_WH = ['janeiro','fevereiro','março','abril','maio','junho',
+                  'julho','agosto','setembro','outubro','novembro','dezembro'];
+
+function whBtnStyle(a){return 'filter-btn'+(a?' active':'');}
+
+async function loadWellHub(force) {
+  const sub = document.getElementById('wh-sub');
+  if (sub) sub.textContent = 'Conectando…';
+  kzStatusUpdate && kzStatusUpdate('kzs-wh','loading','conectando…');
+  try {
+    const url = APPS_SCRIPT_URL.replace('?sheet=Base_Despesas','')
+      + '?sheet=WH&_t=' + Date.now();
+    const resp = await fetch(url, {cache:'no-store'});
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const json = await resp.json();
+    if (!json.ok) throw new Error(json.error || 'Aba WH não encontrada');
+    const rows = json.rows || [];
+    if (!rows.length) throw new Error('Aba WH sem dados');
+
+    // Mapear colunas dinamicamente
+    const sample = rows[0];
+    const keys = Object.keys(sample);
+    const fk = pat => keys.find(k => pat.test(String(k).trim())) || '';
+    const kAno     = fk(/^ano$/i);
+    const kMes     = fk(/^m[eê]s$/i);
+    const kVisit   = fk(/visitante/i);
+    const kWhId    = fk(/id.*well|well.*id|id.*wh|wh.*id/i) || fk(/^id/i);
+    const kCheckin = fk(/check.?in|checkin/i);
+    const kPag     = fk(/pagamento|total.*pag|pag.*total/i);
+
+    whData = rows.map(r => ({
+      ano:      String(r[kAno]  || '').trim(),
+      mes:      String(r[kMes]  || '').trim().toLowerCase(),
+      visitante:String(r[kVisit]|| '').trim(),
+      whId:     String(r[kWhId] || r[kVisit] || '').trim(),
+      checkins: parseInt(r[kCheckin]) || 0,
+      pagamento:typeof r[kPag]==='number'?r[kPag]:parseFloat(String(r[kPag]||'0').replace(/\./g,'').replace(',','.'))||0,
+    })).filter(r => r.visitante || r.whId);
+
+    whLoaded = true;
+    document.getElementById('wh-badge').style.display = 'inline-block';
+    document.getElementById('wh-empty').style.display  = 'none';
+    whPopularFiltros();
+    whRender();
+    if (force) toast('WellHub: ' + whData.length + ' registros', '💜');
+  } catch(err) {
+    console.error('[WellHub]', err);
+    if (sub) sub.textContent = 'Erro: ' + err.message;
+    toast('Erro WH: ' + err.message, '❌');
+  }
+}
+
+function whPopularFiltros() {
+  const anos  = [...new Set(whData.map(r=>r.ano).filter(Boolean))].sort();
+  const meses = [...new Set(whData.map(r=>r.mes).filter(Boolean))]
+    .sort((a,b)=>MESES_WH.indexOf(a)-MESES_WH.indexOf(b));
+
+  const aEl = document.getElementById('wh-anos-btns');
+  if (aEl) aEl.innerHTML =
+    '<button class="'+whBtnStyle(whAnoSel==='')+'" onclick="whSetAno(\'\')">Todos</button>' +
+    anos.map(a=>'<button class="'+whBtnStyle(whAnoSel===a)+'" onclick="whSetAno(\''+a+'\')">'+a+'</button>').join('');
+
+  const mEl = document.getElementById('wh-meses-btns');
+  if (mEl) mEl.innerHTML =
+    '<button class="'+whBtnStyle(whMesSel==='')+'" onclick="whSetMes(\'\')">Todos</button>' +
+    meses.map(m=>'<button class="'+whBtnStyle(whMesSel===m)+'" onclick="whSetMes(\''+m+'\')">'
+      +m.charAt(0).toUpperCase()+m.slice(1,3)+'</button>').join('');
+
+  document.getElementById('wh-filtros').style.display = 'block';
+}
+
+function whSetAno(v){whAnoSel=v; whPopularFiltros(); whRender();}
+function whSetMes(v){whMesSel=v; whPopularFiltros(); whRender();}
+function whResetFiltros(){whAnoSel=''; whMesSel=''; whPopularFiltros(); whRender();}
+
+function whGetFiltered() {
+  return whData.filter(r =>
+    (!whAnoSel || r.ano===whAnoSel) &&
+    (!whMesSel || r.mes===whMesSel)
+  );
+}
+
+function whRender() {
+  const dados = whGetFiltered();
+  ['wh-kpis','wh-charts','wh-table-panel'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display = id==='wh-kpis'?'grid':'block';
+  });
+
+  // ── Parse monetário blindado ──────────────────────────
+  const parsePag = v => {
+    if (typeof v === 'number') return isNaN(v) ? 0 : v;
+    const s = String(v || '0').trim()
+      .replace(/[^\d,.-]/g, '')   // remove símbolos
+      .replace(/\./g, '')          // remove ponto de milhar BR
+      .replace(',', '.');          // vírgula decimal → ponto
+    const n = parseFloat(s);
+    return isNaN(n) ? 0 : n;
+  };
+
+  // ── Agrupar por ID do WellHub (chave primária) ────────
+  // Cada linha da planilha = 1 registro de 1 mês para 1 aluno
+  // NÃO somar entre meses quando filtro "Todos" — cada mês é independente
+  // Para check-ins: usar exatamente o valor da coluna, não contar linhas
+  const porId = dados.reduce((acc, r) => {
+    const id = (r.whId || r.visitante || '').trim();
+    if (!id) return acc;
+    if (!acc[id]) acc[id] = {visitante: r.visitante, checkins: 0, pagamento: 0, meses: new Set()};
+    acc[id].checkins  += r.checkins;                    // soma estrita do campo Total de Check-ins
+    acc[id].pagamento += parsePag(r.pagamento);         // soma blindada contra NaN
+    acc[id].meses.add(r.mes + '|' + r.ano);            // rastrear meses distintos
+    return acc;
+  }, {});
+
+  const alunos   = Object.values(porId);
+  const totalRec = alunos.reduce((s,a) => s + a.pagamento, 0);
+  const totalCk  = alunos.reduce((s,a) => s + a.checkins,  0);
+  const unicos   = alunos.length;
+  const ticket   = totalCk ? totalRec / totalCk : 0;
+
+  // ── setK helper ───────────────────────────────────────
+  const setK = (id, val, sub) => {
+    const e = document.getElementById(id); if (e) e.textContent = val;
+    const s = document.getElementById(id + '-sub');
+    if (s && sub !== undefined)
+      s.innerHTML = '<span style="font-size:11px;color:var(--text-mid)">' + sub + '</span>';
+  };
+
+  setK('wh-kpi-receita',  fmtBRL(totalRec), dados.length + ' registros no período');
+  setK('wh-kpi-checkins', totalCk.toLocaleString('pt-BR'), 'soma exata da coluna Total de Check-ins');
+  setK('wh-kpi-unicos',   unicos.toLocaleString('pt-BR'), 'IDs do WellHub distintos');
+  setK('wh-kpi-ticket',   fmtBRL(ticket), 'por check-in');
+  document.getElementById('wh-prog').style.width = '80%';
+
+  // ── KPI: Alunos que atingiram o teto R$ 116,04 ───────
+  // Regra: pagamento do aluno no período == 116,04 (± 0,05 para float)
+  // Quando filtro "Todos": soma histórica de todos os meses por aluno
+  const LIMITE = 116.04;
+  const alunosLimite = alunos.filter(a => Math.abs(a.pagamento - LIMITE) < 0.05);
+  const pctLimite = unicos ? (alunosLimite.length / unicos * 100).toFixed(1) : '0.0';
+  setK('wh-kpi-limite',
+    alunosLimite.length.toLocaleString('pt-BR'),
+    fmtBRL(alunosLimite.reduce((s,a)=>s+a.pagamento,0)) + ' gerado por esses alunos');
+
+  // ── KPI: % Alunos no Teto ─────────────────────────────
+  const elPct = document.getElementById('wh-kpi-alertas');
+  if (elPct) {
+    elPct.textContent = pctLimite + '%';
+    elPct.style.color = parseFloat(pctLimite) >= 50 ? '#22c55e' : '#f59e0b';
+  }
+  setK('wh-kpi-alertas', pctLimite + '%',
+    alunosLimite.length + ' de ' + unicos + ' alunos no teto de R$ 116,04');
+
+  // ── Painel de Alertas: check-ins > dias do mês ───────
+  // Agrupa por aluno+mês — se a soma ultrapassar os dias do mês, é anomalia
+  const DIAS_MES = {
+    janeiro:31,fevereiro:29,marco:31,abril:30,maio:31,junho:30,
+    julho:31,agosto:31,setembro:30,outubro:31,novembro:30,dezembro:31
+  };
+  const porIdMes = dados.reduce((acc, r) => {
+    const id  = (r.whId || r.visitante || '').trim();
+    const key = id + '||' + (r.mes || '') + '||' + (r.ano || '');
+    if (!acc[key]) acc[key] = {visitante:r.visitante, whId:id, mes:r.mes, ano:r.ano, checkins:0, pagamento:0};
+    acc[key].checkins  += r.checkins;
+    acc[key].pagamento += parsePag(r.pagamento);
+    return acc;
+  }, {});
+
+  const alertas = Object.values(porIdMes).filter(a => {
+    const mesk = (a.mes||'').toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .replace('ç','c');
+    const maxDias = DIAS_MES[mesk] || 31;
+    return a.checkins > maxDias;
+  }).sort((a,b) => b.checkins - a.checkins);
+
+  // Também alertar se pagamento > 116,04 (ID duplicado gerando double billing)
+  const pagsExcesso = alunos.filter(a => a.pagamento > LIMITE + 0.05);
+
+  const alertasPanel = document.getElementById('wh-alertas-panel');
+  const alertasBadge = document.getElementById('wh-alertas-badge');
+  const alertasWrap  = document.getElementById('wh-alertas-wrap');
+  const totalAlertas = alertas.length + pagsExcesso.length;
+
+  if (alertasPanel) alertasPanel.style.display = totalAlertas ? 'block' : 'none';
+  if (alertasBadge) alertasBadge.textContent   = totalAlertas + ' alerta(s)';
+
+  if (alertasWrap) {
+    let html = '';
+    if (alertas.length) {
+      html += '<div style="font-size:12px;font-weight:700;color:#ef4444;padding:8px 14px;background:rgba(239,68,68,.06);border-radius:8px;margin-bottom:8px">Check-ins impossíveis (acima dos dias do mês):</div>';
+      const thead1 = '<tr><th>Visitante</th><th style="text-align:center">Mês/Ano</th><th style="text-align:center">Check-ins</th><th style="text-align:center">Máx. Dias</th><th style="text-align:center">Excesso</th><th style="text-align:right">Valor</th></tr>';
+      const tbody1 = alertas.map(a => {
+        const mesk = (a.mes||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace('ç','c');
+        const maxDias = DIAS_MES[mesk] || 31;
+        return '<tr style="border-bottom:1px solid var(--border);background:rgba(239,68,68,.04)">'
+          +'<td style="padding:9px 14px;font-weight:700;color:#ef4444">'+a.visitante+'</td>'
+          +'<td style="padding:9px 10px;text-align:center;color:var(--text-mid);font-size:12px">'+(a.mes?a.mes.charAt(0).toUpperCase()+a.mes.slice(1):'—')+' '+(a.ano||'')+'</td>'
+          +'<td style="padding:9px 10px;text-align:center;font-family:var(--mono);font-weight:800;color:#ef4444;font-size:15px">'+a.checkins+'</td>'
+          +'<td style="padding:9px 10px;text-align:center;font-family:var(--mono);color:var(--text-light)">'+maxDias+'</td>'
+          +'<td style="padding:9px 10px;text-align:center;font-family:var(--mono);font-weight:800;color:#f59e0b">+' + (a.checkins-maxDias) +'</td>'
+          +'<td style="padding:9px 14px;font-family:var(--mono);color:var(--green);text-align:right;font-weight:700">'+fmtBRL(a.pagamento)+'</td>'
+          +'</tr>';
+      }).join('');
+      html += '<div class="table-wrapper"><table><thead>'+thead1+'</thead><tbody>'+tbody1+'</tbody></table></div>';
+    }
+    if (pagsExcesso.length) {
+      html += '<div style="font-size:12px;font-weight:700;color:#f59e0b;padding:8px 14px;background:rgba(245,158,11,.06);border-radius:8px;margin:12px 0 8px">Pagamento acima do limite R$ 116,04 (possível ID duplicado):</div>';
+      const thead2 = '<tr><th>Visitante</th><th>ID WellHub</th><th style="text-align:center">Check-ins</th><th style="text-align:right">Valor Gerado</th><th style="text-align:right">Excesso</th></tr>';
+      const tbody2 = pagsExcesso.sort((a,b)=>b.pagamento-a.pagamento).map(a =>
+        '<tr style="border-bottom:1px solid var(--border);background:rgba(245,158,11,.04)">'
+          +'<td style="padding:9px 14px;font-weight:700;color:#f59e0b">'+a.visitante+'</td>'
+          +'<td style="padding:9px 14px;font-size:11px;color:var(--text-light);font-family:var(--mono)">'+Object.keys(porId).find(k=>porId[k]===a||false)||'—'+'</td>'
+          +'<td style="padding:9px 10px;text-align:center;font-family:var(--mono);font-weight:800">'+a.checkins+'</td>'
+          +'<td style="padding:9px 14px;font-family:var(--mono);color:#ef4444;text-align:right;font-weight:700">'+fmtBRL(a.pagamento)+'</td>'
+          +'<td style="padding:9px 14px;font-family:var(--mono);color:#f59e0b;text-align:right;font-weight:700">+'+fmtBRL(a.pagamento-LIMITE)+'</td>'
+        +'</tr>'
+      ).join('');
+      html += '<div class="table-wrapper"><table><thead>'+thead2+'</thead><tbody>'+tbody2+'</tbody></table></div>';
+    }
+    alertasWrap.innerHTML = html;
+  }
+
+  const mesLabel = whMesSel ? whMesSel.charAt(0).toUpperCase()+whMesSel.slice(1) : 'todos os meses';
+  document.getElementById('wh-sub').textContent =
+    unicos+' alunos · '+totalCk.toLocaleString('pt-BR')+' check-ins · '+fmtBRL(totalRec)+
+    (whMesSel?' · '+mesLabel:'');
+
+
+  // ── Gráfico 1: Check-ins por mês ─────────────────────
+  if (whChartMes) whChartMes.destroy();
+  const canvas1 = document.getElementById('wh-chart-mes');
+  if (canvas1) {
+    const porMes = MESES_WH.reduce((acc,m)=>{
+      acc[m] = dados.filter(r=>r.mes===m).reduce((s,r)=>s+r.checkins,0);
+      return acc;
+    },{});
+    const mesesComDados = MESES_WH.filter(m=>porMes[m]>0);
+    const vals = mesesComDados.map(m=>porMes[m]);
+    const max  = Math.max(...vals)||1;
+    whChartMes = new Chart(canvas1, {
+      type:'bar',
+      data:{
+        labels: mesesComDados.map(m=>m.charAt(0).toUpperCase()+m.slice(1,3)),
+        datasets:[{
+          label:'Check-ins',
+          data: vals,
+          backgroundColor: vals.map(v=>v===max?'#ec4899cc':'#7c3aed88'),
+          borderRadius:5
+        }]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.raw.toLocaleString('pt-BR')+' check-ins'}}},
+        scales:{x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:11,weight:'600'}}},
+                y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'DM Mono',size:10}}}}
+      }
+    });
+  }
+
+  // ── Gráfico 2: Top 10 visitantes ─────────────────────
+  if (whChartTop) whChartTop.destroy();
+  const canvas2 = document.getElementById('wh-chart-top');
+  if (canvas2) {
+    const top10 = alunos.sort((a,b)=>b.checkins-a.checkins).slice(0,10);
+    whChartTop = new Chart(canvas2, {
+      type:'bar',
+      data:{
+        labels: top10.map(a=>a.visitante.split(' ')[0]),
+        datasets:[{
+          label:'Check-ins',
+          data: top10.map(a=>a.checkins),
+          backgroundColor: top10.map((_,i)=>i===0?'#ec4899cc':i<3?'#7c3aed88':'#1e6fe855'),
+          borderRadius:4
+        }]
+      },
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.raw+' check-ins'}}},
+        scales:{x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10}}},
+                y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'DM Mono',size:10}}}}
+      }
+    });
+  }
+
+  // ── Tabela detalhamento ───────────────────────────────
+  const sorted = alunos.sort((a,b)=>b.checkins-a.checkins);
+  const badge  = document.getElementById('wh-table-badge');
+  if (badge) badge.textContent = unicos + ' visitantes';
+
+  const thead = '<tr><th style="width:36px">#</th><th>Visitante</th><th style="text-align:center;width:120px">Check-ins</th><th style="text-align:right;width:160px">Valor Gerado</th></tr>';
+  const CORES = ['#ec4899','#7c3aed','#1e6fe8','#22c55e'];
+  const tbody = sorted.map((a,i)=>{
+    const cor = i<4?CORES[i]:'var(--text-light)';
+    const bar = (a.checkins / (sorted[0]?.checkins||1)*100).toFixed(0);
+    return '<tr style="border-bottom:1px solid var(--border)">'
+      +'<td style="padding:9px 10px;text-align:center;font-weight:800;color:'+cor+';font-size:13px">'+(i+1)+'</td>'
+      +'<td style="padding:9px 14px">'
+        +'<div style="font-weight:600;font-size:13px">'+a.visitante+'</div>'
+        +'<div style="margin-top:3px;height:3px;border-radius:99px;background:var(--border);overflow:hidden">'
+          +'<div style="width:'+bar+'%;height:100%;background:'+cor+';border-radius:99px"></div>'
+        +'</div>'
+      +'</td>'
+      +'<td style="padding:9px 10px;font-family:var(--mono);font-weight:800;text-align:center;font-size:14px;color:'+cor+'">'+a.checkins+'</td>'
+      +'<td style="padding:9px 14px;font-family:var(--mono);color:var(--green);text-align:right;font-weight:700">'+fmtBRL(a.pagamento)+'</td>'
+      +'</tr>';
+  }).join('');
+
+  const wrap = document.getElementById('wh-table-wrap');
+  if (wrap) wrap.innerHTML='<div class="table-wrapper"><table><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table></div>';
+}
+
+
 document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('skyfit_dark') === '1') {
     document.body.classList.add('dark');
@@ -5724,7 +6180,7 @@ async function loadAgregadores(force) {
   const subEl = document.getElementById('agg-sub');
   if (subEl) subEl.textContent = 'Conectando…';
   try {
-    const resp = await fetch(APPS_SCRIPT_AGG_URL);
+    const resp = await fetch(APPS_SCRIPT_AGG_URL + '&_t=' + Date.now(), {cache:'no-store'});
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const json = await resp.json();
     const rows = json.rows || [];
@@ -6524,6 +6980,18 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="mob-vnd-item" onclick="mobChamGo('cham-oportunidades')"><span class="mob-vnd-dot" style="background:#22c55e"></span>Oportunidades</div>
 </div>
 <div id="mob-cham-overlay" onclick="mobChamClose()"
+  style="display:none;position:fixed;inset:0;z-index:899;background:rgba(0,0,0,.4)"></div>
+
+
+<!-- ═══ MOBILE PARCEIROS SUB-MENU ═══ -->
+<div id="mob-agr-sheet" class="mob-vnd-sheet">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 20px 6px;opacity:.5;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-mid)">
+    Parceiros <button onclick="mobAgrClose()" style="background:none;border:none;color:var(--text-mid);cursor:pointer;font-size:18px;line-height:1">×</button>
+  </div>
+  <div class="mob-vnd-item" onclick="mobAgrGo('agregadores')"><span class="mob-vnd-dot" style="background:#00f5c4"></span>Agregadores</div>
+  <div class="mob-vnd-item" onclick="mobAgrGo('wh-detalhado')"><span class="mob-vnd-dot" style="background:#ec4899"></span>WellHub Detalhado</div>
+</div>
+<div id="mob-agr-overlay" onclick="mobAgrClose()"
   style="display:none;position:fixed;inset:0;z-index:899;background:rgba(0,0,0,.4)"></div>
 
 
