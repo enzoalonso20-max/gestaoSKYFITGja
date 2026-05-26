@@ -5394,74 +5394,245 @@ function skyLoadingHide(){
 
 
 // ── Preview + Export PDF Geral ────────────────────────────
+// ── Preview + Export PDF Geral ────────────────────────────
 function geralPDFPreview() {
   const modal = document.getElementById('ger-pdf-modal');
   if (!modal) return;
-  // Preencher preview
+  modal.style.display = 'flex';
+
+  // Popular seletor de mês comparativo
+  const sel = document.getElementById('ger-pdf-mes-comp');
+  if (sel && sel.options.length <= 1) {
+    const todos = geralGetTodos();
+    const setMeses = new Set();
+    todos.forEach(r => r.mes && setMeses.add(r.mes));
+    (fatData||[]).forEach(r => { const mm = (r['Mês']||'').trim().toLowerCase(); if(mm) setMeses.add(mm); });
+    const meses = [...setMeses].sort((a,b) => MESES_FULL_CNT.indexOf(a)-MESES_FULL_CNT.indexOf(b));
+    const atual = geralMesSel.toLowerCase();
+    meses.forEach(m => {
+      if (m === atual) return; // não oferecer o próprio mês selecionado
+      const opt = document.createElement('option');
+      opt.value = m;
+      opt.textContent = m.charAt(0).toUpperCase() + m.slice(1);
+      sel.appendChild(opt);
+    });
+  }
+
+  const pv = v => typeof v==='number'?v:parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;
   const todos  = geralGetTodos();
   const dados  = geralGetFiltered(todos);
   const fatF   = geralFatFiltrado(geralMesSel);
   const aggF   = geralAggFiltrado(geralMesSel);
   const mesLbl = geralMesSel ? geralMesSel.charAt(0).toUpperCase()+geralMesSel.slice(1) : 'Todos os meses';
-  const volTotal = dados.reduce((s,r)=>s+r.valor,0);
-  const porTipo  = dados.reduce((a,r)=>{a[r.tipo]=(a[r.tipo]||0)+r.valor;return a;},{});
-  const pv = v => typeof v==='number'?v:parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;
-  const fatBase  = fatF.reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0);
 
+  const volTotal = dados.reduce((s,r)=>s+r.valor, 0);
+  const porTipo  = dados.reduce((a,r)=>{a[r.tipo]=(a[r.tipo]||0)+r.valor;return a;},{});
+  const fatBase  = fatF.reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0), 0);
+
+  // Vendedores
+  const porVend = dados.reduce((a,r)=>{
+    if(!r.vendedor||/online|site|sem vendedor/i.test(r.vendedor))return a;
+    if(!a[r.vendedor])a[r.vendedor]={qtd:0,fat:0};
+    a[r.vendedor].qtd++; a[r.vendedor].fat+=r.valor; return a;
+  },{});
+  const topVendedores = Object.entries(porVend).sort((a,b)=>b[1].fat-a[1].fat).slice(0,5);
+
+  // Planos
   const porPlano = dados.filter(r=>r.tipo==='Contratos').reduce((a,r)=>{
-    const k=r.plano.replace(/\s*\(online\)\s*/i,'').trim(); if(!k) return a;
-    if(!a[k]) a[k]={qtd:0,fat:0}; a[k].qtd++; a[k].fat+=r.valor; return a;
+    const k=r.plano.replace(/\s*\(online\)\s*/i,'').trim(); if(!k)return a;
+    if(!a[k])a[k]={qtd:0,fat:0}; a[k].qtd++; a[k].fat+=r.valor; return a;
   },{});
   const top5 = Object.entries(porPlano).sort((a,b)=>b[1].qtd-a[1].qtd).slice(0,5);
 
+  // Check-ins
+  const ckMap = aggF.reduce((a,r)=>{
+    const ag=String(r['Agregador']||'').trim(); if(!ag)return a;
+    if(!a[ag])a[ag]={ck:0,fat:0};
+    a[ag].ck+=parseInt(r['Check-ins'])||0; a[ag].fat+=pv(r['Faturamento']||0); return a;
+  },{});
+
+  // Comparativo
+  const mesCmp = document.getElementById('ger-pdf-mes-comp')?.value || '';
+  let cmpData = null;
+  if (mesCmp) {
+    const dadosCmp = todos.filter(r=>r.mes===mesCmp);
+    const fatCmp   = geralFatFiltrado(mesCmp);
+    const aggCmp   = geralAggFiltrado(mesCmp);
+    cmpData = {
+      label: mesCmp.charAt(0).toUpperCase()+mesCmp.slice(1),
+      volTotal: dadosCmp.reduce((s,r)=>s+r.valor,0),
+      fatBase:  fatCmp.reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0),
+      checkins: Object.values(aggCmp.reduce((a,r)=>{const ag=String(r['Agregador']||'').trim();if(!ag)return a;if(!a[ag])a[ag]={ck:0};a[ag].ck+=parseInt(r['Check-ins'])||0;return a;},{})).reduce((s,v)=>s+v.ck,0),
+      contratos: dadosCmp.filter(r=>r.tipo==='Contratos').length,
+    };
+  }
+
+  // Seleção de seções
+  const sec = {
+    vendas:    document.getElementById('pdf-sec-vendas')?.checked !== false,
+    fat:       document.getElementById('pdf-sec-fat')?.checked !== false,
+    checkins:  document.getElementById('pdf-sec-checkins')?.checked !== false,
+    planos:    document.getElementById('pdf-sec-planos')?.checked !== false,
+    vend:      document.getElementById('pdf-sec-vend')?.checked !== false,
+    comp:      document.getElementById('pdf-sec-comp')?.checked !== false,
+  };
+
+  const CORES_RANK = ['#7c3aed','#1e6fe8','#22c55e','#f59e0b','#ec4899'];
+
   const wrap = document.getElementById('ger-pdf-preview');
   if (!wrap) return;
+
   wrap.innerHTML = `
-    <div style="font-family:'Courier New',monospace;color:#0d1b2a;padding:24px;background:#fff;min-height:500px">
-      <div style="background:#0d1b2a;margin:-24px -24px 20px;padding:20px 24px;display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div style="font-size:20px;font-weight:900;letter-spacing:.3em;color:#00f5c4">KAIZEN</div>
-          <div style="font-size:9px;letter-spacing:.25em;color:rgba(0,245,196,.6);margin-top:2px">PERFORMANCE by KANAWA</div>
-        </div>
-        <div style="text-align:right;font-size:10px;color:rgba(255,255,255,.5)">
-          <div>Período: ${mesLbl}</div>
-          <div>${new Date().toLocaleDateString('pt-BR')}</div>
-        </div>
+  <div style="font-family:'DM Sans',sans-serif;color:#0d1b2a;background:#fff;min-height:500px">
+
+    <!-- Capa -->
+    <div style="background:#030b14;padding:24px 28px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:22px;font-weight:900;letter-spacing:.3em;background:linear-gradient(90deg,#00f5c4,#0099ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">KAIZEN</div>
+        <div style="font-size:9px;letter-spacing:.25em;color:rgba(0,245,196,.6);margin-top:3px">PERFORMANCE by KANAWA</div>
       </div>
-      <div style="font-size:11px;font-weight:700;color:#1e6fe8;letter-spacing:.05em;border-bottom:2px solid #1e6fe8;padding-bottom:4px;margin-bottom:12px">VENDAS</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="text-align:right">
+        <div style="font-size:13px;font-weight:700;color:#fff">Período: ${mesLbl}</div>
+        ${mesCmp&&sec.comp?`<div style="font-size:11px;color:#00f5c4;margin-top:2px">vs ${cmpData.label}</div>`:''}
+        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:4px">${new Date().toLocaleDateString('pt-BR')}</div>
+      </div>
+    </div>
+    <div style="height:3px;background:linear-gradient(90deg,#00f5c4,#0099ff)"></div>
+
+    <div style="padding:20px 24px;display:flex;flex-direction:column;gap:18px">
+
+    ${sec.vendas?`
+    <!-- Vendas -->
+    <div>
+      <div style="font-size:10px;font-weight:800;color:#1e6fe8;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid #1e6fe8;padding-bottom:4px;margin-bottom:10px">📦 Vendas — Contratos · Serviços · Produtos</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
         ${[
-          {l:'Volume Total',v:fmtBRL(volTotal),c:'#7c3aed'},
-          {l:'Maior Fonte',v:(Object.entries(porTipo).sort((a,b)=>b[1]-a[1])[0]||['—'])[0],c:'#1e6fe8'},
-          {l:'Faturamento Base',v:fmtBRL(fatBase),c:'#22c55e'},
-        ].map(k=>`<div style="border-left:3px solid ${k.c};padding:8px 10px;background:#f8fafc;border-radius:0 6px 6px 0">
+          {l:'Volume Total',v:fmtBRL(volTotal),c:'#7c3aed',s:'Contratos: '+fmtBRL(porTipo['Contratos']||0)},
+          {l:'Maior Fonte',v:(Object.entries(porTipo).sort((a,b)=>b[1]-a[1])[0]||['—'])[0],c:'#1e6fe8',s:fmtBRL((Object.entries(porTipo).sort((a,b)=>b[1]-a[1])[0]||[,'',0])[1]||0)},
+          {l:'Total Contratos',v:dados.filter(r=>r.tipo==='Contratos').length,c:'#22c55e',s:'no período'},
+        ].map(k=>`<div style="border-left:3px solid ${k.c};padding:10px 12px;background:#f8fafc;border-radius:0 8px 8px 0">
           <div style="font-size:9px;color:#6b7280;font-weight:700;text-transform:uppercase">${k.l}</div>
-          <div style="font-size:14px;font-weight:800;color:${k.c};margin-top:2px">${k.v}</div>
+          <div style="font-size:16px;font-weight:800;color:${k.c};margin-top:3px">${k.v}</div>
+          <div style="font-size:10px;color:#9ca3af;margin-top:1px">${k.s}</div>
         </div>`).join('')}
       </div>
-      <div style="font-size:11px;font-weight:700;color:#1e6fe8;letter-spacing:.05em;border-bottom:2px solid #1e6fe8;padding-bottom:4px;margin:16px 0 10px">TOP 5 PLANOS</div>
+    </div>`:''}
+
+    ${sec.fat?`
+    <!-- Faturamento -->
+    <div>
+      <div style="font-size:10px;font-weight:800;color:#22c55e;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid #22c55e;padding-bottom:4px;margin-bottom:10px">💳 Faturamento Real — EVO · TotalPass · WellHub</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+        ${['EVO','WellHub','TotalPass'].map(s=>{
+          const v=fatF.reduce((sum,r)=>sum+(String(r['Sistema']||'').toLowerCase()===s.toLowerCase()?pv(r['Faturamento']||r['Valor']||0):0),0);
+          const tot=fatBase||1;
+          return `<div style="border-left:3px solid ${{EVO:'#7c3aed',WellHub:'#ec4899',TotalPass:'#22c55e'}[s]||'#6b7280'};padding:10px 12px;background:#f8fafc;border-radius:0 8px 8px 0">
+            <div style="font-size:9px;color:#6b7280;font-weight:700">${s}</div>
+            <div style="font-size:15px;font-weight:800;color:${{EVO:'#7c3aed',WellHub:'#ec4899',TotalPass:'#22c55e'}[s]||'#6b7280'};margin-top:2px">${fmtBRL(v)}</div>
+            <div style="font-size:10px;color:#9ca3af">${(v/tot*100).toFixed(1)}% do total</div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:8px;padding:10px 12px;background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:8px;display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:11px;color:#166534;font-weight:700">TOTAL FATURAMENTO BASE</div>
+        <div style="font-size:18px;font-weight:900;color:#16a34a">${fmtBRL(fatBase)}</div>
+      </div>
+    </div>`:''}
+
+    ${sec.checkins&&Object.keys(ckMap).length?`
+    <!-- Check-ins -->
+    <div>
+      <div style="font-size:10px;font-weight:800;color:#ec4899;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid #ec4899;padding-bottom:4px;margin-bottom:10px">🤝 Check-ins por Agregador</div>
+      <div style="display:grid;grid-template-columns:repeat(${Math.min(Object.keys(ckMap).length,3)},1fr);gap:8px">
+        ${Object.entries(ckMap).sort((a,b)=>b[1].ck-a[1].ck).map(([ag,d])=>{
+          const cor={TotalPass:'#22c55e',Wellhub:'#ec4899',WellHub:'#ec4899',EVO:'#7c3aed'}[ag]||'#6b7280';
+          return `<div style="border-left:3px solid ${cor};padding:10px 12px;background:#f8fafc;border-radius:0 8px 8px 0">
+            <div style="font-size:9px;color:#6b7280;font-weight:700">${ag}</div>
+            <div style="font-size:20px;font-weight:900;color:${cor};margin-top:2px">${d.ck.toLocaleString('pt-BR')}</div>
+            <div style="font-size:10px;color:#9ca3af">${fmtBRL(d.fat)} faturado</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`:''}
+
+    ${sec.vend&&topVendedores.length?`
+    <!-- Vendedores -->
+    <div>
+      <div style="font-size:10px;font-weight:800;color:#f59e0b;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid #f59e0b;padding-bottom:4px;margin-bottom:10px">🏅 Ranking de Vendedores</div>
       <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <thead><tr style="background:#f1f5f9">
-          <th style="padding:6px 8px;text-align:left;color:#6b7280">#</th>
-          <th style="padding:6px 8px;text-align:left;color:#6b7280">Plano</th>
-          <th style="padding:6px 8px;text-align:center;color:#6b7280">Qtd</th>
-          <th style="padding:6px 8px;text-align:right;color:#6b7280">Faturamento</th>
+        <thead><tr style="background:#f8fafc">
+          <th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:700">#</th>
+          <th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:700">Vendedor</th>
+          <th style="padding:6px 10px;text-align:center;color:#6b7280;font-weight:700">Contratos</th>
+          <th style="padding:6px 10px;text-align:right;color:#6b7280;font-weight:700">Faturamento</th>
         </tr></thead>
-        <tbody>${top5.map(([p,d],i)=>`
+        <tbody>${topVendedores.map(([nome,d],i)=>`
           <tr style="border-bottom:1px solid #e5e7eb">
-            <td style="padding:6px 8px;font-weight:800;color:${['#7c3aed','#1e6fe8','#22c55e','#f59e0b','#ec4899'][i]}">${i+1}</td>
-            <td style="padding:6px 8px;font-weight:600">${p.length>40?p.slice(0,40)+'…':p}</td>
-            <td style="padding:6px 8px;text-align:center;font-weight:700">${d.qtd}</td>
-            <td style="padding:6px 8px;text-align:right;color:#16a34a;font-weight:700">${fmtBRL(d.fat)}</td>
+            <td style="padding:7px 10px;font-weight:800;color:${CORES_RANK[i]||'#6b7280'}">${i+1}</td>
+            <td style="padding:7px 10px;font-weight:600">${nome}</td>
+            <td style="padding:7px 10px;text-align:center;font-weight:700">${d.qtd}</td>
+            <td style="padding:7px 10px;text-align:right;color:#16a34a;font-weight:700">${fmtBRL(d.fat)}</td>
           </tr>`).join('')}</tbody>
       </table>
-      <div style="margin-top:20px;padding-top:12px;border-top:1px solid #e5e7eb;font-size:9px;color:#9ca3af;display:flex;justify-content:space-between">
-        <span>KAIZEN PERFORMANCE by KANAWA — Relatorio Confidencial</span>
-        <span>${new Date().toLocaleDateString('pt-BR')}</span>
+    </div>`:''}
+
+    ${sec.planos&&top5.length?`
+    <!-- Top 5 Planos -->
+    <div>
+      <div style="font-size:10px;font-weight:800;color:#7c3aed;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid #7c3aed;padding-bottom:4px;margin-bottom:10px">🏷️ Top 5 Planos Mais Vendidos</div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <thead><tr style="background:#f8fafc">
+          <th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:700">#</th>
+          <th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:700">Plano</th>
+          <th style="padding:6px 10px;text-align:center;color:#6b7280;font-weight:700">Qtd</th>
+          <th style="padding:6px 10px;text-align:right;color:#6b7280;font-weight:700">Faturamento</th>
+        </tr></thead>
+        <tbody>${top5.map(([p,d],i)=>`
+          <tr style="border-bottom:1px solid #e5e7eb;background:${i%2?'#fafafa':'#fff'}">
+            <td style="padding:7px 10px;font-weight:800;color:${CORES_RANK[i]}">${i+1}</td>
+            <td style="padding:7px 10px;font-weight:600">${p.length>45?p.slice(0,45)+'…':p}</td>
+            <td style="padding:7px 10px;text-align:center;font-weight:700">${d.qtd}</td>
+            <td style="padding:7px 10px;text-align:right;color:#16a34a;font-weight:700">${fmtBRL(d.fat)}</td>
+          </tr>`).join('')}</tbody>
+      </table>
+    </div>`:''}
+
+    ${sec.comp&&cmpData?`
+    <!-- Comparativo -->
+    <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:12px;padding:14px 16px">
+      <div style="font-size:10px;font-weight:800;color:#1e6fe8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">📊 Comparativo: ${mesLbl} vs ${cmpData.label}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        ${[
+          {l:'Vol. Vendas',a:volTotal,b:cmpData.volTotal},
+          {l:'Fat. Base',a:fatBase,b:cmpData.fatBase},
+          {l:'Check-ins',a:Object.values(ckMap).reduce((s,v)=>s+v.ck,0),b:cmpData.checkins,fmt:v=>v.toLocaleString('pt-BR')},
+          {l:'Contratos',a:dados.filter(r=>r.tipo==='Contratos').length,b:cmpData.contratos,fmt:v=>v},
+        ].map(item=>{
+          const fmt = item.fmt || fmtBRL;
+          const diff = item.a - item.b;
+          const pct  = item.b ? (diff/item.b*100).toFixed(1) : '—';
+          const cor  = diff>=0?'#16a34a':'#dc2626';
+          const seta = diff>=0?'▲':'▼';
+          return `<div style="background:#fff;border-radius:8px;padding:10px 12px;text-align:center">
+            <div style="font-size:9px;color:#6b7280;font-weight:700;text-transform:uppercase">${item.l}</div>
+            <div style="font-size:13px;font-weight:800;color:#0d1b2a;margin-top:3px">${fmt(item.a)}</div>
+            <div style="font-size:10px;color:${cor};font-weight:700;margin-top:2px">${seta} ${Math.abs(parseFloat(pct)||0).toFixed(1)}%</div>
+            <div style="font-size:9px;color:#9ca3af">vs ${fmt(item.b)}</div>
+          </div>`;
+        }).join('')}
       </div>
-    </div>`;
-  modal.style.display = 'flex';
+    </div>`:''}
+
+    <!-- Rodapé -->
+    <div style="margin-top:4px;padding-top:10px;border-top:1px solid #e5e7eb;font-size:9px;color:#9ca3af;display:flex;justify-content:space-between">
+      <span>KAIZEN PERFORMANCE by KANAWA — Relatório Confidencial</span>
+      <span>${new Date().toLocaleDateString('pt-BR')}</span>
+    </div>
+
+    </div>
+  </div>`;
 }
+
 
 async function exportarGeralPDF() {
   if (typeof jspdf === 'undefined') {
@@ -5580,6 +5751,11 @@ async function exportarGeralPDF() {
     checkPage(60);
     const porPlano=dados.filter(r=>r.tipo==='Contratos').reduce((a,r)=>{const k=r.plano.replace(/\s*\(online\)\s*/i,'').trim();if(!k)return a;if(!a[k])a[k]={qtd:0,fat:0};a[k].qtd++;a[k].fat+=r.valor;return a;},{});
     const top5=Object.entries(porPlano).sort((a,b)=>b[1].qtd-a[1].qtd).slice(0,5);
+    const topVendedores=Object.entries(dados.reduce((a,r)=>{
+      if(!r.vendedor||/online|site|sem vendedor/i.test(r.vendedor))return a;
+      if(!a[r.vendedor])a[r.vendedor]={qtd:0,fat:0};
+      a[r.vendedor].qtd++;a[r.vendedor].fat+=r.valor;return a;
+    },{})).sort((a,b)=>b[1].fat-a[1].fat).slice(0,5);
     pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(...TEAL);
     pdf.text('TOP 5 PLANOS MAIS VENDIDOS',MAR,Y); Y+=4; hLine(Y); Y+=3;
     pdf.setFillColor(235,240,246); pdf.rect(MAR,Y,CW,7,'F');
@@ -5612,6 +5788,75 @@ async function exportarGeralPDF() {
       pdf.setFontSize(8); pdf.setFont(undefined,'bold'); pdf.setTextColor(...catCores[i]); pdf.text(fmtBRL(val),W-MAR,y+barH*.7,{align:'right'});
     });
     Y+=cats.length*(barH+barGap)+4;
+
+    // ── Seção: Ranking Vendedores ─────────────────────────
+    const secVend = document.getElementById('pdf-sec-vend')?.checked !== false;
+    if (secVend && topVendedores && topVendedores.length) {
+      checkPage(50);
+      pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(...[245,158,11]);
+      pdf.text('RANKING DE VENDEDORES',MAR,Y); Y+=4; hLine(Y); Y+=3;
+      pdf.setFillColor(235,240,246); pdf.rect(MAR,Y,CW,7,'F');
+      pdf.setFontSize(7.5); pdf.setFont(undefined,'bold'); pdf.setTextColor(...CINZA);
+      pdf.text('#',MAR+3,Y+5); pdf.text('Vendedor',MAR+10,Y+5);
+      pdf.text('Qtd',W-MAR-50,Y+5,{align:'right'}); pdf.text('Faturamento',W-MAR-3,Y+5,{align:'right'});
+      Y+=7;
+      topVendedores.forEach(([nome,d],i)=>{
+        pdf.setFillColor(i%2===0?250:245,i%2===0?252:248,i%2===0?255:252);
+        pdf.rect(MAR,Y,CW,8,'F');
+        pdf.setFontSize(7); pdf.setFont(undefined,'bold'); pdf.setTextColor(...(CORES_R[i]||CINZA));
+        pdf.text(String(i+1),MAR+3,Y+5.5);
+        pdf.setFont(undefined,'normal'); pdf.setTextColor(...ESCURO);
+        pdf.text(nome.length>40?nome.slice(0,40)+'...':nome,MAR+10,Y+5.5);
+        pdf.setFont(undefined,'bold'); pdf.setTextColor(...(CORES_R[i]||CINZA));
+        pdf.text(String(d.qtd),W-MAR-50,Y+5.5,{align:'right'});
+        pdf.setTextColor(34,197,94); pdf.text(fmtBRL(d.fat),W-MAR-3,Y+5.5,{align:'right'});
+        Y+=8;
+      });
+      Y+=4;
+    }
+
+    // ── Seção: Comparativo ────────────────────────────────
+    const mesCmpVal = document.getElementById('ger-pdf-mes-comp')?.value||'';
+    const secComp   = document.getElementById('pdf-sec-comp')?.checked !== false;
+    if (secComp && mesCmpVal) {
+      checkPage(55);
+      const dadosCmp = todos.filter(r=>r.mes===mesCmpVal);
+      const fatCmp   = geralFatFiltrado(mesCmpVal);
+      const aggCmp   = geralAggFiltrado(mesCmpVal);
+      const fatBaseCmp = fatCmp.reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0);
+      const volCmp     = dadosCmp.reduce((s,r)=>s+r.valor,0);
+      const ckCmpTotal = aggCmp.reduce((s,r)=>s+(parseInt(r['Check-ins'])||0),0);
+      const cmpLabel   = mesCmpVal.charAt(0).toUpperCase()+mesCmpVal.slice(1);
+
+      pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(30,111,232);
+      pdf.text('COMPARATIVO: '+mesLabel.toUpperCase()+' vs '+cmpLabel.toUpperCase(),MAR,Y);
+      Y+=4; hLine(Y); Y+=5;
+
+      const cmpItems = [
+        {l:'Vol. Vendas',a:volTotal,b:volCmp,fmt:'brl'},
+        {l:'Fat. Base',a:fatBase,b:fatBaseCmp,fmt:'brl'},
+        {l:'Check-ins',a:Object.values(ckMap).reduce((s,v)=>s+v.ck,0),b:ckCmpTotal,fmt:'num'},
+        {l:'Contratos',a:dados.filter(r=>r.tipo==='Contratos').length,b:dadosCmp.filter(r=>r.tipo==='Contratos').length,fmt:'num'},
+      ];
+      const cW2=CW/cmpItems.length-3;
+      cmpItems.forEach((item,i)=>{
+        const x=MAR+i*(cW2+3);
+        const diff=item.a-item.b, pos=diff>=0;
+        const pct=item.b?(Math.abs(diff)/item.b*100).toFixed(1)+'%':'--';
+        const fv=v=>item.fmt==='brl'?fmtBRL(v):v.toLocaleString('pt-BR');
+        pdf.setFillColor(pos?240:255,pos?253:240,pos?244:240); pdf.roundedRect(x,Y,cW2,26,2,2,'F');
+        pdf.setFillColor(pos?34:239,pos?197:68,pos?94:68); pdf.rect(x,Y,2,26,'F');
+        pdf.setFontSize(6.5); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA);
+        pdf.text(item.l.toUpperCase(),x+4,Y+5);
+        pdf.setFontSize(10); pdf.setFont(undefined,'bold'); pdf.setTextColor(...ESCURO);
+        pdf.text(fv(item.a),x+4,Y+12);
+        pdf.setFontSize(8); pdf.setTextColor(pos?34:239,pos?197:68,pos?94:68);
+        pdf.text((pos?'+':'')+pct,x+4,Y+18);
+        pdf.setFontSize(7); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA);
+        pdf.text('vs '+fv(item.b),x+4,Y+23);
+      });
+      Y+=32;
+    }
 
     // Rodape
     const totalPages=pdf.internal.getNumberOfPages();
@@ -6976,18 +7221,43 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 <!-- Modal Preview PDF Geral -->
-<div id="ger-pdf-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:16px">
-  <div style="background:var(--bg-card);border-radius:16px;max-width:700px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+<div id="ger-pdf-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.75);align-items:center;justify-content:center;padding:16px">
+  <div style="background:var(--bg-card);border-radius:16px;max-width:780px;width:100%;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <!-- Header -->
     <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
       <div>
-        <div style="font-size:15px;font-weight:700;color:var(--text-dark)">📄 Preview do Relatório</div>
-        <div style="font-size:12px;color:var(--text-light);margin-top:2px">Revise antes de exportar</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text-dark)">📄 Relatório Kaizen — Visão Geral</div>
+        <div style="font-size:12px;color:var(--text-light);margin-top:2px">Configure e revise antes de exportar</div>
       </div>
       <button onclick="document.getElementById('ger-pdf-modal').style.display='none'"
         style="background:none;border:1px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;color:var(--text-dark);font-size:13px">✕ Fechar</button>
     </div>
+    <!-- Opções -->
+    <div style="padding:14px 20px;border-bottom:1px solid var(--border);display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end;flex-shrink:0;background:var(--bg)">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <label style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em">Comparar com mês:</label>
+        <select id="ger-pdf-mes-comp"
+          onchange="geralPDFPreview()"
+          style="padding:6px 10px;border:1px solid var(--border);border-radius:8px;font-family:var(--font);font-size:13px;background:var(--bg-card);color:var(--text-dark);min-width:160px">
+          <option value="">— Sem comparação —</option>
+        </select>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <label style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em">Seções do PDF:</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="pdf-sec-vendas" checked style="accent-color:#1e6fe8">Vendas</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="pdf-sec-fat" checked style="accent-color:#1e6fe8">Faturamento</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="pdf-sec-checkins" checked style="accent-color:#1e6fe8">Check-ins</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="pdf-sec-planos" checked style="accent-color:#1e6fe8">Top Planos</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="pdf-sec-vend" checked style="accent-color:#1e6fe8">Vendedores</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;cursor:pointer"><input type="checkbox" id="pdf-sec-comp" checked style="accent-color:#1e6fe8">Comparativo</label>
+        </div>
+      </div>
+    </div>
+    <!-- Preview -->
     <div id="ger-pdf-preview" style="flex:1;overflow-y:auto;padding:0"></div>
-    <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0">
+    <!-- Footer -->
+    <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0">
       <button onclick="document.getElementById('ger-pdf-modal').style.display='none'"
         style="padding:9px 20px;border:1px solid var(--border);border-radius:8px;cursor:pointer;background:var(--bg);color:var(--text-dark);font-weight:600">Cancelar</button>
       <button onclick="exportarGeralPDF()"
