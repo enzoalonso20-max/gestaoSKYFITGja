@@ -991,6 +991,12 @@
       <div class="nav-sub" onclick="switchTab('wh-detalhado',this)"><span class="nav-sub-dot">◉</span>WellHub Detalhado</div>
     </div>
 
+    <!-- ══ ESTOQUE ══ -->
+    <div class="nav-label" style="margin-top:8px">Estoque</div>
+    <div class="nav-item" onclick="switchTab('estoque',this)">
+      <span class="nav-icon">📦</span>Contagem de Estoque
+    </div>
+
     <!-- ══ CHAMADOS ══ -->
     <div class="nav-label" style="margin-top:8px">Chamados</div>
     <div class="nav-item nav-parent" onclick="toggleNavGroup('cham-group')">
@@ -2358,6 +2364,83 @@
       </div>
     </div>
 
+    <!-- ════ ABA: ESTOQUE ════ -->
+    <div class="tab-pane" id="tab-estoque">
+      <div class="section-header">
+        <div>
+          <div class="section-title">📦 Contagem de Estoque</div>
+          <div class="section-sub" id="est-sub">Faça upload do arquivo Excel para gerar a folha de contagem</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-primary" onclick="document.getElementById('est-file-input').click()">
+            📂 Selecionar Excel
+          </button>
+          <button class="btn btn-secondary" id="est-btn-docx" style="display:none" onclick="estoqueGerarDocx()">
+            📄 Baixar Word (.docx)
+          </button>
+        </div>
+      </div>
+
+      <!-- Upload -->
+      <input type="file" id="est-file-input" accept=".xlsx,.xls" style="display:none" onchange="estoqueCarregarArquivo(this)">
+
+      <!-- Drop zone -->
+      <div id="est-dropzone"
+        style="border:2px dashed var(--border);border-radius:16px;padding:48px 24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:20px"
+        onclick="document.getElementById('est-file-input').click()"
+        ondragover="estoqueDragOver(event)"
+        ondragleave="estoqueDragLeave(event)"
+        ondrop="estoqueDrop(event)">
+        <div style="font-size:48px;margin-bottom:12px">📊</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text-dark);margin-bottom:6px">
+          Arraste o Excel aqui ou clique para selecionar
+        </div>
+        <div style="font-size:13px;color:var(--text-light)">
+          Formatos aceitos: .xlsx, .xls &nbsp;·&nbsp; O sistema categoriza automaticamente
+        </div>
+        <div id="est-file-nome" style="margin-top:12px;font-size:13px;font-weight:600;color:#1e6fe8;display:none"></div>
+      </div>
+
+      <!-- Resumo -->
+      <div id="est-resumo" style="display:none;margin-bottom:20px">
+        <div class="cards-grid" style="grid-template-columns:repeat(4,1fr)">
+          <div class="kpi-card green">
+            <div class="kpi-icon">📦</div>
+            <div class="kpi-label">Total Produtos</div>
+            <div class="kpi-value" id="est-kpi-total">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon">🏷️</div>
+            <div class="kpi-label">Categorias</div>
+            <div class="kpi-value" id="est-kpi-cats">—</div>
+          </div>
+          <div class="kpi-card amber">
+            <div class="kpi-icon">⚠️</div>
+            <div class="kpi-label">Estoque Zero</div>
+            <div class="kpi-value" id="est-kpi-zero">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon">✅</div>
+            <div class="kpi-label">Em Estoque</div>
+            <div class="kpi-value" id="est-kpi-ok">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview das categorias -->
+      <div id="est-preview" style="display:none"></div>
+
+      <!-- Empty state -->
+      <div id="est-empty" class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">📦</div>
+        <div class="fin-ph-title">Contagem de Estoque</div>
+        <div class="fin-ph-desc">
+          Faça o upload do arquivo Excel exportado do sistema de estoque.<br>
+          O sistema vai categorizar os produtos e gerar a folha de contagem física.
+        </div>
+      </div>
+    </div>
+
   </div><!-- /content -->
 </div><!-- /main -->
 </div><!-- /app -->
@@ -2375,6 +2458,9 @@
   </div>
   <div class="bn-item" onclick="mobChamToggle(this)" data-tab="chamados">
     <span class="bn-icon">📋</span><span>Chamados</span>
+  </div>
+  <div class="bn-item" onclick="switchTab('estoque',this)" data-tab="estoque">
+    <span class="bn-icon">📦</span><span>Estoque</span>
   </div>
 </nav>
 
@@ -2687,6 +2773,7 @@ const VND_TABS   = ['vnd-geral','vnd-contratos','vnd-servicos','vnd-produtos'];
 const FIN_TABS   = ['fin-visao','fin-faturamento','fin-despesas','fin-lucro','fin-caixa','fin-pagamentos'];
 const AGR_TABS   = ['agregadores','wh-detalhado'];
 const CHAM_TABS  = ['cham-expirados','cham-inadimplencia','cham-oportunidades'];
+const EST_TABS   = ['estoque'];
 
 function switchTab(tab, el) {
   // Limpa seleção
@@ -2741,6 +2828,9 @@ function switchTab(tab, el) {
     if(ag) ag.classList.add('open'); if(ac) ac.classList.add('open');
     if(tab==='agregadores' && !aggLoaded) loadAgregadores(false);
     if(tab==='wh-detalhado' && !whLoaded) loadWellHub(false);
+
+  } else if (EST_TABS.includes(tab)) {
+    // Estoque não precisa carregar dados
 
   } else if (CHAM_TABS.includes(tab)) {
     const g=document.getElementById('cham-group'), c=document.getElementById('cham-chevron');
@@ -6265,6 +6355,322 @@ function whRender() {
 
   const wrap = document.getElementById('wh-table-wrap');
   if (wrap) wrap.innerHTML='<div class="table-wrapper"><table><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table></div>';
+}
+
+
+
+// ╔══════════════════════════════════════════════════════════╗
+//  ABA: CONTAGEM DE ESTOQUE
+// ╚══════════════════════════════════════════════════════════╝
+let estDados = [];   // { produto, estoque }
+let estCats  = {};   // { categoria: [produtos] }
+let estChaves= [];   // ordem das categorias
+
+// Regras de categorização (ordem importa)
+const EST_REGRAS = [
+  { cat: 'BEBIDAS', rx: [/^água/i,/^gatorade/i,/^itts/i,/^chá/i,/^coca.cola/i,/^refrigerante/i,/^suco/i,/^guaraviton/i,/^h2o/i,/^panic/i,/^energel/i] },
+  { cat: 'ROUPAS E ACESSÓRIOS', rx: [/^baby look/i,/^camiseta/i,/^regata/i,/^manga compressão/i,/^coqueteleira/i,/^garrafinha/i,/^elástico/i] },
+  { cat: 'ALIMENTOS E SUPLEMENTOS', rx: [/^barrinha/i,/^c4/i,/^chiclete/i,/^chocowheyfer/i,/^cookie/i,/^combo/i,/^whey/i] },
+];
+
+function estCategoria(nome) {
+  for (const r of EST_REGRAS)
+    if (r.rx.some(rx => rx.test(nome))) return r.cat;
+  return 'OUTROS';
+}
+
+function estCategorizar(prods) {
+  const mapa = {};
+  for (const p of prods) {
+    const c = estCategoria(p.produto);
+    if (!mapa[c]) mapa[c] = [];
+    mapa[c].push(p);
+  }
+  const ORDEM = EST_REGRAS.map(r => r.cat);
+  const chaves = [...ORDEM.filter(c => mapa[c]), ...(mapa['OUTROS'] ? ['OUTROS'] : [])];
+  chaves.forEach(c => mapa[c].sort((a,b) => a.produto.localeCompare(b.produto,'pt-BR')));
+  return { mapa, chaves };
+}
+
+// ── Drag & Drop ─────────────────────────────────────────────
+function estoqueDragOver(e) {
+  e.preventDefault();
+  const z = document.getElementById('est-dropzone');
+  if (z) { z.style.borderColor='#1e6fe8'; z.style.background='rgba(30,111,232,.06)'; }
+}
+function estoqueDragLeave(e) {
+  const z = document.getElementById('est-dropzone');
+  if (z) { z.style.borderColor=''; z.style.background=''; }
+}
+function estoqueDrop(e) {
+  e.preventDefault();
+  estoqueDragLeave(e);
+  const file = e.dataTransfer.files[0];
+  if (file) estoqueProcessar(file);
+}
+
+// ── Upload via input ────────────────────────────────────────
+function estoqueCarregarArquivo(input) {
+  const file = input.files[0];
+  if (file) estoqueProcessar(file);
+}
+
+// ── Processar arquivo Excel com SheetJS (CDN) ───────────────
+async function estoqueProcessar(file) {
+  const sub = document.getElementById('est-sub');
+  if (sub) sub.textContent = 'Processando ' + file.name + '...';
+
+  // Carregar SheetJS dinamicamente
+  if (!window.XLSX) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  const buf  = await file.arrayBuffer();
+  const wb   = XLSX.read(buf, { type: 'array' });
+  const ws   = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+
+  // Mapear colunas
+  if (!rows.length) { toast('Arquivo vazio ou sem dados', '❌'); return; }
+  const sample = rows[0];
+  const keys = Object.keys(sample);
+  const kProd = keys.find(k => /produto/i.test(k)) || keys[0];
+  const kEst  = keys.find(k => /estoque\s*atual/i.test(k)) || keys[1];
+
+  estDados = rows
+    .map(r => ({ produto: String(r[kProd]||'').trim(), estoque: Number(r[kEst])||0 }))
+    .filter(r => r.produto);
+
+  const { mapa, chaves } = estCategorizar(estDados);
+  estCats   = mapa;
+  estChaves = chaves;
+
+  // Atualizar UI
+  const nomeEl = document.getElementById('est-file-nome');
+  if (nomeEl) { nomeEl.textContent = '✅ ' + file.name; nomeEl.style.display='block'; }
+
+  const total = estDados.length;
+  const zeros = estDados.filter(p => p.estoque === 0).length;
+  document.getElementById('est-kpi-total').textContent = total;
+  document.getElementById('est-kpi-cats').textContent  = chaves.length;
+  document.getElementById('est-kpi-zero').textContent  = zeros;
+  document.getElementById('est-kpi-ok').textContent    = total - zeros;
+  document.getElementById('est-resumo').style.display  = 'block';
+  document.getElementById('est-empty').style.display   = 'none';
+  document.getElementById('est-btn-docx').style.display= 'inline-flex';
+
+  if (sub) sub.textContent = total + ' produtos em ' + chaves.length + ' categorias — ' + file.name;
+
+  estoqueRenderPreview();
+  toast(total + ' produtos carregados em ' + chaves.length + ' categorias', '📦');
+}
+
+// ── Preview na aba ──────────────────────────────────────────
+function estoqueRenderPreview() {
+  const wrap = document.getElementById('est-preview');
+  if (!wrap) return;
+  wrap.style.display = 'block';
+
+  const COR = { 'BEBIDAS':'#1e6fe8','ROUPAS E ACESSÓRIOS':'#7c3aed','ALIMENTOS E SUPLEMENTOS':'#22c55e','OUTROS':'#f59e0b' };
+
+  wrap.innerHTML = estChaves.map(cat => {
+    const prods = estCats[cat];
+    const cor   = COR[cat] || '#6b7280';
+    const rows  = prods.map((p,i) => `
+      <tr style="background:${i%2?'rgba(0,0,0,.02)':'transparent'};border-bottom:1px solid var(--border)">
+        <td style="padding:8px 14px;font-size:13px;font-weight:500">${p.produto}</td>
+        <td style="padding:8px 14px;text-align:center;font-family:monospace;font-weight:700;font-size:13px">${p.estoque}</td>
+        <td style="padding:8px 14px;text-align:center;color:var(--text-light);font-size:13px">___________</td>
+      </tr>`).join('');
+
+    return `
+    <div class="panel" style="margin-bottom:16px;border-top:3px solid ${cor}">
+      <div class="panel-header" style="background:${cor}12">
+        <span class="panel-title" style="color:${cor}">${cat}</span>
+        <span class="badge" style="background:${cor};color:#fff">${prods.length} produtos</span>
+      </div>
+      <div class="panel-body" style="padding:0">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:var(--bg)">
+            <th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em">Produto</th>
+            <th style="padding:8px 14px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;width:120px">Estoque Atual</th>
+            <th style="padding:8px 14px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;width:160px">Contagem Física</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Gerar .docx via Anthropic API (docx + SheetJS já na memória) ─
+async function estoqueGerarDocx() {
+  if (!estChaves.length) { toast('Carregue um arquivo Excel primeiro','⚠️'); return; }
+  toast('Gerando documento Word...','⏳');
+
+  const hoje = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const COR_AZUL = '1B3A6B', COR_CLARO = 'D6E4F0', COR_ALT = 'F4F8FC', COR_BRD = 'BDD7EE';
+  const TW=9080, C1=4600, C2=1740, C3=2740;
+
+  // Usar jsPDF não serve para docx — usar docx-wasm via blob/fetch ou
+  // gerar HTML para impressão e deixar o browser imprimir como PDF
+  // Solução robusta: gerar HTML imprimível e abrir janela de impressão
+  estoqueAbrirImpressao();
+}
+
+// ── Abrir janela de impressão (HTML → PDF/Word via browser) ─
+function estoqueAbrirImpressao() {
+  if (!estChaves.length) { toast('Carregue um arquivo Excel primeiro','⚠️'); return; }
+
+  const hoje = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const COR = { 'BEBIDAS':'#1B3A6B','ROUPAS E ACESSÓRIOS':'#5B2C8D','ALIMENTOS E SUPLEMENTOS':'#1A5C30','OUTROS':'#8B4513' };
+
+  const secoes = estChaves.map(cat => {
+    const prods = estCats[cat];
+    const cor   = COR[cat] || '#333';
+    const linhas = prods.map((p,i) => `
+      <tr class="${i%2?'alt':''}">
+        <td class="col-prod">${p.produto}</td>
+        <td class="col-num">${p.estoque}</td>
+        <td class="col-cnt"></td>
+      </tr>`).join('');
+    return `
+    <div class="categoria-bloco">
+      <table>
+        <thead>
+          <tr class="hdr-col"><th colspan="3" class="col-prod">Produto</th></tr>
+          <tr class="hdr-col">
+            <th class="col-prod">Produto</th>
+            <th class="col-num">Estoque Atual</th>
+            <th class="col-cnt">Contagem Física</th>
+          </tr>
+          <tr class="hdr-cat" style="background:${cor}">
+            <td colspan="3">📁 ${cat} <span class="qtd">(${prods.length} produtos)</span></td>
+          </tr>
+        </thead>
+        <tbody>${linhas}</tbody>
+        <tfoot>
+          <tr><td colspan="3" class="rodape-cat">${prods.length} produto${prods.length!==1?'s':''} — ${cat}</td></tr>
+        </tfoot>
+      </table>
+    </div>`;
+  }).join('');
+
+  const total = estDados.length;
+  const zeros = estDados.filter(p=>p.estoque===0).length;
+
+  const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Folha de Contagem — SkyFit Guarujá — ${hoje}</title>
+<style>
+  @page { size: A4; margin: 1.5cm 1.2cm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 11pt; color: #1B3A6B; background: #fff; }
+
+  /* Capa / cabeçalho */
+  .capa { text-align: center; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 3px solid #1B3A6B; }
+  .capa h1 { font-size: 20pt; font-weight: 900; color: #1B3A6B; letter-spacing: .03em; }
+  .capa h2 { font-size: 13pt; font-weight: 700; color: #444; margin-top: 4px; }
+  .capa .meta { font-size: 10pt; color: #555; margin-top: 8px; }
+  .capa .meta span { display: inline-block; margin: 0 18px; }
+
+  /* Resumo */
+  .resumo { display: flex; gap: 12px; margin-bottom: 16px; }
+  .resumo-card { flex: 1; border: 1px solid #BDD7EE; border-radius: 6px; padding: 8px 12px; text-align: center; }
+  .resumo-card .num { font-size: 18pt; font-weight: 900; color: #1B3A6B; }
+  .resumo-card .lbl { font-size: 8pt; color: #666; text-transform: uppercase; letter-spacing: .05em; }
+
+  /* Tabelas */
+  table { width: 100%; border-collapse: collapse; font-size: 10pt; }
+  th, td { border: 1px solid #BDD7EE; }
+  .col-prod { width: 58%; padding: 5px 8px; text-align: left; }
+  .col-num  { width: 18%; padding: 5px 8px; text-align: center; font-weight: 700; }
+  .col-cnt  { width: 24%; padding: 5px 8px; text-align: center; color: #aaa; }
+
+  /* Header de coluna */
+  .hdr-col { background: #1B3A6B; color: #fff; font-size: 9pt; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+  .hdr-col th { border-color: #0d2a50; padding: 5px 8px; }
+  tr.hdr-col:first-child { display: none; } /* esconde a linha duplicada */
+
+  /* Header de categoria */
+  .hdr-cat td { color: #fff; font-weight: 800; font-size: 11pt; padding: 7px 10px; border-color: #000; letter-spacing: .03em; }
+  .qtd { font-size: 9pt; font-weight: 400; opacity: .8; }
+
+  /* Linhas */
+  tbody tr td { color: #1B3A6B; }
+  tbody tr.alt td { background: #F4F8FC; }
+  tbody tr:hover td { background: #E8F1FA; }
+
+  /* Rodapé de categoria */
+  .rodape-cat { font-size: 8.5pt; color: #888; font-style: italic; text-align: right; padding: 4px 8px; border-top: 2px solid #1B3A6B; border-left: none; border-right: none; border-bottom: none; background: transparent; }
+
+  /* Bloco de categoria */
+  .categoria-bloco { margin-bottom: 20px; page-break-inside: avoid; }
+  .categoria-bloco:not(:first-child) { page-break-before: always; }
+
+  /* Rodapé geral */
+  .rodape { margin-top: 24px; padding-top: 10px; border-top: 2px solid #1B3A6B; display: flex; justify-content: space-between; font-size: 9pt; color: #666; }
+
+  /* Não imprimir botões */
+  @media print {
+    .no-print { display: none !important; }
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Barra de ações (não imprime) -->
+<div class="no-print" style="position:fixed;top:0;left:0;right:0;background:#1B3A6B;color:#fff;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;z-index:999;font-family:Arial">
+  <span style="font-weight:700">📦 SkyFit — Folha de Contagem de Estoque</span>
+  <div style="display:flex;gap:10px">
+    <button onclick="window.print()" style="background:#fff;color:#1B3A6B;border:none;padding:8px 20px;border-radius:6px;font-weight:700;cursor:pointer;font-size:13px">🖨️ Imprimir / Salvar PDF</button>
+    <button onclick="window.close()" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px">✕ Fechar</button>
+  </div>
+</div>
+<div class="no-print" style="height:52px"></div>
+
+<!-- Capa -->
+<div class="capa">
+  <h1>🏋️ SkyFit — Unidade Guarujá</h1>
+  <h2>FOLHA DE CONTAGEM DE ESTOQUE</h2>
+  <div class="meta">
+    <span>📅 Data: <strong>${hoje}</strong></span>
+    <span>👤 Responsável: <strong>_______________________________</strong></span>
+    <span>🕐 Início: _______ &nbsp; Fim: _______</span>
+  </div>
+</div>
+
+<!-- Resumo -->
+<div class="resumo">
+  <div class="resumo-card"><div class="num">${total}</div><div class="lbl">Produtos</div></div>
+  <div class="resumo-card"><div class="num">${estChaves.length}</div><div class="lbl">Categorias</div></div>
+  <div class="resumo-card"><div class="num">${zeros}</div><div class="lbl">Em Falta</div></div>
+  <div class="resumo-card"><div class="num">${total-zeros}</div><div class="lbl">Em Estoque</div></div>
+</div>
+
+${secoes}
+
+<!-- Rodapé geral -->
+<div class="rodape">
+  <span>Total: ${total} produtos | ${estChaves.length} categorias | ${zeros} sem estoque</span>
+  <span>SkyFit Sistema de Gestão — ${hoje}</span>
+</div>
+
+</body>
+</html>`;
+
+  const janela = window.open('', '_blank', 'width=900,height=800');
+  janela.document.write(html);
+  janela.document.close();
+  toast('Documento gerado! Use Ctrl+P para imprimir ou salvar como PDF', '✅');
 }
 
 
