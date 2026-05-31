@@ -210,13 +210,55 @@
     .chart-grid { grid-template-columns:1fr !important; }
   }
 
-  /* PDF Preview sempre light mode */
-  #ger-pdf-preview { background: #fff !important; color: #0d1b2a !important; }
-  body.dark #ger-pdf-preview,
-  body.dark #ger-pdf-preview div,
-  body.dark #ger-pdf-preview span,
-  body.dark #ger-pdf-preview td,
-  body.dark #ger-pdf-preview th { background-color: initial !important; }
+  /* PDF Preview — adapta ao tema ativo */
+  #ger-pdf-preview { background: #f8fafc; color: #0d1b2a; }
+
+  /* Dark mode: preview usa fundo escuro profissional */
+  body.dark #ger-pdf-preview { background: #0f1923 !important; color: #e8f0f7 !important; }
+
+  /* Capa do preview */
+  body.dark #ger-pdf-preview .pdf-capa { background: #030b14 !important; }
+
+  /* Seções e cards no dark */
+  body.dark #ger-pdf-preview div[style*="background:#f8fafc"],
+  body.dark #ger-pdf-preview div[style*="background:#fff"] { background: #1a2535 !important; color: #e8f0f7 !important; }
+  body.dark #ger-pdf-preview table { color: #e8f0f7 !important; }
+  body.dark #ger-pdf-preview thead tr { background: #1e2f43 !important; }
+  body.dark #ger-pdf-preview tbody tr { background: transparent !important; }
+  body.dark #ger-pdf-preview tbody tr:nth-child(even) { background: #131e2b !important; }
+  body.dark #ger-pdf-preview th { color: #8fa3b1 !important; }
+  body.dark #ger-pdf-preview td { color: #e8f0f7 !important; border-color: #263548 !important; }
+
+  /* Cards de KPI no dark */
+  body.dark #ger-pdf-preview div[style*="border-left:3px"] { background: #1a2535 !important; }
+  body.dark #ger-pdf-preview div[style*="background:#ede9fe"] { background: #2d1b69 !important; }
+  body.dark #ger-pdf-preview div[style*="background:#e0f2fe"] { background: #0c2d4a !important; }
+  body.dark #ger-pdf-preview div[style*="background:#fef3c7"] { background: #3d2300 !important; }
+  body.dark #ger-pdf-preview div[style*="background:#f5f3ff"] { background: #1e1244 !important; }
+  body.dark #ger-pdf-preview div[style*="background:#f0f9ff"] { background: #061828 !important; }
+  body.dark #ger-pdf-preview div[style*="background:#fffbeb"] { background: #1f1000 !important; }
+  body.dark #ger-pdf-preview div[style*="background:#dbeafe"],
+  body.dark #ger-pdf-preview div[style*="background:linear-gradient(135deg,#eff6ff"] { background: #0d1f35 !important; }
+
+  /* Texto escuro que some no dark */
+  body.dark #ger-pdf-preview span[style*="color:#6b7280"],
+  body.dark #ger-pdf-preview div[style*="color:#6b7280"],
+  body.dark #ger-pdf-preview th[style*="color:#6b7280"] { color: #8fa3b1 !important; }
+  body.dark #ger-pdf-preview div[style*="color:#0d1b2a"],
+  body.dark #ger-pdf-preview td[style*="color:#0d1b2a"] { color: #e8f0f7 !important; }
+  body.dark #ger-pdf-preview div[style*="color:#1e1b4b"],
+  body.dark #ger-pdf-preview td[style*="color:#1e1b4b"],
+  body.dark #ger-pdf-preview td[style*="color:#082f49"],
+  body.dark #ger-pdf-preview td[style*="color:#451a03"],
+  body.dark #ger-pdf-preview td[style*="color:#1b3a6b"] { color: #e8f0f7 !important; }
+  body.dark #ger-pdf-preview div[style*="color:#9ca3af"],
+  body.dark #ger-pdf-preview span[style*="color:#9ca3af"] { color: #546a7b !important; }
+
+  /* Gradiente comparativo dark */
+  body.dark #ger-pdf-preview div[style*="background:linear-gradient(135deg,#eff6ff,#dbeafe)"] {
+    background: linear-gradient(135deg,#0d1f35,#0a1a2e) !important;
+  }
+  body.dark #ger-pdf-preview div[style*="background:#fff;border-radius:8px"] { background: #1a2535 !important; }
 
   html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text-dark); font-size: 15px; }
   .app { display: flex; height: 100vh; overflow: hidden; }
@@ -5491,6 +5533,64 @@ function skyLoadingHide(){
 
 
 
+
+function geralBuildSrvHtml(dados, fmtBRL, PRV) { if(!PRV) PRV={bg:'#f8fafc',bgCard:'#fff',bgAlt:'#fafafa',bgHead:'#e0f2fe',bgSrvAlt:'#f0f9ff',text:'#0d1b2a',textMid:'#6b7280',border:'#bae6fd'};
+  const srvFil = dados.filter(r => r.tipo === 'Serviços');
+  if (!srvFil.length) return '';
+  const porSrv = srvFil.reduce((a,r) => {
+    const k = (r.plano||'Serviço').trim(); if (!k) return a;
+    if (!a[k]) a[k]={qtd:0,fat:0}; a[k].qtd+=1; a[k].fat+=r.valor; return a;
+  }, {});
+  const topSrv = Object.entries(porSrv).sort((a,b) => b[1].fat - a[1].fat);
+  const AZUIS  = ['#0ea5e9','#38bdf8','#7dd3fc','#93c5fd','#bfdbfe'];
+  const rows   = topSrv.map(([s,d],i) =>
+    '<tr style="border-bottom:1px solid #bae6fd;background:'+(i%2?'#f0f9ff':'#fff')+'">'+
+    '<td style="padding:7px 10px;font-weight:800;color:'+(AZUIS[i]||'#6b7280')+'">'+( i+1)+'</td>'+
+    '<td style="padding:7px 10px;font-weight:600;color:#082f49">'+(s.length>45?s.slice(0,45)+'…':s)+'</td>'+
+    '<td style="padding:7px 10px;text-align:center;font-weight:700;color:#0369a1">'+d.qtd+'</td>'+
+    '<td style="padding:7px 10px;text-align:right;color:#16a34a;font-weight:700">'+fmtBRL(d.fat)+'</td>'+
+    '</tr>'
+  ).join('');
+  return '<div style="margin-top:12px">'+
+    '<div style="font-size:10px;font-weight:800;color:#0ea5e9;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid #0ea5e9;padding-bottom:4px;margin-bottom:10px">🛎️ Serviços Vendidos</div>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:11px;color:#0d1b2a">'+
+    '<thead><tr style="background:#e0f2fe">'+
+    '<th style="padding:6px 10px;text-align:left;color:#0369a1;font-weight:700">#</th>'+
+    '<th style="padding:6px 10px;text-align:left;color:#0369a1;font-weight:700">Serviço</th>'+
+    '<th style="padding:6px 10px;text-align:center;color:#0369a1;font-weight:700">Qtd</th>'+
+    '<th style="padding:6px 10px;text-align:right;color:#0369a1;font-weight:700">Faturamento</th>'+
+    '</tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+function geralBuildPrdHtml(dados, fmtBRL, PRV) { if(!PRV) PRV={bg:'#f8fafc',bgCard:'#fff',bgAlt:'#fafafa',bgHead:'#fef3c7',bgPrdAlt:'#fffbeb',text:'#0d1b2a',textMid:'#6b7280',border:'#fde68a'};
+  const prdFil = dados.filter(r => r.tipo === 'Produtos');
+  if (!prdFil.length) return '';
+  const porPrd = prdFil.reduce((a,r) => {
+    const k = (r.plano||'Produto').trim(); if (!k) return a;
+    if (!a[k]) a[k]={qtd:0,fat:0}; a[k].qtd+=1; a[k].fat+=r.valor; return a;
+  }, {});
+  const top5P  = Object.entries(porPrd).sort((a,b) => b[1].fat - a[1].fat).slice(0,5);
+  const AMBS   = ['#f59e0b','#fbbf24','#fcd34d','#d97706','#b45309'];
+  const rows   = top5P.map(([p,d],i) =>
+    '<tr style="border-bottom:1px solid #fde68a;background:'+(i%2?'#fffbeb':'#fff')+'">'+
+    '<td style="padding:7px 10px;font-weight:800;color:'+(AMBS[i]||'#6b7280')+'">'+( i+1)+'</td>'+
+    '<td style="padding:7px 10px;font-weight:600;color:#451a03">'+(p.length>45?p.slice(0,45)+'…':p)+'</td>'+
+    '<td style="padding:7px 10px;text-align:center;font-weight:700;color:#92400e">'+d.qtd+'</td>'+
+    '<td style="padding:7px 10px;text-align:right;color:#16a34a;font-weight:700">'+fmtBRL(d.fat)+'</td>'+
+    '</tr>'
+  ).join('');
+  return '<div style="margin-top:12px">'+
+    '<div style="font-size:10px;font-weight:800;color:#f59e0b;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid #f59e0b;padding-bottom:4px;margin-bottom:10px">🛍️ Top 5 Produtos Mais Vendidos</div>'+
+    '<table style="width:100%;border-collapse:collapse;font-size:11px;color:#0d1b2a">'+
+    '<thead><tr style="background:#fef3c7">'+
+    '<th style="padding:6px 10px;text-align:left;color:#92400e;font-weight:700">#</th>'+
+    '<th style="padding:6px 10px;text-align:left;color:#92400e;font-weight:700">Produto</th>'+
+    '<th style="padding:6px 10px;text-align:center;color:#92400e;font-weight:700">Qtd</th>'+
+    '<th style="padding:6px 10px;text-align:right;color:#92400e;font-weight:700">Faturamento</th>'+
+    '</tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
+
 // ── Preview + Export PDF Geral ────────────────────────────
 // ── Preview + Export PDF Geral ────────────────────────────
 function geralPDFPreview() {
@@ -5556,12 +5656,27 @@ function geralPDFPreview() {
     const dadosCmp = todos.filter(r=>r.mes===mesCmp);
     const fatCmp   = geralFatFiltrado(mesCmp);
     const aggCmp   = geralAggFiltrado(mesCmp);
+    const pvCmp=v=>typeof v==='number'?v:parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;
+    const fatCmpEVO  = fatCmp.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase()==='evo'?pvCmp(r['Faturamento']||r['Valor']||0):0),0);
+    const fatCmpWH   = fatCmp.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase().includes('well')?pvCmp(r['Faturamento']||r['Valor']||0):0),0);
+    const fatCmpTP   = fatCmp.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase().includes('total')?pvCmp(r['Faturamento']||r['Valor']||0):0),0);
+    const aggCmpMap  = aggCmp.reduce((a,r)=>{const ag=String(r['Agregador']||'').trim();if(!ag)return a;if(!a[ag])a[ag]={ck:0,fat:0};a[ag].ck+=parseInt(r['Check-ins'])||0;a[ag].fat+=pvCmp(r['Faturamento']||0);return a;},{});
     cmpData = {
-      label: mesCmp.charAt(0).toUpperCase()+mesCmp.slice(1),
-      volTotal: dadosCmp.reduce((s,r)=>s+r.valor,0),
-      fatBase:  fatCmp.reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0),
-      checkins: Object.values(aggCmp.reduce((a,r)=>{const ag=String(r['Agregador']||'').trim();if(!ag)return a;if(!a[ag])a[ag]={ck:0};a[ag].ck+=parseInt(r['Check-ins'])||0;return a;},{})).reduce((s,v)=>s+v.ck,0),
-      contratos: dadosCmp.filter(r=>r.tipo==='Contratos').length,
+      label:      mesCmp.charAt(0).toUpperCase()+mesCmp.slice(1),
+      volTotal:   dadosCmp.reduce((s,r)=>s+r.valor,0),
+      volCnt:     dadosCmp.filter(r=>r.tipo==='Contratos').reduce((s,r)=>s+r.valor,0),
+      volSrv:     dadosCmp.filter(r=>r.tipo==='Serviços').reduce((s,r)=>s+r.valor,0),
+      volPrd:     dadosCmp.filter(r=>r.tipo==='Produtos').reduce((s,r)=>s+r.valor,0),
+      fatBase:    fatCmp.reduce((s,r)=>s+pvCmp(r['Faturamento']||r['Valor']||0),0),
+      fatEVO:     fatCmpEVO,
+      fatWH:      fatCmpWH,
+      fatTP:      fatCmpTP,
+      checkins:   Object.values(aggCmpMap).reduce((s,v)=>s+v.ck,0),
+      ckTP:       (aggCmpMap['TotalPass']||{ck:0}).ck,
+      ckWH:       Object.entries(aggCmpMap).filter(([k])=>/well/i.test(k)).reduce((s,[,v])=>s+v.ck,0),
+      contratos:  dadosCmp.filter(r=>r.tipo==='Contratos').length,
+      servicos:   dadosCmp.filter(r=>r.tipo==='Serviços').length,
+      produtos:   dadosCmp.filter(r=>r.tipo==='Produtos').length,
     };
   }
 
@@ -5579,12 +5694,34 @@ function geralPDFPreview() {
 
   const wrap = document.getElementById('ger-pdf-preview');
   if (!wrap) return;
+  const isDarkPrev = document.body.classList.contains('dark');
+  const PRV = isDarkPrev ? {
+    bg:'#0f1923', bgCard:'#1a2535', bgAlt:'#131e2b',
+    bgHead:'#1e2f43', bgCapa:'#030b14',
+    text:'#e8f0f7', textMid:'#8fa3b1', textLight:'#546a7b',
+    border:'#263548',
+    bgPlano:'#2d1b69', bgPlanoAlt:'#1e1244',
+    bgSrv:'#0c2d4a', bgSrvAlt:'#061828',
+    bgPrd:'#3d2300', bgPrdAlt:'#1f1000',
+    bgCmp:'linear-gradient(135deg,#0d1f35,#0a1a2e)',
+    bgCmpCard:'#1a2535',
+  } : {
+    bg:'#f8fafc', bgCard:'#ffffff', bgAlt:'#fafafa',
+    bgHead:'#f8fafc', bgCapa:'#030b14',
+    text:'#0d1b2a', textMid:'#6b7280', textLight:'#9ca3af',
+    border:'#e5e7eb',
+    bgPlano:'#ede9fe', bgPlanoAlt:'#f5f3ff',
+    bgSrv:'#e0f2fe', bgSrvAlt:'#f0f9ff',
+    bgPrd:'#fef3c7', bgPrdAlt:'#fffbeb',
+    bgCmp:'linear-gradient(135deg,#eff6ff,#dbeafe)',
+    bgCmpCard:'#ffffff',
+  };
 
   wrap.innerHTML = `
   <div style="font-family:'DM Sans',sans-serif;color:#0d1b2a;background:#fff;min-height:500px">
 
     <!-- Capa -->
-    <div style="background:#030b14;padding:24px 28px;display:flex;justify-content:space-between;align-items:center">
+    <div style="background:\${PRV.bgCapa};padding:24px 28px;display:flex;justify-content:space-between;align-items:center">
       <div>
         <div style="font-size:22px;font-weight:900;letter-spacing:.3em;background:linear-gradient(90deg,#00f5c4,#0099ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent">KAIZEN</div>
         <div style="font-size:9px;letter-spacing:.25em;color:rgba(0,245,196,.6);margin-top:3px">PERFORMANCE by KANAWA</div>
@@ -5658,17 +5795,15 @@ function geralPDFPreview() {
     <div>
       <div style="font-size:10px;font-weight:800;color:#f59e0b;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid #f59e0b;padding-bottom:4px;margin-bottom:10px">🏅 Ranking de Vendedores</div>
       <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <thead><tr style="background:#f8fafc">
-          <th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:700">#</th>
-          <th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:700">Vendedor</th>
-          <th style="padding:6px 10px;text-align:center;color:#6b7280;font-weight:700">Contratos</th>
-          <th style="padding:6px 10px;text-align:right;color:#6b7280;font-weight:700">Faturamento</th>
+        <thead><tr style="background:\${PRV.bgHead}">
+          <th style="padding:6px 10px;text-align:left;color:\${PRV.textMid};font-weight:700">#</th>
+          <th style="padding:6px 10px;text-align:left;color:\${PRV.textMid};font-weight:700">Vendedor</th>
+          <th style="padding:6px 10px;text-align:right;color:\${PRV.textMid};font-weight:700">Faturamento Total</th>
         </tr></thead>
         <tbody>${topVendedores.map(([nome,d],i)=>`
-          <tr style="border-bottom:1px solid #e5e7eb">
+          <tr style="border-bottom:1px solid ${PRV.border};background:${i%2?PRV.bgAlt:PRV.bgCard}">
             <td style="padding:7px 10px;font-weight:800;color:${CORES_RANK[i]||'#6b7280'}">${i+1}</td>
-            <td style="padding:7px 10px;font-weight:600">${nome}</td>
-            <td style="padding:7px 10px;text-align:center;font-weight:700">${d.qtd}</td>
+            <td style="padding:7px 10px;font-weight:600;color:${PRV.text}">${nome}</td>
             <td style="padding:7px 10px;text-align:right;color:#16a34a;font-weight:700">${fmtBRL(d.fat)}</td>
           </tr>`).join('')}</tbody>
       </table>
@@ -5678,48 +5813,79 @@ function geralPDFPreview() {
     <!-- Top 5 Planos -->
     <div>
       <div style="font-size:10px;font-weight:800;color:#7c3aed;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid #7c3aed;padding-bottom:4px;margin-bottom:10px">🏷️ Top 5 Planos Mais Vendidos</div>
-      <table style="width:100%;border-collapse:collapse;font-size:11px">
-        <thead><tr style="background:#f8fafc">
-          <th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:700">#</th>
-          <th style="padding:6px 10px;text-align:left;color:#6b7280;font-weight:700">Plano</th>
-          <th style="padding:6px 10px;text-align:center;color:#6b7280;font-weight:700">Qtd</th>
-          <th style="padding:6px 10px;text-align:right;color:#6b7280;font-weight:700">Faturamento</th>
+      <table style="width:100%;border-collapse:collapse;font-size:11px;color:#0d1b2a">
+        <thead><tr style="background:\${PRV.bgPlano}">
+          <th style="padding:6px 10px;text-align:left;color:#4c1d95;font-weight:700">#</th>
+          <th style="padding:6px 10px;text-align:left;color:#4c1d95;font-weight:700">Plano</th>
+          <th style="padding:6px 10px;text-align:center;color:#4c1d95;font-weight:700">Qtd</th>
+          <th style="padding:6px 10px;text-align:right;color:#4c1d95;font-weight:700">Faturamento</th>
         </tr></thead>
         <tbody>${top5.map(([p,d],i)=>`
-          <tr style="border-bottom:1px solid #e5e7eb;background:${i%2?'#fafafa':'#fff'}">
+          <tr style="border-bottom:1px solid ${PRV.border};background:${i%2?PRV.bgPlanoAlt:PRV.bgCard}">
             <td style="padding:7px 10px;font-weight:800;color:${CORES_RANK[i]}">${i+1}</td>
-            <td style="padding:7px 10px;font-weight:600">${p.length>45?p.slice(0,45)+'…':p}</td>
-            <td style="padding:7px 10px;text-align:center;font-weight:700">${d.qtd}</td>
+            <td style="padding:7px 10px;font-weight:600;color:${PRV.text}">${p.length>45?p.slice(0,45)+'…':p}</td>
+            <td style="padding:7px 10px;text-align:center;font-weight:700;color:#4c1d95">${d.qtd}</td>
             <td style="padding:7px 10px;text-align:right;color:#16a34a;font-weight:700">${fmtBRL(d.fat)}</td>
           </tr>`).join('')}</tbody>
       </table>
-    </div>`:''}
+    </div>
+    <!-- Serviços e Produtos calculados abaixo do top5 -->
+    ${geralBuildSrvHtml(dados, fmtBRL, PRV)}
+    ${geralBuildPrdHtml(dados, fmtBRL, PRV)}`:''}
 
-    ${sec.comp&&cmpData?`
-    <!-- Comparativo -->
-    <div style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:12px;padding:14px 16px">
-      <div style="font-size:10px;font-weight:800;color:#1e6fe8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">📊 Comparativo: ${mesLbl} vs ${cmpData.label}</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-        ${[
-          {l:'Vol. Vendas',a:volTotal,b:cmpData.volTotal},
-          {l:'Fat. Base',a:fatBase,b:cmpData.fatBase},
-          {l:'Check-ins',a:Object.values(ckMap).reduce((s,v)=>s+v.ck,0),b:cmpData.checkins,fmt:v=>v.toLocaleString('pt-BR')},
-          {l:'Contratos',a:dados.filter(r=>r.tipo==='Contratos').length,b:cmpData.contratos,fmt:v=>v},
-        ].map(item=>{
-          const fmt = item.fmt || fmtBRL;
-          const diff = item.a - item.b;
-          const pct  = item.b ? (diff/item.b*100).toFixed(1) : '—';
-          const cor  = diff>=0?'#16a34a':'#dc2626';
-          const seta = diff>=0?'▲':'▼';
-          return `<div style="background:#fff;border-radius:8px;padding:10px 12px;text-align:center">
-            <div style="font-size:9px;color:#6b7280;font-weight:700;text-transform:uppercase">${item.l}</div>
-            <div style="font-size:13px;font-weight:800;color:#0d1b2a;margin-top:3px">${fmt(item.a)}</div>
-            <div style="font-size:10px;color:${cor};font-weight:700;margin-top:2px">${seta} ${Math.abs(parseFloat(pct)||0).toFixed(1)}%</div>
-            <div style="font-size:9px;color:#9ca3af">vs ${fmt(item.b)}</div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`:''}
+    ${sec.comp&&cmpData?(()=>{
+  const ckTotal = Object.values(ckMap).reduce((s,v)=>s+v.ck,0);
+  const ckTPat  = (ckMap['TotalPass']||{ck:0}).ck;
+  const ckWHat  = Object.entries(ckMap).filter(([k])=>/well/i.test(k)).reduce((s,[,v])=>s+v.ck,0);
+  const volCnt  = dados.filter(r=>r.tipo==='Contratos').reduce((s,r)=>s+r.valor,0);
+  const volSrv  = dados.filter(r=>r.tipo==='Serviços').reduce((s,r)=>s+r.valor,0);
+  const volPrd  = dados.filter(r=>r.tipo==='Produtos').reduce((s,r)=>s+r.valor,0);
+  const fatEVO  = fatF.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase()==='evo'?pv(r['Faturamento']||r['Valor']||0):0),0);
+  const fatWH   = fatF.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase().includes('well')?pv(r['Faturamento']||r['Valor']||0):0),0);
+  const fatTP   = fatF.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase().includes('total')?pv(r['Faturamento']||r['Valor']||0):0),0);
+
+  function kCard(label,a,b,fmt,cor) {
+    const fv   = fmt||fmtBRL;
+    const diff = a-b, pos=diff>=0;
+    const pct  = b?(Math.abs(diff)/b*100).toFixed(1):'—';
+    const c    = cor||(pos?'#16a34a':'#dc2626');
+    const st   = pos?'▲':'▼';
+    return '<div style="background:'+(typeof PRV!=='undefined'?PRV.bgCmpCard:'#fff')+';border-radius:8px;padding:9px 10px;text-align:center;border:1px solid '+(typeof PRV!=='undefined'?PRV.border:'#e5e7eb')+'">'+
+      '<div style="font-size:8.5px;color:'+(typeof PRV!=='undefined'?PRV.textMid:'#6b7280')+';font-weight:700;text-transform:uppercase;letter-spacing:.04em">'+label+'</div>'+
+      '<div style="font-size:13px;font-weight:800;color:'+(typeof PRV!=='undefined'?PRV.text:'#0d1b2a')+';margin-top:3px">'+fv(a)+'</div>'+
+      '<div style="font-size:10px;color:'+(pos?'#16a34a':'#dc2626')+';font-weight:700;margin-top:2px">'+st+' '+pct+'%</div>'+
+      '<div style="font-size:9px;color:'+(typeof PRV!=='undefined'?PRV.textLight:'#9ca3af')+'">vs '+fv(b)+'</div>'+
+      '</div>';
+  }
+  const num = v=>v.toLocaleString('pt-BR');
+
+  return '<div style="background:'+PRV.bgCmp+';border-radius:12px;padding:14px 16px">'+
+    '<div style="font-size:10px;font-weight:800;color:#1e6fe8;letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">📊 Comparativo: '+mesLbl+' vs '+cmpData.label+'</div>'+
+
+    '<div style="font-size:9px;font-weight:700;color:#3730a3;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;padding-left:2px">📦 Vendas</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">'+
+      kCard('Total Vendas',volTotal,cmpData.volTotal)+
+      kCard('Contratos',volCnt,cmpData.volCnt)+
+      kCard('Serviços',volSrv,cmpData.volSrv)+
+      kCard('Produtos',volPrd,cmpData.volPrd)+
+    '</div>'+
+
+    '<div style="font-size:9px;font-weight:700;color:#166534;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;padding-left:2px">💳 Faturamento</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px">'+
+      kCard('Total',fatBase,cmpData.fatBase)+
+      kCard('EVO',fatEVO,cmpData.fatEVO)+
+      kCard('WellHub',fatWH,cmpData.fatWH)+
+      kCard('TotalPass',fatTP,cmpData.fatTP)+
+    '</div>'+
+
+    '<div style="font-size:9px;font-weight:700;color:#9d174d;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;padding-left:2px">🤝 Check-ins</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">'+
+      kCard('Total Check-ins',ckTotal,cmpData.checkins,num)+
+      kCard('TotalPass',ckTPat,cmpData.ckTP,num)+
+      kCard('WellHub',ckWHat,cmpData.ckWH,num)+
+    '</div>'+
+  '</div>';
+})():''}
 
     <!-- Rodapé -->
     <div style="margin-top:4px;padding-top:10px;border-top:1px solid #e5e7eb;font-size:9px;color:#9ca3af;display:flex;justify-content:space-between">
@@ -5743,10 +5909,35 @@ async function exportarGeralPDF() {
     const W=pdf.internal.pageSize.getWidth(), H=pdf.internal.pageSize.getHeight();
     const MAR=12, CW=W-MAR*2;
     let Y=MAR;
-    const TEAL=[0,205,164], AZUL=[30,111,232], VERDE=[34,197,94], VERM=[239,68,68], ESCURO=[13,27,42], CINZA=[100,120,140];
+    const isDark = document.body.classList.contains('dark');
 
-    function hLine(y){pdf.setDrawColor(220,228,240);pdf.setLineWidth(0.2);pdf.line(MAR,y,W-MAR,y);}
-    function checkPage(n){if(Y+n>H-MAR){pdf.addPage();Y=MAR;}}
+    // Paleta adaptada ao tema
+    const TEAL   = [0,205,164];
+    const AZUL   = [30,111,232];
+    const VERDE  = [34,197,94];
+    const VERM   = [239,68,68];
+    const ESCURO = isDark ? [232,240,247] : [13,27,42];       // texto principal
+    const CINZA  = isDark ? [143,163,177] : [100,120,140];    // texto secundário
+    const BG_PAG = isDark ? [15,25,35]    : [255,255,255];    // fundo da página
+    const BG_ROW = isDark ? [26,37,53]    : [250,252,255];    // linha par
+    const BG_ALT = isDark ? [19,30,43]    : [245,248,252];    // linha ímpar
+    const BG_HDR = isDark ? [30,47,67]    : [235,240,246];    // header de tabela
+    const BORDA  = isDark ? [38,53,72]    : [220,228,240];    // linhas/bordas
+
+    // Aplicar fundo da página
+    if (isDark) {
+      pdf.setFillColor(...BG_PAG);
+      pdf.rect(0,0,W,H,'F');
+    }
+
+    function hLine(y){pdf.setDrawColor(...BORDA);pdf.setLineWidth(0.2);pdf.line(MAR,y,W-MAR,y);}
+    function checkPage(n){
+      if(Y+n>H-MAR){
+        pdf.addPage();
+        if(isDark){pdf.setFillColor(...BG_PAG);pdf.rect(0,0,W,H,'F');}
+        Y=MAR;
+      }
+    }
 
     // Capa
     pdf.setFillColor(...ESCURO); pdf.rect(0,0,W,52,'F');
@@ -5788,7 +5979,7 @@ async function exportarGeralPDF() {
      {label:'Maior Vendedor',val:topVend?topVend[0].split(' ')[0]:'---',sub:topVend?fmtBRL(topVend[1]):'',cor:VERDE}
     ].forEach((k,i)=>{
       const x=MAR+i*(kpiW+3);
-      pdf.setFillColor(245,248,252); pdf.roundedRect(x,Y,kpiW,kpiH,2,2,'F');
+      pdf.setFillColor(...BG_ROW); pdf.roundedRect(x,Y,kpiW,kpiH,2,2,'F');
       pdf.setFillColor(...k.cor); pdf.rect(x,Y,2,kpiH,'F');
       pdf.setFontSize(6.5); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA); pdf.text(k.label.toUpperCase(),x+4,Y+5);
       pdf.setFontSize(11); pdf.setFont(undefined,'bold'); pdf.setTextColor(...ESCURO); pdf.text(k.val,x+4,Y+12);
@@ -5817,7 +6008,7 @@ async function exportarGeralPDF() {
      {label:'Tendencia vs Anterior',val:tendText,sub:'comparativo mensal',cor:tendCor}
     ].forEach((k,i)=>{
       const x=MAR+i*(kpiW+3);
-      pdf.setFillColor(245,248,252); pdf.roundedRect(x,Y,kpiW,kpiH,2,2,'F');
+      pdf.setFillColor(...BG_ROW); pdf.roundedRect(x,Y,kpiW,kpiH,2,2,'F');
       pdf.setFillColor(...k.cor); pdf.rect(x,Y,2,kpiH,'F');
       pdf.setFontSize(6.5); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA); pdf.text(k.label.toUpperCase(),x+4,Y+5);
       pdf.setFontSize(11); pdf.setFont(undefined,'bold'); pdf.setTextColor(...k.cor); pdf.text(k.val,x+4,Y+12);
@@ -5843,7 +6034,7 @@ async function exportarGeralPDF() {
       const agW=CW/Math.min(agrs.length,3)-3;
       agrs.slice(0,3).forEach(([ag,d],i)=>{
         const x=MAR+i*(agW+3), cor=ag.includes('Total')?VERDE:ag.toLowerCase().includes('well')?[236,72,153]:AZUL;
-        pdf.setFillColor(245,248,252); pdf.roundedRect(x,Y,agW,20,2,2,'F');
+        pdf.setFillColor(...BG_ROW); pdf.roundedRect(x,Y,agW,20,2,2,'F');
         pdf.setFillColor(...cor); pdf.rect(x,Y,2,20,'F');
         pdf.setFontSize(6.5); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA); pdf.text(ag.toUpperCase(),x+4,Y+5);
         pdf.setFontSize(14); pdf.setFont(undefined,'bold'); pdf.setTextColor(...cor); pdf.text(d.ck.toLocaleString('pt-BR'),x+4,Y+13);
@@ -5863,14 +6054,14 @@ async function exportarGeralPDF() {
     },{})).sort((a,b)=>b[1].fat-a[1].fat).slice(0,5);
     pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(...TEAL);
     pdf.text('TOP 5 PLANOS MAIS VENDIDOS',MAR,Y); Y+=4; hLine(Y); Y+=3;
-    pdf.setFillColor(235,240,246); pdf.rect(MAR,Y,CW,7,'F');
+    pdf.setFillColor(...BG_HDR); pdf.rect(MAR,Y,CW,7,'F');
     pdf.setFontSize(7.5); pdf.setFont(undefined,'bold'); pdf.setTextColor(...CINZA);
     pdf.text('#',MAR+3,Y+5); pdf.text('Plano',MAR+10,Y+5);
     pdf.text('Qtd',W-MAR-35,Y+5,{align:'right'}); pdf.text('Faturamento',W-MAR-3,Y+5,{align:'right'});
     Y+=7;
     const CORES_R=[[0,205,164],[30,111,232],[34,197,94],[245,158,11],[236,72,153]];
     top5.forEach(([p,d],i)=>{
-      pdf.setFillColor(i%2===0?250:245,i%2===0?252:248,i%2===0?255:252); pdf.rect(MAR,Y,CW,8,'F');
+      pdf.setFillColor(...(i%2===0?BG_ROW:BG_ALT)); pdf.rect(MAR,Y,CW,8,'F');
       pdf.setFontSize(7); pdf.setFont(undefined,'bold'); pdf.setTextColor(...CORES_R[i]); pdf.text(String(i+1),MAR+3,Y+5.5);
       pdf.setFont(undefined,'normal'); pdf.setTextColor(...ESCURO); pdf.text(p.length>48?p.slice(0,48)+'...':p,MAR+10,Y+5.5);
       pdf.setFont(undefined,'bold'); pdf.setTextColor(...CORES_R[i]); pdf.text(String(d.qtd),W-MAR-35,Y+5.5,{align:'right'});
@@ -5888,11 +6079,73 @@ async function exportarGeralPDF() {
     catVals.forEach((val,i)=>{
       const barW=Math.max((val/catMax)*barTrackW,val>0?2:0), x=MAR, y=Y+i*(barH+barGap);
       pdf.setFontSize(7.5); pdf.setFont(undefined,'bold'); pdf.setTextColor(...catCores[i]); pdf.text(catLabels[i],x,y+barH*.7);
-      pdf.setFillColor(235,240,246); pdf.roundedRect(x+28,y,barTrackW,barH,1.5,1.5,'F');
+      pdf.setFillColor(...BG_HDR); pdf.roundedRect(x+28,y,barTrackW,barH,1.5,1.5,'F');
       if(barW>0){pdf.setFillColor(...catCores[i]); pdf.roundedRect(x+28,y,barW,barH,1.5,1.5,'F');}
       pdf.setFontSize(8); pdf.setFont(undefined,'bold'); pdf.setTextColor(...catCores[i]); pdf.text(fmtBRL(val),W-MAR,y+barH*.7,{align:'right'});
     });
     Y+=cats.length*(barH+barGap)+4;
+
+    // ── Seção: Serviços
+    const srvFiltDados = dados.filter(r=>r.tipo==='Serviços');
+    if (srvFiltDados.length) {
+      checkPage(50);
+      const porSrvPdf = srvFiltDados.reduce((a,r)=>{
+        const k=(r.plano||'Serviço').trim(); if(!k) return a;
+        if(!a[k])a[k]={qtd:0,fat:0}; a[k].qtd+=1; a[k].fat+=r.valor; return a;
+      },{});
+      const topSrvPdf = Object.entries(porSrvPdf).sort((a,b)=>b[1].fat-a[1].fat);
+      pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(14,165,233);
+      pdf.text('SERVICOS VENDIDOS',MAR,Y); Y+=4; hLine(Y); Y+=3;
+      pdf.setFillColor(224,242,254); pdf.rect(MAR,Y,CW,7,'F');
+      pdf.setFontSize(7.5); pdf.setFont(undefined,'bold'); pdf.setTextColor(3,105,161);
+      pdf.text('#',MAR+3,Y+5); pdf.text('Servico',MAR+10,Y+5);
+      pdf.text('Qtd',W-MAR-50,Y+5,{align:'right'}); pdf.text('Faturamento',W-MAR-3,Y+5,{align:'right'});
+      Y+=7;
+      topSrvPdf.forEach(([s,d],i)=>{
+        pdf.setFillColor(...(i%2===0?BG_ROW:BG_ALT));
+        pdf.rect(MAR,Y,CW,8,'F');
+        pdf.setFontSize(7); pdf.setFont(undefined,'bold'); pdf.setTextColor(14,165,233);
+        pdf.text(String(i+1),MAR+3,Y+5.5);
+        pdf.setFont(undefined,'normal'); pdf.setTextColor(...ESCURO);
+        pdf.text(s.length>45?s.slice(0,45)+'...':s,MAR+10,Y+5.5);
+        pdf.setFont(undefined,'bold'); pdf.setTextColor(3,105,161);
+        pdf.text(String(d.qtd),W-MAR-50,Y+5.5,{align:'right'});
+        pdf.setTextColor(34,197,94); pdf.text(fmtBRL(d.fat),W-MAR-3,Y+5.5,{align:'right'});
+        Y+=8;
+      });
+      Y+=4;
+    }
+
+    // ── Seção: Top 5 Produtos
+    const prdFiltDados = dados.filter(r=>r.tipo==='Produtos');
+    if (prdFiltDados.length) {
+      checkPage(50);
+      const porPrdPdf = prdFiltDados.reduce((a,r)=>{
+        const k=(r.plano||'Produto').trim(); if(!k) return a;
+        if(!a[k])a[k]={qtd:0,fat:0}; a[k].qtd+=1; a[k].fat+=r.valor; return a;
+      },{});
+      const top5PrdPdf = Object.entries(porPrdPdf).sort((a,b)=>b[1].fat-a[1].fat).slice(0,5);
+      pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(245,158,11);
+      pdf.text('TOP 5 PRODUTOS MAIS VENDIDOS',MAR,Y); Y+=4; hLine(Y); Y+=3;
+      pdf.setFillColor(254,243,199); pdf.rect(MAR,Y,CW,7,'F');
+      pdf.setFontSize(7.5); pdf.setFont(undefined,'bold'); pdf.setTextColor(146,64,14);
+      pdf.text('#',MAR+3,Y+5); pdf.text('Produto',MAR+10,Y+5);
+      pdf.text('Qtd',W-MAR-50,Y+5,{align:'right'}); pdf.text('Faturamento',W-MAR-3,Y+5,{align:'right'});
+      Y+=7;
+      top5PrdPdf.forEach(([p,d],i)=>{
+        pdf.setFillColor(...(i%2===0?BG_ROW:BG_ALT));
+        pdf.rect(MAR,Y,CW,8,'F');
+        pdf.setFontSize(7); pdf.setFont(undefined,'bold'); pdf.setTextColor(245,158,11);
+        pdf.text(String(i+1),MAR+3,Y+5.5);
+        pdf.setFont(undefined,'normal'); pdf.setTextColor(...ESCURO);
+        pdf.text(p.length>45?p.slice(0,45)+'...':p,MAR+10,Y+5.5);
+        pdf.setFont(undefined,'bold'); pdf.setTextColor(146,64,14);
+        pdf.text(String(d.qtd),W-MAR-50,Y+5.5,{align:'right'});
+        pdf.setTextColor(34,197,94); pdf.text(fmtBRL(d.fat),W-MAR-3,Y+5.5,{align:'right'});
+        Y+=8;
+      });
+      Y+=4;
+    }
 
     // ── Seção: Ranking Vendedores ─────────────────────────
     const secVend = document.getElementById('pdf-sec-vend')?.checked !== false;
@@ -5900,20 +6153,18 @@ async function exportarGeralPDF() {
       checkPage(50);
       pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(...[245,158,11]);
       pdf.text('RANKING DE VENDEDORES',MAR,Y); Y+=4; hLine(Y); Y+=3;
-      pdf.setFillColor(235,240,246); pdf.rect(MAR,Y,CW,7,'F');
+      pdf.setFillColor(...BG_HDR); pdf.rect(MAR,Y,CW,7,'F');
       pdf.setFontSize(7.5); pdf.setFont(undefined,'bold'); pdf.setTextColor(...CINZA);
       pdf.text('#',MAR+3,Y+5); pdf.text('Vendedor',MAR+10,Y+5);
-      pdf.text('Qtd',W-MAR-50,Y+5,{align:'right'}); pdf.text('Faturamento',W-MAR-3,Y+5,{align:'right'});
+      pdf.text('Faturamento Total',W-MAR-3,Y+5,{align:'right'});
       Y+=7;
       topVendedores.forEach(([nome,d],i)=>{
-        pdf.setFillColor(i%2===0?250:245,i%2===0?252:248,i%2===0?255:252);
+        pdf.setFillColor(...(i%2===0?BG_ROW:BG_ALT));
         pdf.rect(MAR,Y,CW,8,'F');
         pdf.setFontSize(7); pdf.setFont(undefined,'bold'); pdf.setTextColor(...(CORES_R[i]||CINZA));
         pdf.text(String(i+1),MAR+3,Y+5.5);
         pdf.setFont(undefined,'normal'); pdf.setTextColor(...ESCURO);
-        pdf.text(nome.length>40?nome.slice(0,40)+'...':nome,MAR+10,Y+5.5);
-        pdf.setFont(undefined,'bold'); pdf.setTextColor(...(CORES_R[i]||CINZA));
-        pdf.text(String(d.qtd),W-MAR-50,Y+5.5,{align:'right'});
+        pdf.text(nome.length>50?nome.slice(0,50)+'...':nome,MAR+10,Y+5.5);
         pdf.setTextColor(34,197,94); pdf.text(fmtBRL(d.fat),W-MAR-3,Y+5.5,{align:'right'});
         Y+=8;
       });
@@ -5926,39 +6177,93 @@ async function exportarGeralPDF() {
     if (secComp && mesCmpVal) {
       checkPage(55);
       const dadosCmp = todos.filter(r=>r.mes===mesCmpVal);
-      const fatCmp   = geralFatFiltrado(mesCmpVal);
-      const aggCmp   = geralAggFiltrado(mesCmpVal);
-      const fatBaseCmp = fatCmp.reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0);
-      const volCmp     = dadosCmp.reduce((s,r)=>s+r.valor,0);
-      const ckCmpTotal = aggCmp.reduce((s,r)=>s+(parseInt(r['Check-ins'])||0),0);
-      const cmpLabel   = mesCmpVal.charAt(0).toUpperCase()+mesCmpVal.slice(1);
+      const fatCmpLocal = geralFatFiltrado(mesCmpVal);
+      const aggCmpLocal = geralAggFiltrado(mesCmpVal);
+      const pvL = v=>typeof v==='number'?v:parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;
+      const aggCmpMapL = aggCmpLocal.reduce((a,r)=>{const ag=String(r['Agregador']||'').trim();if(!ag)return a;if(!a[ag])a[ag]={ck:0,fat:0};a[ag].ck+=parseInt(r['Check-ins'])||0;a[ag].fat+=pvL(r['Faturamento']||0);return a;},{});
+      const cmpData = {
+        label:     mesCmpVal.charAt(0).toUpperCase()+mesCmpVal.slice(1),
+        volTotal:  dadosCmp.reduce((s,r)=>s+r.valor,0),
+        volCnt:    dadosCmp.filter(r=>r.tipo==='Contratos').reduce((s,r)=>s+r.valor,0),
+        volSrv:    dadosCmp.filter(r=>r.tipo==='Serviços').reduce((s,r)=>s+r.valor,0),
+        volPrd:    dadosCmp.filter(r=>r.tipo==='Produtos').reduce((s,r)=>s+r.valor,0),
+        fatBase:   fatCmpLocal.reduce((s,r)=>s+pvL(r['Faturamento']||r['Valor']||0),0),
+        fatEVO:    fatCmpLocal.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase()==='evo'?pvL(r['Faturamento']||r['Valor']||0):0),0),
+        fatWH:     fatCmpLocal.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase().includes('well')?pvL(r['Faturamento']||r['Valor']||0):0),0),
+        fatTP:     fatCmpLocal.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase().includes('total')?pvL(r['Faturamento']||r['Valor']||0):0),0),
+        checkins:  Object.values(aggCmpMapL).reduce((s,v)=>s+v.ck,0),
+        ckTP:      (aggCmpMapL['TotalPass']||{ck:0}).ck,
+        ckWH:      Object.entries(aggCmpMapL).filter(([k])=>/well/i.test(k)).reduce((s,[,v])=>s+v.ck,0),
+        contratos: dadosCmp.filter(r=>r.tipo==='Contratos').length,
+        servicos:  dadosCmp.filter(r=>r.tipo==='Serviços').length,
+        produtos:  dadosCmp.filter(r=>r.tipo==='Produtos').length,
+      };
+      const fatBaseCmp = cmpData.fatBase;
+      const volCmp     = cmpData.volTotal;
+      const ckCmpTotal = cmpData.checkins;
+      const cmpLabel   = cmpData.label;
+
 
       pdf.setFontSize(9); pdf.setFont(undefined,'bold'); pdf.setTextColor(30,111,232);
       pdf.text('COMPARATIVO: '+mesLabel.toUpperCase()+' vs '+cmpLabel.toUpperCase(),MAR,Y);
       Y+=4; hLine(Y); Y+=5;
 
-      const cmpItems = [
-        {l:'Vol. Vendas',a:volTotal,b:volCmp,fmt:'brl'},
-        {l:'Fat. Base',a:fatBase,b:fatBaseCmp,fmt:'brl'},
-        {l:'Check-ins',a:Object.values(ckMap).reduce((s,v)=>s+v.ck,0),b:ckCmpTotal,fmt:'num'},
-        {l:'Contratos',a:dados.filter(r=>r.tipo==='Contratos').length,b:dadosCmp.filter(r=>r.tipo==='Contratos').length,fmt:'num'},
-      ];
-      const cW2=CW/cmpItems.length-3;
-      cmpItems.forEach((item,i)=>{
-        const x=MAR+i*(cW2+3);
-        const diff=item.a-item.b, pos=diff>=0;
-        const pct=item.b?(Math.abs(diff)/item.b*100).toFixed(1)+'%':'--';
-        const fv=v=>item.fmt==='brl'?fmtBRL(v):v.toLocaleString('pt-BR');
-        pdf.setFillColor(pos?240:255,pos?253:240,pos?244:240); pdf.roundedRect(x,Y,cW2,26,2,2,'F');
-        pdf.setFillColor(pos?34:239,pos?197:68,pos?94:68); pdf.rect(x,Y,2,26,'F');
+      // Dados comparativo expandidos
+      const ckTotalAt  = Object.values(ckMap).reduce((s,v)=>s+v.ck,0);
+      const ckTPat2    = (ckMap['TotalPass']||{ck:0}).ck;
+      const ckWHat2    = Object.entries(ckMap).filter(([k])=>/well/i.test(k)).reduce((s,[,v])=>s+v.ck,0);
+      const volCntAt   = dados.filter(r=>r.tipo==='Contratos').reduce((s,r)=>s+r.valor,0);
+      const volSrvAt   = dados.filter(r=>r.tipo==='Serviços').reduce((s,r)=>s+r.valor,0);
+      const volPrdAt   = dados.filter(r=>r.tipo==='Produtos').reduce((s,r)=>s+r.valor,0);
+      const fatEVOat   = fatF.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase()==='evo'?pv(r['Faturamento']||r['Valor']||0):0),0);
+      const fatWHat    = fatF.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase().includes('well')?pv(r['Faturamento']||r['Valor']||0):0),0);
+      const fatTPat    = fatF.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase().includes('total')?pv(r['Faturamento']||r['Valor']||0):0),0);
+
+      // Helper: desenhar 1 card de comparativo
+      function drawCmpCard(x,y,w,h,label,valA,valB,fmtFn) {
+        const diff=valA-valB, pos=diff>=0;
+        const pct=valB?(Math.abs(diff)/valB*100).toFixed(1)+'%':'—';
+        const COR_POS=[34,197,94], COR_NEG=[239,68,68];
+        const cor=pos?COR_POS:COR_NEG;
+        pdf.setFillColor(...(pos?(isDark?[20,50,35]:[240,253,244]):(isDark?[50,20,20]:[255,240,240])));
+        pdf.roundedRect(x,y,w,h,1.5,1.5,'F');
+        pdf.setFillColor(...cor); pdf.rect(x,y,1.5,h,'F');
+        pdf.setFontSize(6); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA);
+        pdf.text(label.toUpperCase(),x+3.5,y+5);
+        pdf.setFontSize(9.5); pdf.setFont(undefined,'bold'); pdf.setTextColor(...ESCURO);
+        pdf.text(fmtFn(valA),x+3.5,y+12);
+        pdf.setFontSize(7.5); pdf.setTextColor(...cor);
+        pdf.text((pos?'+':'-')+pct,x+3.5,y+18);
         pdf.setFontSize(6.5); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA);
-        pdf.text(item.l.toUpperCase(),x+4,Y+5);
-        pdf.setFontSize(10); pdf.setFont(undefined,'bold'); pdf.setTextColor(...ESCURO);
-        pdf.text(fv(item.a),x+4,Y+12);
-        pdf.setFontSize(8); pdf.setTextColor(pos?34:239,pos?197:68,pos?94:68);
-        pdf.text((pos?'+':'')+pct,x+4,Y+18);
-        pdf.setFontSize(7); pdf.setFont(undefined,'normal'); pdf.setTextColor(...CINZA);
-        pdf.text('vs '+fv(item.b),x+4,Y+23);
+        pdf.text('vs '+fmtFn(valB===undefined||valB===null?0:valB),x+3.5,y+23);
+      }
+
+      // Seção 1: Vendas
+      pdf.setFontSize(7.5); pdf.setFont(undefined,'bold'); pdf.setTextColor(55,48,163);
+      pdf.text('VENDAS',MAR,Y); Y+=3; hLine(Y); Y+=4;
+      const cW4=(CW-9)/4;
+      [[volTotal,cmpData.volTotal,'Total Vendas'],[volCntAt,cmpData.volCnt,'Contratos'],[volSrvAt,cmpData.volSrv,'Servicos'],[volPrdAt,cmpData.volPrd,'Produtos']].forEach(([a,b,l],i)=>{
+        drawCmpCard(MAR+i*(cW4+3),Y,cW4,26,l,a,b||0,fmtBRL);
+      });
+      Y+=30;
+
+      // Seção 2: Faturamento
+      checkPage(35);
+      pdf.setFontSize(7.5); pdf.setFont(undefined,'bold'); pdf.setTextColor(22,101,52);
+      pdf.text('FATURAMENTO',MAR,Y); Y+=3; hLine(Y); Y+=4;
+      [[fatBase,fatBaseCmp,'Total Fat.'],[fatEVOat,cmpData.fatEVO,'EVO'],[fatWHat,cmpData.fatWH,'WellHub'],[fatTPat,cmpData.fatTP,'TotalPass']].forEach(([a,b,l],i)=>{
+        drawCmpCard(MAR+i*(cW4+3),Y,cW4,26,l,a,b||0,fmtBRL);
+      });
+      Y+=30;
+
+      // Seção 3: Check-ins
+      checkPage(35);
+      pdf.setFontSize(7.5); pdf.setFont(undefined,'bold'); pdf.setTextColor(157,23,77);
+      pdf.text('CHECK-INS',MAR,Y); Y+=3; hLine(Y); Y+=4;
+      const cW3=(CW-6)/3;
+      const numFmt=v=>v.toLocaleString('pt-BR');
+      [[ckTotalAt,cmpData.checkins,'Total'],[ckTPat2,cmpData.ckTP,'TotalPass'],[ckWHat2,cmpData.ckWH,'WellHub']].forEach(([a,b,l],i)=>{
+        drawCmpCard(MAR+i*(cW3+3),Y,cW3,26,l,a,b||0,numFmt);
       });
       Y+=32;
     }
@@ -7676,7 +7981,7 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
     </div>
     <!-- Preview -->
-    <div id="ger-pdf-preview" style="flex:1;overflow-y:auto;padding:0;background:#fff;color:#0d1b2a"></div>
+    <div id="ger-pdf-preview" style="flex:1;overflow-y:auto;padding:0"></div>
     <!-- Footer -->
     <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-shrink:0">
       <button onclick="document.getElementById('ger-pdf-modal').style.display='none'"
