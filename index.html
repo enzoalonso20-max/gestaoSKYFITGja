@@ -2159,35 +2159,131 @@
 
     <!-- GERAL -->
     <div class="tab-pane active" id="tab-vnd-geral">
+      <!-- HEADER -->
       <div class="section-header">
-        <div><div class="section-title">📈 Visão Geral de Vendas</div><div class="section-sub" id="ger-sub">Consolidado</div></div>
-        <button class="btn btn-secondary" onclick="geralPDFPreview()" style="gap:6px">📄 Exportar PDF</button>
+        <div>
+          <div class="section-title">📈 Visão Geral de Vendas</div>
+          <div class="section-sub" id="ger-sub">Consolidado</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="ger-aviso" style="font-size:12px;color:var(--text-light);display:none">⚠️ Carregando...</span>
+          <button class="btn btn-secondary" onclick="geralPDFPreview()" style="gap:6px">📄 Exportar PDF</button>
+        </div>
       </div>
-      <div class="panel" style="margin-bottom:16px"><div class="panel-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-        <label class="filter-label" style="margin:0">Mês:</label>
-        <div style="display:flex;gap:4px;flex-wrap:wrap" id="ger-meses-btns"></div>
-        <button class="btn btn-secondary" onclick="geralSetMes('')">↺ Todos</button>
-        <span id="ger-aviso" style="font-size:12px;color:var(--text-light);display:none">⚠️ Carregando...</span>
-      </div></div>
-      <div style="font-size:11px;font-weight:700;color:var(--text-light);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">📦 Vendas</div>
-      <div class="cards-grid" id="ger-kpis-vendas">
-        <div class="kpi-card"><div class="kpi-icon">🛒</div><div class="kpi-label">Volume Total de Vendas</div><div class="kpi-value" id="ger-kpi-fat">—</div><div class="kpi-delta" id="ger-kpi-fat-sub"></div><div class="progress-bar"><div class="progress-fill" id="ger-prog-fat" style="width:0%;background:linear-gradient(90deg,#7c3aed,#1e6fe8)"></div></div></div>
-        <div class="kpi-card"><div class="kpi-icon">🏆</div><div class="kpi-label">Maior Fonte de Venda</div><div class="kpi-value" id="ger-kpi-fonte" style="font-size:20px">—</div><div class="kpi-delta" id="ger-kpi-fonte-sub"></div></div>
-        <div class="kpi-card amber"><div class="kpi-icon">🎯</div><div class="kpi-label">Maior Vendedor do Mês</div><div class="kpi-value" id="ger-kpi-top-vend" style="font-size:18px">—</div><div class="kpi-delta" id="ger-kpi-top-vend-sub"></div></div>
+
+      <!-- FILTRO DE MÊS -->
+      <div class="panel" style="margin-bottom:16px">
+        <div class="panel-body" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:12px 16px">
+          <span style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em">Mês:</span>
+          <div style="display:flex;gap:4px;flex-wrap:wrap" id="ger-meses-btns"></div>
+          <button class="btn btn-secondary" onclick="geralSetMes('')" style="padding:5px 10px;font-size:11px">↺ Todos</button>
+        </div>
       </div>
-      <div style="font-size:11px;font-weight:700;color:var(--text-light);letter-spacing:.5px;text-transform:uppercase;margin:20px 0 8px">💳 Faturamento Real</div>
-      <div class="cards-grid" id="ger-kpis-fat">
-        <div class="kpi-card green"><div class="kpi-icon">💰</div><div class="kpi-label" id="ger-fat-label">Faturamento Total</div><div class="kpi-value" id="ger-kpi-fat-base">—</div><div class="kpi-delta" id="ger-kpi-fat-base-sub"></div><div class="progress-bar"><div class="progress-fill" id="ger-prog-base" style="width:0%;background:linear-gradient(90deg,#22c55e,#16a34a)"></div></div></div>
-        <div class="kpi-card"><div class="kpi-icon">📊</div><div class="kpi-label">Maior Fonte (EVO/TP/WH)</div><div class="kpi-value" id="ger-kpi-fonte-base" style="font-size:18px">—</div><div class="kpi-delta" id="ger-kpi-fonte-base-sub"></div></div>
-        <div class="kpi-card"><div class="kpi-icon">📈</div><div class="kpi-label">Tendência vs Mês Anterior</div><div class="kpi-value" id="ger-kpi-tendencia" style="font-size:20px">—</div><div class="kpi-delta" id="ger-kpi-tendencia-sub"></div></div>
+
+      <!-- EMPTY STATE -->
+      <div id="ger-empty" style="display:none" class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">📈</div>
+        <div class="fin-ph-title">Visão Geral</div>
+        <div class="fin-ph-desc">Carregue os dados primeiro.</div>
       </div>
-      <div style="font-size:11px;font-weight:700;color:var(--text-light);letter-spacing:.5px;text-transform:uppercase;margin:20px 0 8px">🤝 Check-ins</div>
-      <div class="cards-grid" id="ger-kpis-checkins"></div>
-      <div class="chart-grid" style="margin-top:20px">
-        <div class="panel"><div class="panel-header"><span class="panel-title">📊 Vendas por Categoria</span></div><div class="panel-body"><div class="chart-wrap" style="height:220px"><canvas id="ger-chart-cat"></canvas></div></div></div>
-        <div class="panel"><div class="panel-header"><span class="panel-title">🏅 Top 5 Planos</span></div><div class="panel-body" id="ger-top5-wrap"><p style="color:var(--text-light);padding:16px">Carregando...</p></div></div>
-      </div>
-      <div id="ger-empty" style="display:none" class="fin-placeholder-wrap"><div class="fin-ph-icon">📈</div><div class="fin-ph-title">Visão Geral</div><div class="fin-ph-desc">Carregue os dados primeiro.</div></div>
+
+      <!-- CONTEÚDO PRINCIPAL -->
+      <div id="ger-conteudo" style="display:none">
+
+        <!-- ── SEÇÃO 1: KPIs RÁPIDOS ── -->
+        <div id="ger-kpis-row" class="cards-grid" style="margin-bottom:20px"></div>
+
+        <!-- ── SEÇÃO 2: EVOLUÇÃO MENSAL (Linha) ── -->
+        <div class="panel" style="margin-bottom:16px">
+          <div class="panel-header">
+            <span class="panel-title">📊 Evolução de Vendas por Mês</span>
+            <div style="display:flex;gap:4px">
+              <button class="pf-btn active" id="ger-ev-total" onclick="geralSetEvol('total')">Total</button>
+              <button class="pf-btn" id="ger-ev-cnt" onclick="geralSetEvol('Contratos')">Contratos</button>
+              <button class="pf-btn" id="ger-ev-srv" onclick="geralSetEvol('Serviços')">Serviços</button>
+              <button class="pf-btn" id="ger-ev-prd" onclick="geralSetEvol('Produtos')">Produtos</button>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="chart-wrap" style="height:220px"><canvas id="ger-chart-evol"></canvas></div>
+          </div>
+        </div>
+
+        <!-- ── SEÇÃO 3: RANKING VENDEDORAS ── -->
+        <div class="chart-grid" style="margin-bottom:16px">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">🏅 Ranking de Vendedoras</span>
+              <span class="badge badge-blue" id="ger-rank-badge"></span>
+            </div>
+            <div class="panel-body" id="ger-rank-wrap"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">🎯 Melhor Mês por Vendedora</span>
+              <span class="badge badge-blue" id="ger-best-mes-badge"></span>
+            </div>
+            <div class="panel-body" id="ger-best-mes-wrap"></div>
+          </div>
+        </div>
+
+        <!-- ── SEÇÃO 4: BUSCA INTELIGENTE ── -->
+        <div class="panel" style="margin-bottom:16px">
+          <div class="panel-header">
+            <span class="panel-title">🔍 Analisar Produto / Plano / Serviço por Mês</span>
+          </div>
+          <div class="panel-body">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+              <div style="flex:1;min-width:220px">
+                <label style="font-size:11px;font-weight:700;color:var(--text-light);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Buscar</label>
+                <input id="ger-busca-input" type="text" placeholder="Ex: Água, Plano Mensal, Diária..." 
+                  oninput="geralBuscaRender()"
+                  style="width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-size:13px;font-family:var(--font)">
+              </div>
+              <div>
+                <label style="font-size:11px;font-weight:700;color:var(--text-light);display:block;margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">Tipo</label>
+                <div style="display:flex;gap:4px">
+                  <button class="pf-btn active" id="ger-bus-all" onclick="geralBuscaSetTipo('all')">Todos</button>
+                  <button class="pf-btn" id="ger-bus-cnt" onclick="geralBuscaSetTipo('Contratos')">Contratos</button>
+                  <button class="pf-btn" id="ger-bus-srv" onclick="geralBuscaSetTipo('Serviços')">Serviços</button>
+                  <button class="pf-btn" id="ger-bus-prd" onclick="geralBuscaSetTipo('Produtos')">Produtos</button>
+                </div>
+              </div>
+            </div>
+            <div id="ger-busca-resultado"></div>
+          </div>
+        </div>
+
+        <!-- ── SEÇÃO 5: TOP PLANOS + FATURAMENTO ── -->
+        <div class="chart-grid" style="margin-bottom:16px">
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">🏷️ Top Planos Vendidos</span>
+              <div style="display:flex;gap:4px">
+                <button class="pf-btn active" id="ger-pl-qtd" onclick="geralSetPlanoSort('qtd')">Qtd</button>
+                <button class="pf-btn" id="ger-pl-fat" onclick="geralSetPlanoSort('fat')">Fat.</button>
+              </div>
+            </div>
+            <div class="panel-body" id="ger-planos-wrap"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <span class="panel-title">💳 Faturamento Real</span>
+              <span class="badge badge-green" id="ger-fat-badge"></span>
+            </div>
+            <div class="panel-body" id="ger-fat-wrap"></div>
+          </div>
+        </div>
+
+        <!-- ── SEÇÃO 6: CHECK-INS ── -->
+        <div class="panel" style="margin-bottom:16px" id="ger-ck-panel">
+          <div class="panel-header"><span class="panel-title">🤝 Check-ins por Agregador</span></div>
+          <div class="panel-body">
+            <div class="cards-grid" id="ger-kpis-checkins"></div>
+          </div>
+        </div>
+
+      </div><!-- /ger-conteudo -->
     </div>
 
     <!-- CONTRATOS -->
@@ -4596,7 +4692,6 @@ let fatLoaded     = false;
 let cntLoaded=false, srvLoaded=false, prdLoaded=false, pagLoaded=false;
 let cntData=[], srvData=[], prdData=[];
 let pagData=[], pagChartDonut=null, pagChartStone=null;
-let geralMesSel='', geralChartCat=null;
 let chartFatEvol  = null;
 let chartFatCat   = null;
 let chartFatBar   = null;
@@ -5346,8 +5441,18 @@ function prdRenderTabela(dados){
 // ============================================================
 // GERAL — Visão Consolidada
 // ============================================================
-const _gNorm=m=>String(m||'').trim().toLowerCase();
-const RECEPCAO_EXCLUIR=/online|site|sem vendedor/i;
+// ══════════════════════════════════════════════════════════════
+// GERAL — Visão Consolidada NOVA (análises visuais avançadas)
+// ══════════════════════════════════════════════════════════════
+const _gNorm = m => String(m||'').trim().toLowerCase();
+const RECEPCAO_EXCLUIR = /online|site|sem vendedor/i;
+
+let geralMesSel    = '';
+let geralEvolModo  = 'total';
+let geralPlanoSort = 'qtd';
+let geralBuscaTipo = 'all';
+let geralChartEvol = null;
+let geralChartCat  = null; // mantido para PDF
 
 function geralGetTodos(){
   const todos=[];
@@ -5356,74 +5461,434 @@ function geralGetTodos(){
   (prdData||[]).forEach(r=>todos.push({tipo:'Produtos',valor:r.valor||0,mes:_gNorm(r.mes),ano:r.ano||'',vendedor:r.vendedor||'',plano:r.produto||''}));
   return todos;
 }
-function geralGetFiltered(todos){if(!geralMesSel)return todos;return todos.filter(r=>_gNorm(r.mes)===_gNorm(geralMesSel));}
-function geralFatFiltrado(mes){const rows=fatData||[];if(!mes)return rows;return rows.filter(r=>_gNorm(r['Mês'])===_gNorm(mes));}
-function geralAggFiltrado(mes){const rows=aggData||[];if(!mes)return rows;return rows.filter(r=>_gNorm(r['Mês'])===_gNorm(mes));}
+function geralGetFiltered(todos){ if(!geralMesSel)return todos; return todos.filter(r=>_gNorm(r.mes)===_gNorm(geralMesSel)); }
+function geralFatFiltrado(mes){ const rows=fatData||[]; if(!mes)return rows; return rows.filter(r=>_gNorm(r['Mês'])===_gNorm(mes)); }
+function geralAggFiltrado(mes){ const rows=aggData||[]; if(!mes)return rows; return rows.filter(r=>_gNorm(r['Mês'])===_gNorm(mes)); }
 
 function geralPopularMeses(todos){
-  const set=new Set();todos.forEach(r=>r.mes&&set.add(r.mes));
+  const set=new Set();
+  todos.forEach(r=>r.mes&&set.add(r.mes));
   (fatData||[]).forEach(r=>{const m=_gNorm(r['Mês']);if(m)set.add(m);});
   (aggData||[]).forEach(r=>{const m=_gNorm(r['Mês']);if(m)set.add(m);});
   const meses=[...set].sort((a,b)=>MESES_FULL_CNT.indexOf(a)-MESES_FULL_CNT.indexOf(b));
-  const el=document.getElementById('ger-meses-btns');if(!el)return;
-  const btn=(label,ativo,fn)=>'<button style="padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;background:'+(ativo?'#1e6fe8':'var(--bg-card)')+';color:'+(ativo?'#fff':'var(--text-dark)')+'" onclick="'+fn+'">'+label+'</button>';
-  el.innerHTML=btn('Todos',!geralMesSel,"geralSetMes('')")+meses.map(m=>btn(m.charAt(0).toUpperCase()+m.slice(1,3),geralMesSel===m,"geralSetMes('"+m+"')")).join('');
+  const el=document.getElementById('ger-meses-btns'); if(!el)return;
+  const btn=(label,ativo,fn)=>`<button style="padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;background:${ativo?'#1e6fe8':'var(--bg-card)'};color:${ativo?'#fff':'var(--text-dark)'}" onclick="${fn}">${label}</button>`;
+  el.innerHTML = btn('Todos',!geralMesSel,"geralSetMes('')") + meses.map(m=>btn(m.charAt(0).toUpperCase()+m.slice(1,3),geralMesSel===m,`geralSetMes('${m}')`)).join('');
 }
-function geralSetMes(mes){geralMesSel=mes;geralRender();}
+function geralSetMes(mes){ geralMesSel=mes; geralRender(); }
+function geralSetEvol(modo){
+  geralEvolModo=modo;
+  ['total','Contratos','Serviços','Produtos'].forEach(m=>{
+    const id='ger-ev-'+(m==='total'?'total':m==='Contratos'?'cnt':m==='Serviços'?'srv':'prd');
+    const el=document.getElementById(id); if(el)el.classList.toggle('active',m===modo);
+  });
+  geralRenderEvol(geralGetTodos());
+}
+function geralSetPlanoSort(s){
+  geralPlanoSort=s;
+  document.getElementById('ger-pl-qtd')?.classList.toggle('active',s==='qtd');
+  document.getElementById('ger-pl-fat')?.classList.toggle('active',s==='fat');
+  geralRender();
+}
+function geralBuscaSetTipo(t){
+  geralBuscaTipo=t;
+  ['all','cnt','srv','prd'].forEach(id=>{
+    const el=document.getElementById('ger-bus-'+id);
+    if(el)el.classList.toggle('active',
+      (id==='all'&&t==='all')||(id==='cnt'&&t==='Contratos')||
+      (id==='srv'&&t==='Serviços')||(id==='prd'&&t==='Produtos'));
+  });
+  geralBuscaRender();
+}
 
+// ── KPIs rápidos ──────────────────────────────────────────────
+function geralRenderKPIs(dados, fatF, aggF){
+  const wrap = document.getElementById('ger-kpis-row'); if(!wrap)return;
+  const pv = v=>typeof v==='number'?v:parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;
+  const volTotal = dados.reduce((s,r)=>s+r.valor,0);
+  const porTipo  = dados.reduce((a,r)=>{a[r.tipo]=(a[r.tipo]||0)+r.valor;return a;},{});
+  const fatBase  = fatF.reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0);
+  const ckTotal  = aggF.reduce((s,r)=>s+(parseInt(r['Check-ins'])||0),0);
+  const porVend  = dados.reduce((a,r)=>{if(!r.vendedor||RECEPCAO_EXCLUIR.test(r.vendedor))return a;a[r.vendedor]=(a[r.vendedor]||0)+r.valor;return a;},{});
+  const topVend  = Object.entries(porVend).sort((a,b)=>b[1]-a[1])[0];
+  const mesLabel = geralMesSel?geralMesSel.charAt(0).toUpperCase()+geralMesSel.slice(1):'Todos os meses';
+
+  document.getElementById('ger-sub').textContent =
+    dados.length+' vendas · '+fmtBRL(volTotal)+(fatBase?' · Fat: '+fmtBRL(fatBase):'')+(geralMesSel?' · '+mesLabel:'');
+
+  wrap.innerHTML = [
+    {icon:'🛒',label:'Volume de Vendas',val:fmtBRL(volTotal),sub:`Contratos: ${fmtBRL(porTipo['Contratos']||0)} · Srv: ${fmtBRL(porTipo['Serviços']||0)} · Prd: ${fmtBRL(porTipo['Produtos']||0)}`,cor:'#7c3aed',cls:''},
+    {icon:'💰',label:'Faturamento Real',val:fmtBRL(fatBase),sub:`${fatF.length} registros na base`,cor:'#22c55e',cls:'green'},
+    {icon:'🏆',label:'Top Vendedora',val:topVend?topVend[0].split(' ')[0]:'—',sub:topVend?fmtBRL(topVend[1])+' no período':'Sem dados',cor:'#f59e0b',cls:'amber'},
+    {icon:'🤝',label:'Check-ins',val:ckTotal.toLocaleString('pt-BR'),sub:`${Object.keys(aggF.reduce((a,r)=>{const ag=String(r['Agregador']||'').trim();if(ag)a[ag]=1;return a;},{})).length} agregadores`,cor:'#ec4899',cls:''},
+  ].map(k=>`
+    <div class="kpi-card ${k.cls}" style="border-top:3px solid ${k.cor}">
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value" style="color:${k.cor}">${k.val}</div>
+      <div class="kpi-delta"><span style="font-size:11px;color:var(--text-mid)">${k.sub}</span></div>
+    </div>`).join('');
+}
+
+// ── Evolução mensal (gráfico de linhas) ───────────────────────
+function geralRenderEvol(todos){
+  if(geralChartEvol){geralChartEvol.destroy();geralChartEvol=null;}
+  const canvas = document.getElementById('ger-chart-evol'); if(!canvas)return;
+
+  // Coletar todos os meses disponíveis
+  const mesesSet = new Set();
+  todos.forEach(r=>r.mes&&mesesSet.add(r.mes));
+  (fatData||[]).forEach(r=>{const m=_gNorm(r['Mês']);if(m)mesesSet.add(m);});
+  const meses = [...mesesSet].sort((a,b)=>MESES_FULL_CNT.indexOf(a)-MESES_FULL_CNT.indexOf(b));
+  if(!meses.length) return;
+
+  const labels = meses.map(m=>m.charAt(0).toUpperCase()+m.slice(1,3));
+  let datasets = [];
+
+  if(geralEvolModo==='total'){
+    // Total + por tipo
+    const cores = {Contratos:'#7c3aed',Serviços:'#1e6fe8',Produtos:'#22c55e'};
+    const totalVals = meses.map(m=>todos.filter(r=>r.mes===m).reduce((s,r)=>s+r.valor,0));
+    datasets = [
+      {label:'Total',data:totalVals,borderColor:'#f59e0b',backgroundColor:'rgba(245,158,11,.1)',
+       tension:.35,fill:true,pointRadius:5,pointBackgroundColor:'#f59e0b',borderWidth:2.5},
+      ...['Contratos','Serviços','Produtos'].map(t=>({
+        label:t, data:meses.map(m=>todos.filter(r=>r.mes===m&&r.tipo===t).reduce((s,r)=>s+r.valor,0)),
+        borderColor:cores[t],backgroundColor:'transparent',tension:.35,fill:false,
+        pointRadius:4,borderWidth:1.8,borderDash:t==='Produtos'?[4,2]:undefined,
+      }))
+    ];
+  } else {
+    const cor={Contratos:'#7c3aed',Serviços:'#1e6fe8',Produtos:'#22c55e'}[geralEvolModo]||'#1e6fe8';
+    const vals = meses.map(m=>todos.filter(r=>r.mes===m&&r.tipo===geralEvolModo).reduce((s,r)=>s+r.valor,0));
+    // Calcular melhor mês para marcar
+    const maxIdx = vals.indexOf(Math.max(...vals));
+    datasets = [{
+      label:geralEvolModo, data:vals, borderColor:cor,
+      backgroundColor:cor+'20', tension:.35, fill:true,
+      pointRadius:vals.map((_,i)=>i===maxIdx?9:4),
+      pointBackgroundColor:vals.map((_,i)=>i===maxIdx?'#f59e0b':cor),
+      borderWidth:2.5,
+    }];
+  }
+
+  geralChartEvol = new Chart(canvas,{
+    type:'line',
+    data:{labels,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{position:'top',labels:{font:{family:'DM Sans',size:11},padding:10,boxWidth:12}},
+        tooltip:{callbacks:{label:ctx=>` ${ctx.dataset.label}: ${fmtBRL(ctx.raw)}`}},
+        annotation:geralEvolModo!=='total'?{annotations:{
+          melhorMes:{
+            type:'line',scaleID:'x',
+            value:meses.indexOf(meses[meses.reduce((bi,_,i,a)=>
+              todos.filter(r=>r.mes===a[i]&&r.tipo===geralEvolModo).reduce((s,r)=>s+r.valor,0)>
+              todos.filter(r=>r.mes===a[bi]&&r.tipo===geralEvolModo).reduce((s,r)=>s+r.valor,0)?i:bi,0)]),
+            borderColor:'#f59e0b',borderWidth:1.5,borderDash:[4,3],
+          }
+        }}:{}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:11}}},
+        y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'DM Mono',size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}
+      }
+    }
+  });
+}
+
+// ── Ranking Vendedoras ────────────────────────────────────────
+function geralRenderRanking(todos){
+  const wrap = document.getElementById('ger-rank-wrap'); if(!wrap)return;
+  const dados = geralGetFiltered(todos);
+  const porVend = {};
+  dados.forEach(r=>{
+    if(!r.vendedor||RECEPCAO_EXCLUIR.test(r.vendedor))return;
+    if(!porVend[r.vendedor])porVend[r.vendedor]={fat:0,cnt:0,srv:0,prd:0,planos:{}};
+    porVend[r.vendedor].fat+=r.valor;
+    if(r.tipo==='Contratos'){porVend[r.vendedor].cnt+=r.valor;if(r.plano){porVend[r.vendedor].planos[r.plano]=(porVend[r.vendedor].planos[r.plano]||0)+1;}}
+    if(r.tipo==='Serviços')porVend[r.vendedor].srv+=r.valor;
+    if(r.tipo==='Produtos')porVend[r.vendedor].prd+=r.valor;
+  });
+  const ranking = Object.entries(porVend).sort((a,b)=>b[1].fat-a[1].fat);
+  const maxFat = ranking[0]?.[1].fat||1;
+  document.getElementById('ger-rank-badge').textContent = ranking.length+' vendedoras';
+  const CORES=['#f59e0b','#6b7280','#cd7f32','#1e6fe8','#22c55e'];
+  const medalhas=['🥇','🥈','🥉','4º','5º'];
+  wrap.innerHTML = `<div class="table-wrapper"><table>
+    <thead><tr><th>#</th><th>Vendedora</th><th style="text-align:center">Contratos</th><th style="text-align:right">Total</th><th style="min-width:100px">Part.</th></tr></thead>
+    <tbody>${ranking.map(([nome,d],i)=>{
+      const pct=(d.fat/maxFat*100).toFixed(0);
+      const cor=CORES[i]||'var(--text-light)';
+      const topPlano=Object.entries(d.planos).sort((a,b)=>b[1]-a[1])[0];
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:10px 10px;text-align:center;font-size:16px">${medalhas[i]||i+1}</td>
+        <td style="padding:10px 12px">
+          <div style="font-weight:700;font-size:13px">${nome}</div>
+          ${topPlano?`<div style="font-size:10px;color:var(--text-light);margin-top:2px">🏷️ ${topPlano[0].length>28?topPlano[0].slice(0,26)+'...':topPlano[0]}</div>`:''}
+        </td>
+        <td style="padding:10px 8px;text-align:center;font-family:var(--mono);font-size:12px;color:#7c3aed;font-weight:700">${fmtBRL(d.cnt)}</td>
+        <td style="padding:10px 12px;font-family:var(--mono);font-weight:800;color:${cor};text-align:right;white-space:nowrap">${fmtBRL(d.fat)}</td>
+        <td style="padding:10px 12px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="flex:1;background:var(--border);border-radius:99px;height:6px;overflow:hidden">
+              <div style="width:${pct}%;height:100%;background:${cor};border-radius:99px"></div>
+            </div>
+            <span style="font-size:10px;color:${cor};font-weight:700">${pct}%</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+// ── Melhor Mês por Vendedora ──────────────────────────────────
+function geralRenderMelhorMes(todos){
+  const wrap = document.getElementById('ger-best-mes-wrap'); if(!wrap)return;
+  // Para cada vendedora, calcular qual mês vendeu mais
+  const porVendMes = {};
+  todos.forEach(r=>{
+    if(!r.vendedor||RECEPCAO_EXCLUIR.test(r.vendedor)||!r.mes)return;
+    if(!porVendMes[r.vendedor])porVendMes[r.vendedor]={};
+    porVendMes[r.vendedor][r.mes]=(porVendMes[r.vendedor][r.mes]||0)+r.valor;
+  });
+  const vendedoras = Object.entries(porVendMes)
+    .map(([nome,mMap])=>{
+      const melhor=Object.entries(mMap).sort((a,b)=>b[1]-a[1])[0];
+      const total=Object.values(mMap).reduce((s,v)=>s+v,0);
+      return {nome,melhor,total,meses:Object.keys(mMap).length};
+    })
+    .sort((a,b)=>b.total-a.total).slice(0,6);
+
+  document.getElementById('ger-best-mes-badge').textContent = vendedoras.length+' vendedoras';
+  const CORES_MES={janeiro:'#ef4444',fevereiro:'#f97316',março:'#f59e0b',abril:'#22c55e',
+    maio:'#10b981',junho:'#06b6d4',julho:'#1e6fe8',agosto:'#7c3aed',setembro:'#ec4899',
+    outubro:'#6b7280',novembro:'#a78bfa',dezembro:'#34d399'};
+  wrap.innerHTML = vendedoras.map(v=>{
+    const cor=CORES_MES[v.melhor?.[0]]||'#1e6fe8';
+    return `<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border)">
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:13px">${v.nome.split(' ')[0]}</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:2px">${v.meses} meses de venda</div>
+      </div>
+      <div style="text-align:center;min-width:80px">
+        <div style="font-size:10px;color:var(--text-light);font-weight:600;text-transform:uppercase;letter-spacing:.04em">Melhor Mês</div>
+        <div style="font-size:12px;font-weight:800;color:${cor};margin-top:2px">${v.melhor?v.melhor[0].charAt(0).toUpperCase()+v.melhor[0].slice(1,3):'—'}</div>
+      </div>
+      <div style="text-align:right;min-width:90px">
+        <div style="font-size:10px;color:var(--text-light);font-weight:600">Nesse mês</div>
+        <div style="font-size:12px;font-weight:800;color:var(--green)">${v.melhor?fmtBRL(v.melhor[1]):'—'}</div>
+      </div>
+    </div>`;
+  }).join('') || '<p style="color:var(--text-light);padding:16px">Carregue Contratos primeiro</p>';
+}
+
+// ── Busca Inteligente ─────────────────────────────────────────
+function geralBuscaRender(){
+  const wrap = document.getElementById('ger-busca-resultado'); if(!wrap)return;
+  const query = (document.getElementById('ger-busca-input')?.value||'').trim().toLowerCase();
+  if(!query||query.length<2){
+    wrap.innerHTML=`<div style="color:var(--text-light);font-size:13px;padding:8px 0">
+      💡 Digite o nome de um produto, plano ou serviço para ver como as vendas variaram mês a mês.<br>
+      <span style="color:var(--accent);font-weight:600">Exemplos: Água, Plano Mensal, Diária, Whey, Coqueteleira</span>
+    </div>`;
+    return;
+  }
+  const todos = geralGetTodos();
+  const filtered = todos.filter(r=>{
+    const matchTipo = geralBuscaTipo==='all'||r.tipo===geralBuscaTipo;
+    return matchTipo && r.plano.toLowerCase().includes(query);
+  });
+  if(!filtered.length){
+    wrap.innerHTML=`<div style="color:var(--text-light);font-size:13px;padding:8px 0">Nenhum resultado para "<strong>${query}</strong>" no tipo selecionado.</div>`;
+    return;
+  }
+
+  // Agrupar por item encontrado
+  const porItem={};
+  filtered.forEach(r=>{
+    const key=r.plano;
+    if(!porItem[key])porItem[key]={tipo:r.tipo,meses:{},total:0,qtd:0};
+    porItem[key].total+=r.valor; porItem[key].qtd++;
+    if(r.mes){
+      if(!porItem[key].meses[r.mes])porItem[key].meses[r.mes]={fat:0,qtd:0};
+      porItem[key].meses[r.mes].fat+=r.valor; porItem[key].meses[r.mes].qtd++;
+    }
+  });
+
+  const CORES_TIPO={Contratos:'#7c3aed',Serviços:'#1e6fe8',Produtos:'#22c55e'};
+  const items = Object.entries(porItem).sort((a,b)=>b[1].total-a[1].total).slice(0,6);
+
+  wrap.innerHTML = items.map(([nome,d])=>{
+    const mesesOrdenados = Object.entries(d.meses)
+      .sort((a,b)=>MESES_FULL_CNT.indexOf(a[0])-MESES_FULL_CNT.indexOf(b[0]));
+    const maxFat = Math.max(...mesesOrdenados.map(([,m])=>m.fat))||1;
+    const melhorMes = mesesOrdenados.reduce((best,cur)=>cur[1].fat>best[1].fat?cur:best, ['—',{fat:0}]);
+    const cor = CORES_TIPO[d.tipo]||'#6b7280';
+
+    const bars = mesesOrdenados.map(([mes,m])=>{
+      const pct=(m.fat/maxFat*100).toFixed(0);
+      const isMelhor=mes===melhorMes[0];
+      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <div style="width:30px;font-size:10px;color:var(--text-light);font-weight:600;flex-shrink:0">${mes.charAt(0).toUpperCase()+mes.slice(1,3)}</div>
+        <div style="flex:1;background:var(--border);border-radius:99px;height:14px;overflow:hidden;position:relative">
+          <div style="width:${pct}%;height:100%;background:${isMelhor?'#f59e0b':cor};border-radius:99px;transition:width .4s"></div>
+        </div>
+        <div style="width:80px;text-align:right;font-size:11px;font-family:var(--mono);font-weight:${isMelhor?'800':'600'};color:${isMelhor?'#f59e0b':cor}">${fmtBRL(m.fat)}</div>
+        ${isMelhor?`<span style="font-size:10px;background:#f59e0b;color:#fff;border-radius:4px;padding:1px 5px;flex-shrink:0">🏆 melhor</span>`:`<span style="width:62px"></span>`}
+      </div>`;
+    }).join('');
+
+    return `<div style="margin-bottom:16px;padding:14px;background:var(--bg-card);border-radius:12px;border:1px solid var(--border);border-left:3px solid ${cor}">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <div style="font-weight:700;font-size:13px">${nome}</div>
+          <div style="font-size:11px;color:${cor};font-weight:600;margin-top:2px">${d.tipo} · ${d.qtd} vendas</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;color:var(--text-light)">Total no período</div>
+          <div style="font-size:16px;font-weight:800;color:${cor}">${fmtBRL(d.total)}</div>
+          <div style="font-size:10px;color:#f59e0b;font-weight:600">🏆 Melhor: ${melhorMes[0].charAt(0).toUpperCase()+melhorMes[0].slice(1)}</div>
+        </div>
+      </div>
+      ${bars}
+    </div>`;
+  }).join('');
+}
+
+// ── Top Planos ────────────────────────────────────────────────
+function geralRenderPlanos(dados){
+  const wrap = document.getElementById('ger-planos-wrap'); if(!wrap)return;
+  const porPlano = dados.filter(r=>r.tipo==='Contratos').reduce((a,r)=>{
+    const k=r.plano.replace(/\s*\(online\)\s*/i,'').trim(); if(!k)return a;
+    if(!a[k])a[k]={qtd:0,fat:0}; a[k].qtd++; a[k].fat+=r.valor; return a;
+  },{});
+  const sorted = Object.entries(porPlano).sort((a,b)=>b[1][geralPlanoSort]-a[1][geralPlanoSort]);
+  const maxVal = sorted[0]?.[1][geralPlanoSort]||1;
+  const CORES = ['#7c3aed','#1e6fe8','#22c55e','#f59e0b','#ec4899','#0ea5e9','#f97316'];
+
+  wrap.innerHTML = `<div class="table-wrapper"><table>
+    <thead><tr>
+      <th style="width:32px">#</th><th>Plano</th>
+      <th style="text-align:center;width:70px">Qtd</th>
+      <th style="text-align:right;width:130px">Faturamento</th>
+    </tr></thead>
+    <tbody>${sorted.map(([p,d],i)=>{
+      const bar=((d[geralPlanoSort]/maxVal)*100).toFixed(0);
+      const cor=CORES[i%CORES.length];
+      return `<tr style="border-bottom:1px solid var(--border)">
+        <td style="padding:8px 10px;text-align:center;font-weight:800;color:${cor};font-size:13px">${i+1}</td>
+        <td style="padding:8px 12px">
+          <div style="font-weight:600;font-size:12px">${p.length>32?p.slice(0,30)+'...':p}</div>
+          <div style="margin-top:3px;height:3px;border-radius:99px;background:var(--border);overflow:hidden">
+            <div style="width:${bar}%;height:100%;background:${cor};border-radius:99px"></div>
+          </div>
+        </td>
+        <td style="padding:8px 8px;font-family:var(--mono);text-align:center;font-weight:800;font-size:14px">${d.qtd}</td>
+        <td style="padding:8px 12px;font-family:var(--mono);color:var(--green);text-align:right;font-weight:700">${fmtBRL(d.fat)}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>` || '<p style="color:var(--text-light);padding:16px">Carregue Contratos</p>';
+}
+
+// ── Faturamento Real ──────────────────────────────────────────
+function geralRenderFat(fatF){
+  const wrap = document.getElementById('ger-fat-wrap'); if(!wrap)return;
+  const pv = v=>typeof v==='number'?v:parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;
+  const SIST = ['EVO','WellHub','TotalPass'];
+  const COR_S = {EVO:'#7c3aed',WellHub:'#ec4899',TotalPass:'#22c55e'};
+  const porSis = SIST.reduce((a,s)=>{
+    a[s]=fatF.reduce((sum,r)=>sum+(String(r['Sistema']||'').toLowerCase()===s.toLowerCase()?pv(r['Faturamento']||r['Valor']||0):0),0);
+    return a;
+  },{});
+  const fatBase = Object.values(porSis).reduce((s,v)=>s+v,0);
+  document.getElementById('ger-fat-badge').textContent = fmtBRL(fatBase);
+
+  // Tendência vs mês anterior
+  let tendText='', tendCor='var(--text-light)';
+  if(geralMesSel&&(fatData||[]).length){
+    const mi=MESES_FULL_CNT.indexOf(_gNorm(geralMesSel));
+    const mAnt=mi>0?MESES_FULL_CNT[mi-1]:null;
+    if(mAnt){
+      const fAnt=geralFatFiltrado(mAnt).reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0);
+      if(fAnt>0){const pct=(fatBase-fAnt)/fAnt*100;tendText=(pct>=0?'▲ +':'▼ ')+pct.toFixed(1)+'% vs '+mAnt.charAt(0).toUpperCase()+mAnt.slice(1,3);tendCor=pct>=0?'var(--green)':'var(--red)';}
+    }
+  }
+
+  wrap.innerHTML = `
+    <div style="padding:12px 14px;background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(34,197,94,.02));border-radius:10px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:10px;color:var(--text-light);font-weight:700;text-transform:uppercase">Total Faturamento</div>
+        <div style="font-size:22px;font-weight:900;color:var(--green)">${fmtBRL(fatBase)}</div>
+      </div>
+      ${tendText?`<div style="text-align:right"><div style="font-size:13px;font-weight:800;color:${tendCor}">${tendText}</div></div>`:''}
+    </div>
+    ${SIST.map(s=>{
+      const val=porSis[s], pct=fatBase?(val/fatBase*100).toFixed(1):0;
+      const cor=COR_S[s];
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-bottom:1px solid var(--border)">
+        <div style="width:10px;height:10px;border-radius:50%;background:${cor};flex-shrink:0"></div>
+        <div style="flex:1;font-weight:600;font-size:13px">${s}</div>
+        <div style="font-size:11px;color:var(--text-light)">${pct}%</div>
+        <div style="font-family:var(--mono);font-weight:700;color:${cor}">${fmtBRL(val)}</div>
+      </div>`;
+    }).join('')}`;
+}
+
+// ── Check-ins ─────────────────────────────────────────────────
+function geralRenderCheckins(aggF){
+  const ccW = document.getElementById('ger-kpis-checkins'); if(!ccW)return;
+  const pv = v=>typeof v==='number'?v:parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;
+  const ckMap = aggF.reduce((a,r)=>{
+    const ag=String(r['Agregador']||r['Sistema']||'').trim(); if(!ag)return a;
+    if(!a[ag])a[ag]={ck:0,fat:0};
+    a[ag].ck+=parseInt(r['Check-ins'])||0; a[ag].fat+=pv(r['Faturamento']||0); return a;
+  },{});
+  const AGR_COR={TotalPass:'#22c55e',Wellhub:'#ec4899',WellHub:'#ec4899',EVO:'#7c3aed'};
+  if(!Object.keys(ckMap).length){
+    ccW.innerHTML=`<div style="color:var(--text-light);font-size:13px;padding:12px">${aggLoaded?'Sem dados no período':'Carregue a aba Agregadores primeiro'}</div>`;
+    return;
+  }
+  ccW.innerHTML = Object.entries(ckMap).sort((a,b)=>b[1].ck-a[1].ck).map(([ag,d])=>{
+    const cor=AGR_COR[ag]||'#6b7280';
+    return `<div class="kpi-card" style="border-top:3px solid ${cor}">
+      <div class="kpi-icon">🤝</div>
+      <div class="kpi-label">${ag}</div>
+      <div class="kpi-value" style="color:${cor};font-size:28px">${d.ck.toLocaleString('pt-BR')}</div>
+      <div class="kpi-delta"><span style="font-size:11px;color:var(--text-mid)">${fmtBRL(d.fat)} faturado</span></div>
+    </div>`;
+  }).join('');
+}
+
+// ── Render principal ──────────────────────────────────────────
 function geralRender(){
-  const todos=geralGetTodos(),temDados=todos.length>0||(fatData||[]).length>0;
-  document.getElementById('ger-empty').style.display=temDados?'none':'flex';
-  document.getElementById('ger-aviso').style.display=(cntLoaded&&srvLoaded&&prdLoaded)?'none':'inline';
+  const todos = geralGetTodos();
+  const temDados = todos.length>0||(fatData||[]).length>0;
+  document.getElementById('ger-empty').style.display    = temDados?'none':'flex';
+  document.getElementById('ger-conteudo').style.display = temDados?'block':'none';
+  document.getElementById('ger-aviso').style.display    = (cntLoaded&&srvLoaded&&prdLoaded)?'none':'inline';
   if(!temDados)return;
+
   geralPopularMeses(todos);
-  const dados=geralGetFiltered(todos),fatF=geralFatFiltrado(geralMesSel),aggF=geralAggFiltrado(geralMesSel);
-  const volTotal=dados.reduce((s,r)=>s+r.valor,0);
-  const porTipo=dados.reduce((a,r)=>{a[r.tipo]=(a[r.tipo]||0)+r.valor;return a;},{});
-  const maiorFonte=Object.entries(porTipo).sort((a,b)=>b[1]-a[1])[0];
-  const porVend=dados.reduce((a,r)=>{if(!r.vendedor||RECEPCAO_EXCLUIR.test(r.vendedor))return a;a[r.vendedor]=(a[r.vendedor]||0)+r.valor;return a;},{});
-  const topVend=Object.entries(porVend).sort((a,b)=>b[1]-a[1])[0];
-  const recep=dados.filter(r=>r.tipo==='Contratos'&&!RECEPCAO_EXCLUIR.test(r.vendedor));
-  const fatRec=recep.reduce((s,r)=>s+r.valor,0);
-  const porPlano=dados.filter(r=>r.tipo==='Contratos').reduce((a,r)=>{const k=r.plano.replace(/\s*\(online\)\s*/i,'').trim();if(!k)return a;if(!a[k])a[k]={qtd:0,fat:0};a[k].qtd++;a[k].fat+=r.valor;return a;},{});
-  const top5=Object.entries(porPlano).sort((a,b)=>b[1].qtd-a[1].qtd).slice(0,5);
-  const pv=v=>typeof v==='number'?v:parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;
-  const fatBase=fatF.reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0);
-  const SIST=['EVO','WellHub','TotalPass'];
-  const porSis=SIST.reduce((a,s)=>{a[s]=fatF.reduce((sum,r)=>sum+(String(r['Sistema']||'').toLowerCase()===s.toLowerCase()?pv(r['Faturamento']||r['Valor']||0):0),0);return a;},{});
-  const maiorSis=Object.entries(porSis).sort((a,b)=>b[1]-a[1])[0];
-  let tendText='—',tendCor='var(--text-light)',tendSub='Selecione um mês';
-  if(geralMesSel&&(fatData||[]).length){const mi=MESES_FULL_CNT.indexOf(_gNorm(geralMesSel));const mAnt=mi>0?MESES_FULL_CNT[mi-1]:null;if(mAnt){const fAnt=geralFatFiltrado(mAnt).reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0);if(fAnt>0){const pct=(fatBase-fAnt)/fAnt*100;tendText=(pct>=0?'▲ +':'▼ ')+pct.toFixed(1)+'%';tendCor=pct>=0?'var(--green)':'var(--red)';tendSub='vs '+mAnt.charAt(0).toUpperCase()+mAnt.slice(1,3)+' ('+fmtBRL(fAnt)+')';}}}
-  const ckMap=aggF.reduce((a,r)=>{const ag=String(r['Agregador']||r['Sistema']||'').trim();if(!ag)return a;if(!a[ag])a[ag]={ck:0,fat:0};a[ag].ck+=parseInt(r['Check-ins'])||0;a[ag].fat+=pv(r['Faturamento']||0);return a;},{});
-  const setK=(id,val,sub)=>{const e=document.getElementById(id);if(e)e.textContent=val;const s=document.getElementById(id+'-sub');if(s&&sub!==undefined)s.innerHTML='<span style="font-size:11px;color:var(--text-mid)">'+sub+'</span>';};
-  const mesLabel=geralMesSel?geralMesSel.charAt(0).toUpperCase()+geralMesSel.slice(1):'Todos os meses';
-  const fatLbl=document.getElementById('ger-fat-label');if(fatLbl)fatLbl.textContent='Faturamento — '+mesLabel;
-  setK('ger-kpi-fat',fmtBRL(volTotal),'Contratos: '+fmtBRL(porTipo['Contratos']||0)+' · Serviços: '+fmtBRL(porTipo['Serviços']||0)+' · Produtos: '+fmtBRL(porTipo['Produtos']||0));
-  document.getElementById('ger-prog-fat').style.width='80%';
-  setK('ger-kpi-fonte',maiorFonte?(maiorFonte[0]==='Contratos'?'📋':maiorFonte[0]==='Serviços'?'🛎️':'🛍️')+' '+maiorFonte[0]:'—',maiorFonte?fmtBRL(maiorFonte[1]):'');
-  setK('ger-kpi-top-vend',topVend?topVend[0].split(' ')[0]:'—',topVend?fmtBRL(topVend[1])+' no período':'Sem dados');
-  setK('ger-kpi-recepcao',fmtBRL(fatRec),recep.length+' contratos pelo balcão');
-  setK('ger-kpi-fat-base',fmtBRL(fatBase),fatF.length+' registros');document.getElementById('ger-prog-base').style.width='80%';
-  setK('ger-kpi-fonte-base',maiorSis?maiorSis[0]:'—',maiorSis?fmtBRL(maiorSis[1]):'');
-  const tEl=document.getElementById('ger-kpi-tendencia');if(tEl){tEl.textContent=tendText;tEl.style.color=tendCor;}setK('ger-kpi-tendencia',tendText,tendSub);
-  const ccW=document.getElementById('ger-kpis-checkins');
-  if(ccW){const AGR_COR={TotalPass:'#22c55e',Wellhub:'#ec4899',WellHub:'#ec4899',EVO:'#7c3aed'};if(!Object.keys(ckMap).length){ccW.innerHTML='<div style="color:var(--text-light);font-size:13px;padding:12px">'+(aggLoaded?'Sem dados no período':'Carregue a aba Agregadores primeiro')+'</div>';}else{ccW.innerHTML=Object.entries(ckMap).sort((a,b)=>b[1].ck-a[1].ck).map(([ag,d])=>{const cor=AGR_COR[ag]||'#6b7280';return '<div class="kpi-card" style="border-top:3px solid '+cor+'"><div class="kpi-icon">🤝</div><div class="kpi-label">'+ag+'</div><div class="kpi-value" style="color:'+cor+';font-size:28px">'+d.ck.toLocaleString('pt-BR')+'</div><div class="kpi-delta"><span style="font-size:11px;color:var(--text-mid)">'+fmtBRL(d.fat)+' faturado</span></div></div>';}).join('');}}
-  document.getElementById('ger-sub').textContent=dados.length+' vendas · '+fmtBRL(volTotal)+(fatLoaded?' · Base: '+fmtBRL(fatBase):'')+(geralMesSel?' · '+mesLabel:' · todos os meses');
-  geralRenderCat(porTipo);geralRenderTop5(top5);
+  const dados = geralGetFiltered(todos);
+  const fatF  = geralFatFiltrado(geralMesSel);
+  const aggF  = geralAggFiltrado(geralMesSel);
+
+  geralRenderKPIs(dados, fatF, aggF);
+  geralRenderEvol(todos);
+  geralRenderRanking(todos);
+  geralRenderMelhorMes(todos);
+  geralRenderPlanos(dados);
+  geralRenderFat(fatF);
+  geralRenderCheckins(aggF);
+  geralBuscaRender();
 }
-function geralRenderCat(porTipo){
-  if(geralChartCat)geralChartCat.destroy();const canvas=document.getElementById('ger-chart-cat');if(!canvas)return;
-  const cats=['Contratos','Serviços','Produtos'],vals=cats.map(c=>porTipo[c]||0);
-  const CORES={Contratos:'#7c3aedcc',Serviços:'#1e6fe8cc',Produtos:'#22c55ecc'};
-  geralChartCat=new Chart(canvas,{type:'bar',data:{labels:cats,datasets:[{data:vals,backgroundColor:cats.map(c=>CORES[c]),borderRadius:6,label:'Vendas'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmtBRL(ctx.raw)}}},scales:{x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:13,weight:'600'}}},y:{grid:{color:'rgba(0,0,0,.04)'},ticks:{font:{family:'DM Mono',size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
-}
-function geralRenderTop5(top5){
-  const wrap=document.getElementById('ger-top5-wrap');if(!wrap)return;
-  if(!top5.length){wrap.innerHTML='<p style="color:var(--text-light);padding:16px">Carregue os Contratos primeiro.</p>';return;}
-  const CORES=['#7c3aed','#1e6fe8','#22c55e','#f59e0b','#ec4899'];
-  const rows=top5.map(([p,d],i)=>{const n=p.length>40?p.slice(0,40)+'...':p;return '<tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 10px;text-align:center;font-weight:800;color:'+CORES[i]+';font-size:14px">'+(i+1)+'</td><td style="padding:9px 12px;font-size:12px;font-weight:600" title="'+p+'">'+n+'</td><td style="padding:9px 10px;font-family:var(--mono);text-align:center;font-weight:800">'+d.qtd+'</td><td style="padding:9px 12px;font-family:var(--mono);color:var(--green);text-align:right;font-weight:700">'+fmtBRL(d.fat)+'</td></tr>';}).join('');
-  wrap.innerHTML='<div class="table-wrapper"><table><thead><tr><th>#</th><th>Plano</th><th style="text-align:center">Qtd</th><th style="text-align:right">Faturamento</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
-}
+
+// Stubs mantidos para compatibilidade com PDF
+function geralRenderCat(porTipo){}
+function geralRenderTop5(top5){}
+
 
 // ============================================================
 // FORMAS DE PAGAMENTO — BD_Recebimento
