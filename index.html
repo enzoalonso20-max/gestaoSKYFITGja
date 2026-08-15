@@ -2174,9 +2174,11 @@
       <!-- FILTRO DE MÊS -->
       <div class="panel" style="margin-bottom:16px">
         <div class="panel-body" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:12px 16px">
-          <span style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em">Mês:</span>
+          <span style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em">Ano:</span>
+          <div style="display:flex;gap:4px" id="ger-anos-btns"></div>
+          <span style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em;margin-left:8px">Mês:</span>
           <div style="display:flex;gap:4px;flex-wrap:wrap" id="ger-meses-btns"></div>
-          <button class="btn btn-secondary" onclick="geralSetMes('')" style="padding:5px 10px;font-size:11px">↺ Todos</button>
+          <button class="btn btn-secondary" onclick="geralResetFiltros()" style="padding:5px 10px;font-size:11px">↺ Todos</button>
         </div>
       </div>
 
@@ -5243,6 +5245,8 @@ function cntRenderOrigem(dados){
   const total=vals.reduce((s,v)=>s+v,0);
   cntChartDonut=new Chart(canvas,{type:'doughnut',data:{labels:origens,datasets:[{data:vals,backgroundColor:['#7c3aedcc','#22c55ecc','#ec4899cc','#f59e0bcc'],borderWidth:2,borderColor:'#fff',hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},padding:10,boxWidth:10}},tooltip:{callbacks:{label:ctx=>{const pct=total?(ctx.raw/total*100).toFixed(1):0;return ' '+ctx.label+': '+fmtBRL(ctx.raw)+' ('+pct+'%)';}}}}}});
 }
+
+function geralMedal(i){ return ['🥇','🥈','🥉'][i]||(i+1); }
 function cntRenderRanking(dados){
   const vMap={};
   dados.forEach(r=>{if(!vMap[r.vendedor])vMap[r.vendedor]={qtd:0,fat:0,dias:new Set()};vMap[r.vendedor].qtd++;vMap[r.vendedor].fat+=r.valor;if(r.dt)vMap[r.vendedor].dias.add(r.dt.toISOString().slice(0,10));});
@@ -5252,7 +5256,7 @@ function cntRenderRanking(dados){
   const thead='<tr><th style="width:32px">#</th><th>Vendedor</th><th style="text-align:center;width:70px">Qtd</th><th style="text-align:center;width:80px">Dias c/ Venda</th><th style="text-align:right;width:140px">Faturamento</th><th style="min-width:110px">Part.</th></tr>';
   const tbody=sorted.map(([nome,d],i)=>{
     const pct=(d.fat/maxFat*100).toFixed(0);const cor=i===0?'#22c55e':i===1?'#f59e0b':'var(--accent)';
-    return '<tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;text-align:center;font-weight:800;color:var(--text-light)">'+(i+1)+'</td><td style="padding:10px 12px"><div style="font-weight:700">'+nome+'</div><div style="font-size:10px;color:var(--text-light)">'+(d.qtd?((d.qtd/Math.max(d.dias.size,1)).toFixed(1)):'—')+' contratos/dia</div></td><td style="padding:10px 8px;font-family:var(--mono);text-align:center;font-weight:800">'+d.qtd+'</td><td style="padding:10px 8px;font-family:var(--mono);text-align:center;color:var(--accent)">'+d.dias.size+'<span style="font-size:10px;color:var(--text-light);margin-left:2px">dias</span></td><td style="padding:10px 12px;font-family:var(--mono);font-weight:800;color:var(--green);text-align:right;white-space:nowrap">'+fmtBRL(d.fat)+'</td><td style="padding:10px 12px"><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;background:var(--border);border-radius:99px;height:6px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+cor+';border-radius:99px"></div></div><span style="font-size:11px;font-weight:700;color:'+cor+';min-width:28px">'+pct+'%</span></div></td></tr>';
+    return '<tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;text-align:center;font-weight:800;color:var(--text-light)">'+geralMedal(i)+'</td><td style="padding:10px 12px"><div style="font-weight:700">'+nome+'</div><div style="font-size:10px;color:var(--text-light)">'+(d.qtd?((d.qtd/Math.max(d.dias.size,1)).toFixed(1)):'—')+' contratos/dia</div></td><td style="padding:10px 8px;font-family:var(--mono);text-align:center;font-weight:800">'+d.qtd+'</td><td style="padding:10px 8px;font-family:var(--mono);text-align:center;color:var(--accent)">'+d.dias.size+'<span style="font-size:10px;color:var(--text-light);margin-left:2px">dias</span></td><td style="padding:10px 12px;font-family:var(--mono);font-weight:800;color:var(--green);text-align:right;white-space:nowrap">'+fmtBRL(d.fat)+'</td><td style="padding:10px 12px"><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;background:var(--border);border-radius:99px;height:6px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+cor+';border-radius:99px"></div></div><span style="font-size:11px;font-weight:700;color:'+cor+';min-width:28px">'+pct+'%</span></div></td></tr>';
   }).join('');
   const wrap=document.getElementById('cnt-ranking-wrap');if(wrap)wrap.innerHTML='<div class="table-wrapper"><table><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table></div>';
 }
@@ -5366,7 +5370,7 @@ function srvRenderRankingVendedores(dados){
   const sorted=Object.entries(vMap).sort((a,b)=>b[1].fat-a[1].fat);const maxFat=sorted[0]?.[1].fat||1;
   const badge=document.getElementById('srv-rank-vend-badge');if(badge)badge.textContent=sorted.length+' vendedores';
   const thead='<tr><th style="width:32px">#</th><th>Vendedor</th><th style="text-align:center;width:90px">Qtd</th><th style="text-align:right;width:150px">Faturamento</th><th style="min-width:110px">Part.</th></tr>';
-  const tbody=sorted.map(([nome,d],i)=>{const pct=(d.fat/maxFat*100).toFixed(0);const cor=i===0?'#22c55e':i===1?'#f59e0b':'var(--accent)';return '<tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;text-align:center;font-weight:800;color:var(--text-light)">'+(i+1)+'</td><td style="padding:10px 12px;font-weight:700">'+nome+'</td><td style="padding:10px 8px;font-family:var(--mono);text-align:center;font-weight:800">'+d.qtd+'</td><td style="padding:10px 12px;font-family:var(--mono);font-weight:800;color:var(--green);text-align:right;white-space:nowrap">'+fmtBRL(d.fat)+'</td><td style="padding:10px 12px"><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;background:var(--border);border-radius:99px;height:6px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+cor+';border-radius:99px"></div></div><span style="font-size:11px;font-weight:700;color:'+cor+';min-width:28px">'+pct+'%</span></div></td></tr>';}).join('');
+  const tbody=sorted.map(([nome,d],i)=>{const pct=(d.fat/maxFat*100).toFixed(0);const cor=i===0?'#22c55e':i===1?'#f59e0b':'var(--accent)';return '<tr style="border-bottom:1px solid var(--border)"><td style="padding:10px 8px;text-align:center;font-weight:800;color:var(--text-light)">'+geralMedal(i)+'</td><td style="padding:10px 12px;font-weight:700">'+nome+'</td><td style="padding:10px 8px;font-family:var(--mono);text-align:center;font-weight:800">'+d.qtd+'</td><td style="padding:10px 12px;font-family:var(--mono);font-weight:800;color:var(--green);text-align:right;white-space:nowrap">'+fmtBRL(d.fat)+'</td><td style="padding:10px 12px"><div style="display:flex;align-items:center;gap:6px"><div style="flex:1;background:var(--border);border-radius:99px;height:6px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:'+cor+';border-radius:99px"></div></div><span style="font-size:11px;font-weight:700;color:'+cor+';min-width:28px">'+pct+'%</span></div></td></tr>';}).join('');
   const wrap=document.getElementById('srv-rank-vend-wrap');if(wrap)wrap.innerHTML='<div class="table-wrapper"><table><thead>'+thead+'</thead><tbody>'+tbody+'</tbody></table></div>';
 }
 
@@ -5447,6 +5451,7 @@ function prdRenderTabela(dados){
 const _gNorm = m => String(m||'').trim().toLowerCase();
 const RECEPCAO_EXCLUIR = /online|site|sem vendedor/i;
 
+let geralAnoSel    = String(new Date().getFullYear()); // ano atual selecionado por padrão
 let geralMesSel    = '';
 let geralEvolModo  = 'total';
 let geralPlanoSort = 'qtd';
@@ -5461,21 +5466,50 @@ function geralGetTodos(){
   (prdData||[]).forEach(r=>todos.push({tipo:'Produtos',valor:r.valor||0,mes:_gNorm(r.mes),ano:r.ano||'',vendedor:r.vendedor||'',plano:r.produto||''}));
   return todos;
 }
-function geralGetFiltered(todos){ if(!geralMesSel)return todos; return todos.filter(r=>_gNorm(r.mes)===_gNorm(geralMesSel)); }
-function geralFatFiltrado(mes){ const rows=fatData||[]; if(!mes)return rows; return rows.filter(r=>_gNorm(r['Mês'])===_gNorm(mes)); }
-function geralAggFiltrado(mes){ const rows=aggData||[]; if(!mes)return rows; return rows.filter(r=>_gNorm(r['Mês'])===_gNorm(mes)); }
+function geralGetFiltered(todos){
+  let r=todos;
+  if(geralAnoSel) r=r.filter(x=>String(x.ano)===geralAnoSel);
+  if(geralMesSel) r=r.filter(x=>_gNorm(x.mes)===_gNorm(geralMesSel));
+  return r;
+}
+function geralFatFiltrado(mes){
+  let rows=fatData||[];
+  if(geralAnoSel) rows=rows.filter(r=>String(r['Ano']||'').trim()===geralAnoSel);
+  if(!mes) return rows;
+  return rows.filter(r=>_gNorm(r['Mês'])===_gNorm(mes));
+}
+function geralAggFiltrado(mes){
+  let rows=aggData||[];
+  if(geralAnoSel) rows=rows.filter(r=>String(r['Ano']||r['ano']||'').trim()===geralAnoSel);
+  if(!mes) return rows;
+  return rows.filter(r=>_gNorm(r['Mês'])===_gNorm(mes));
+}
 
 function geralPopularMeses(todos){
+  // ── Botões de Ano ─────────────────────────────────────
+  const anosSet = new Set();
+  todos.forEach(r=>r.ano&&anosSet.add(String(r.ano)));
+  (fatData||[]).forEach(r=>{const a=String(r['Ano']||'').trim();if(a)anosSet.add(a);});
+  (aggData||[]).forEach(r=>{const a=String(r['Ano']||r['ano']||'').trim();if(a)anosSet.add(a);});
+  const anos=[...anosSet].filter(Boolean).sort();
+  const elA=document.getElementById('ger-anos-btns');
+  if(elA){
+    const btnA=(label,ativo,fn)=>`<button style="padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;background:${ativo?'#1e6fe8':'var(--bg-card)'};color:${ativo?'#fff':'var(--text-dark)'}" onclick="${fn}">${label}</button>`;
+    elA.innerHTML = btnA('Todos',geralAnoSel==='',"geralSetAno('')") + anos.map(a=>btnA(a,geralAnoSel===a,`geralSetAno('${a}')`)).join('');
+  }
+  // ── Botões de Mês (filtrados pelo ano selecionado) ─────
   const set=new Set();
-  todos.forEach(r=>r.mes&&set.add(r.mes));
-  (fatData||[]).forEach(r=>{const m=_gNorm(r['Mês']);if(m)set.add(m);});
-  (aggData||[]).forEach(r=>{const m=_gNorm(r['Mês']);if(m)set.add(m);});
+  todos.filter(r=>!geralAnoSel||String(r.ano)===geralAnoSel).forEach(r=>r.mes&&set.add(r.mes));
+  (fatData||[]).filter(r=>!geralAnoSel||String(r['Ano']||'').trim()===geralAnoSel).forEach(r=>{const m=_gNorm(r['Mês']);if(m)set.add(m);});
+  (aggData||[]).filter(r=>!geralAnoSel||String(r['Ano']||r['ano']||'').trim()===geralAnoSel).forEach(r=>{const m=_gNorm(r['Mês']);if(m)set.add(m);});
   const meses=[...set].sort((a,b)=>MESES_FULL_CNT.indexOf(a)-MESES_FULL_CNT.indexOf(b));
   const el=document.getElementById('ger-meses-btns'); if(!el)return;
   const btn=(label,ativo,fn)=>`<button style="padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;background:${ativo?'#1e6fe8':'var(--bg-card)'};color:${ativo?'#fff':'var(--text-dark)'}" onclick="${fn}">${label}</button>`;
   el.innerHTML = btn('Todos',!geralMesSel,"geralSetMes('')") + meses.map(m=>btn(m.charAt(0).toUpperCase()+m.slice(1,3),geralMesSel===m,`geralSetMes('${m}')`)).join('');
 }
+function geralSetAno(ano){ geralAnoSel=ano; geralMesSel=''; geralRender(); }
 function geralSetMes(mes){ geralMesSel=mes; geralRender(); }
+function geralResetFiltros(){ geralAnoSel=''; geralMesSel=''; geralRender(); }
 function geralSetEvol(modo){
   geralEvolModo=modo;
   ['total','Contratos','Serviços','Produtos'].forEach(m=>{
@@ -7111,7 +7145,7 @@ function whRender() {
     const cor = i<4?CORES[i]:'var(--text-light)';
     const bar = (a.checkins / (sorted[0]?.checkins||1)*100).toFixed(0);
     return '<tr style="border-bottom:1px solid var(--border)">'
-      +'<td style="padding:9px 10px;text-align:center;font-weight:800;color:'+cor+';font-size:13px">'+(i+1)+'</td>'
+      +'<td style="padding:9px 10px;text-align:center;font-weight:800;color:'+cor+';font-size:13px">'+geralMedal(i)+'</td>'
       +'<td style="padding:9px 14px">'
         +'<div style="font-weight:600;font-size:13px">'+a.visitante+'</div>'
         +'<div style="margin-top:3px;height:3px;border-radius:99px;background:var(--border);overflow:hidden">'
