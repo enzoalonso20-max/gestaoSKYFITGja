@@ -1007,6 +1007,7 @@
       <div class="nav-sub" onclick="switchTab('vnd-contratos',this)"><span class="nav-sub-dot">◉</span>Contratos</div>
       <div class="nav-sub" onclick="switchTab('vnd-servicos',this)"><span class="nav-sub-dot">◉</span>Serviços</div>
       <div class="nav-sub" onclick="switchTab('vnd-produtos',this)"><span class="nav-sub-dot">◉</span>Produtos</div>
+      <div class="nav-sub" onclick="switchTab('vnd-comparacao',this)"><span class="nav-sub-dot">◉</span>Comparação</div>
     </div>
 
     <!-- ══ FINANCEIRO ══ -->
@@ -1299,6 +1300,70 @@
         </div>
       </div>
     </div>
+
+    <!-- ════ ABA: COMPARAÇÃO DE PERÍODOS ════ -->
+    <div class="tab-pane" id="tab-vnd-comparacao">
+      <div class="section-header">
+        <div>
+          <div class="section-title">🔄 Comparação de Períodos</div>
+          <div class="section-sub" id="cmp-sub">Selecione dois períodos para comparar</div>
+        </div>
+        <button class="btn btn-primary" id="cmp-pdf-btn" onclick="cmpGerarPDF()" style="display:none;gap:6px">📄 Exportar PDF</button>
+      </div>
+
+      <!-- SELEÇÃO DE PERÍODOS -->
+      <div class="panel" style="margin-bottom:20px">
+        <div class="panel-body">
+          <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end">
+            <!-- Período 1 -->
+            <div>
+              <div style="font-size:10px;font-weight:800;color:#1e6fe8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📅 Período 1</div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <select id="cmp-p1-ano" onchange="cmpOnChangePeriodo()"
+                  style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-family:var(--font);font-size:13px;cursor:pointer;font-weight:600">
+                  <option value="">Ano...</option>
+                </select>
+                <select id="cmp-p1-mes" onchange="cmpOnChangePeriodo()"
+                  style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-family:var(--font);font-size:13px;cursor:pointer;font-weight:600">
+                  <option value="">Mês...</option>
+                </select>
+              </div>
+            </div>
+            <!-- X -->
+            <div style="font-size:24px;font-weight:900;color:var(--text-light);padding-bottom:6px">×</div>
+            <!-- Período 2 -->
+            <div>
+              <div style="font-size:10px;font-weight:800;color:#7c3aed;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">📅 Período 2</div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <select id="cmp-p2-ano" onchange="cmpOnChangePeriodo()"
+                  style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-family:var(--font);font-size:13px;cursor:pointer;font-weight:600">
+                  <option value="">Ano...</option>
+                </select>
+                <select id="cmp-p2-mes" onchange="cmpOnChangePeriodo()"
+                  style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-family:var(--font);font-size:13px;cursor:pointer;font-weight:600">
+                  <option value="">Mês...</option>
+                </select>
+              </div>
+            </div>
+            <!-- Botão -->
+            <button class="btn btn-primary" onclick="cmpExecutar()" style="padding:10px 20px;font-size:13px">
+              🔍 Comparar períodos
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div id="cmp-empty" class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">🔄</div>
+        <div class="fin-ph-title">Comparação de Períodos</div>
+        <div class="fin-ph-desc">Selecione dois períodos e clique em <strong>Comparar períodos</strong> para ver a análise completa.</div>
+      </div>
+
+      <!-- RESULTADO (preenchido via JS) -->
+      <div id="cmp-resultado" style="display:none"></div>
+    </div>
+
     <!-- ════ ABA: FIN-FATURAMENTO ════ -->
     <div class="tab-pane" id="tab-fin-faturamento">
       <div class="section-header">
@@ -2897,6 +2962,7 @@ const tabMeta = {
   'vnd-contratos':  { title:'Contratos Vendidos',     sub:'Analise de contratos - VD_Contratos' },
   'vnd-servicos':   { title:'Servicos Vendidos',       sub:'Diarias e servicos avulsos - VD_Servicos' },
   'vnd-produtos':   { title:'Produtos Vendidos',       sub:'Suplementos e acessorios - VD_Produtos' },
+  'vnd-comparacao': { title:'Comparacao de Periodos',   sub:'Compare dois periodos — Vendas · Faturamento · Vendedoras · Planos · Check-ins' },
   'fin-detalhes':       { title:'Vendas Detalhadas',       sub:'Raio-X por categoria, plano e colaborador' },
   'fin-faturamento':    { title:'Receita',                 sub:'Faturamento oficial — EVO · WellHub · TotalPass' },
   'fin-despesas':       { title:'Despesas',                sub:'Lançamentos reais via Google Sheets' },
@@ -2909,7 +2975,7 @@ const tabMeta = {
 };
 
 // Grupo financeiro aberto por padrão ao clicar em qualquer sub-aba financeira
-const VND_TABS   = ['vnd-geral','vnd-contratos','vnd-servicos','vnd-produtos'];
+const VND_TABS   = ['vnd-geral','vnd-contratos','vnd-servicos','vnd-produtos','vnd-comparacao'];
 const FIN_TABS   = ['fin-visao','fin-faturamento','fin-despesas','fin-lucro','fin-caixa','fin-pagamentos'];
 const AGR_TABS   = ['agregadores','wh-detalhado'];
 const CHAM_TABS  = ['cham-expirados','cham-inadimplencia','cham-oportunidades'];
@@ -2954,6 +3020,7 @@ function switchTab(tab, el) {
     if(tab==='vnd-contratos'&&!cntLoaded)    loadContratos(false);
     if(tab==='vnd-servicos' &&!srvLoaded)    loadServicos(false);
     if(tab==='vnd-produtos' &&!prdLoaded)    loadProdutos(false);
+    if(tab==='vnd-comparacao')               cmpInit();
 
   } else if (FIN_TABS.includes(tab)) {
     const g=document.getElementById('fin-group'), c=document.getElementById('fin-chevron');
@@ -5245,8 +5312,6 @@ function cntRenderOrigem(dados){
   const total=vals.reduce((s,v)=>s+v,0);
   cntChartDonut=new Chart(canvas,{type:'doughnut',data:{labels:origens,datasets:[{data:vals,backgroundColor:['#7c3aedcc','#22c55ecc','#ec4899cc','#f59e0bcc'],borderWidth:2,borderColor:'#fff',hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},padding:10,boxWidth:10}},tooltip:{callbacks:{label:ctx=>{const pct=total?(ctx.raw/total*100).toFixed(1):0;return ' '+ctx.label+': '+fmtBRL(ctx.raw)+' ('+pct+'%)';}}}}}});
 }
-
-function geralMedal(i){ return ['🥇','🥈','🥉'][i]||(i+1); }
 function cntRenderRanking(dados){
   const vMap={};
   dados.forEach(r=>{if(!vMap[r.vendedor])vMap[r.vendedor]={qtd:0,fat:0,dias:new Set()};vMap[r.vendedor].qtd++;vMap[r.vendedor].fat+=r.valor;if(r.dt)vMap[r.vendedor].dias.add(r.dt.toISOString().slice(0,10));});
@@ -5451,7 +5516,7 @@ function prdRenderTabela(dados){
 const _gNorm = m => String(m||'').trim().toLowerCase();
 const RECEPCAO_EXCLUIR = /online|site|sem vendedor/i;
 
-let geralAnoSel    = String(new Date().getFullYear()); // ano atual selecionado por padrão
+let geralAnoSel    = String(new Date().getFullYear());
 let geralMesSel    = '';
 let geralEvolModo  = 'total';
 let geralPlanoSort = 'qtd';
@@ -5486,8 +5551,7 @@ function geralAggFiltrado(mes){
 }
 
 function geralPopularMeses(todos){
-  // ── Botões de Ano ─────────────────────────────────────
-  const anosSet = new Set();
+  const anosSet=new Set();
   todos.forEach(r=>r.ano&&anosSet.add(String(r.ano)));
   (fatData||[]).forEach(r=>{const a=String(r['Ano']||'').trim();if(a)anosSet.add(a);});
   (aggData||[]).forEach(r=>{const a=String(r['Ano']||r['ano']||'').trim();if(a)anosSet.add(a);});
@@ -5495,9 +5559,8 @@ function geralPopularMeses(todos){
   const elA=document.getElementById('ger-anos-btns');
   if(elA){
     const btnA=(label,ativo,fn)=>`<button style="padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;background:${ativo?'#1e6fe8':'var(--bg-card)'};color:${ativo?'#fff':'var(--text-dark)'}" onclick="${fn}">${label}</button>`;
-    elA.innerHTML = btnA('Todos',geralAnoSel==='',"geralSetAno('')") + anos.map(a=>btnA(a,geralAnoSel===a,`geralSetAno('${a}')`)).join('');
+    elA.innerHTML=btnA('Todos',geralAnoSel==='',"geralSetAno('')")+anos.map(a=>btnA(a,geralAnoSel===a,`geralSetAno('${a}')`)).join('');
   }
-  // ── Botões de Mês (filtrados pelo ano selecionado) ─────
   const set=new Set();
   todos.filter(r=>!geralAnoSel||String(r.ano)===geralAnoSel).forEach(r=>r.mes&&set.add(r.mes));
   (fatData||[]).filter(r=>!geralAnoSel||String(r['Ano']||'').trim()===geralAnoSel).forEach(r=>{const m=_gNorm(r['Mês']);if(m)set.add(m);});
@@ -5505,7 +5568,7 @@ function geralPopularMeses(todos){
   const meses=[...set].sort((a,b)=>MESES_FULL_CNT.indexOf(a)-MESES_FULL_CNT.indexOf(b));
   const el=document.getElementById('ger-meses-btns'); if(!el)return;
   const btn=(label,ativo,fn)=>`<button style="padding:5px 11px;border-radius:7px;border:1px solid var(--border);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;background:${ativo?'#1e6fe8':'var(--bg-card)'};color:${ativo?'#fff':'var(--text-dark)'}" onclick="${fn}">${label}</button>`;
-  el.innerHTML = btn('Todos',!geralMesSel,"geralSetMes('')") + meses.map(m=>btn(m.charAt(0).toUpperCase()+m.slice(1,3),geralMesSel===m,`geralSetMes('${m}')`)).join('');
+  el.innerHTML=btn('Todos',!geralMesSel,"geralSetMes('')") + meses.map(m=>btn(m.charAt(0).toUpperCase()+m.slice(1,3),geralMesSel===m,`geralSetMes('${m}')`)).join('');
 }
 function geralSetAno(ano){ geralAnoSel=ano; geralMesSel=''; geralRender(); }
 function geralSetMes(mes){ geralMesSel=mes; geralRender(); }
@@ -5894,6 +5957,582 @@ function geralRenderCheckins(aggF){
     </div>`;
   }).join('');
 }
+
+
+function geralMedal(i){ return ['🥇','🥈','🥉'][i]||(i+1); }
+
+// ══════════════════════════════════════════════════════════════
+//  COMPARAÇÃO DE PERÍODOS — Aba vnd-comparacao
+//  Reutiliza: geralGetTodos, geralFatFiltrado, geralAggFiltrado
+//             fmtBRL, RECEPCAO_EXCLUIR, MESES_FULL_CNT, geralMedal
+// ══════════════════════════════════════════════════════════════
+
+// ── Init (chamado quando a aba é aberta) ──────────────────────
+function cmpInit() {
+  cmpPopularAnos();
+}
+
+function cmpPopularAnos() {
+  const todos = geralGetTodos();
+  const set = new Set();
+  todos.forEach(r => r.ano && set.add(String(r.ano)));
+  (fatData||[]).forEach(r => { const a=String(r['Ano']||'').trim(); if(a) set.add(a); });
+  (aggData||[]).forEach(r => { const a=String(r['Ano']||r['ano']||'').trim(); if(a) set.add(a); });
+  const anos = [...set].filter(Boolean).sort();
+
+  ['cmp-p1-ano','cmp-p2-ano'].forEach(id => {
+    const sel = document.getElementById(id); if(!sel) return;
+    sel.innerHTML = '<option value="">Ano...</option>' +
+      anos.map(a => `<option value="${a}">${a}</option>`).join('');
+  });
+  cmpPopularMesesPeriodo('cmp-p1-ano','cmp-p1-mes');
+  cmpPopularMesesPeriodo('cmp-p2-ano','cmp-p2-mes');
+}
+
+function cmpPopularMesesPeriodo(anoId, mesId) {
+  const ano  = document.getElementById(anoId)?.value || '';
+  const sel  = document.getElementById(mesId); if(!sel) return;
+  const todos = geralGetTodos();
+  const set = new Set();
+  todos.filter(r => !ano || String(r.ano)===ano).forEach(r => r.mes && set.add(r.mes));
+  (fatData||[]).filter(r => !ano || String(r['Ano']||'').trim()===ano)
+    .forEach(r => { const m=_gNorm(r['Mês']); if(m) set.add(m); });
+  const meses = [...set].sort((a,b) => MESES_FULL_CNT.indexOf(a)-MESES_FULL_CNT.indexOf(b));
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Mês...</option>' +
+    meses.map(m => `<option value="${m}" ${m===cur?'selected':''}>${m.charAt(0).toUpperCase()+m.slice(1)}</option>`).join('');
+}
+
+function cmpOnChangePeriodo() {
+  // Atualiza meses disponíveis ao trocar o ano
+  const anoP1 = document.getElementById('cmp-p1-ano')?.value || '';
+  const anoP2 = document.getElementById('cmp-p2-ano')?.value || '';
+  if(document.activeElement?.id === 'cmp-p1-ano') cmpPopularMesesPeriodo('cmp-p1-ano','cmp-p1-mes');
+  if(document.activeElement?.id === 'cmp-p2-ano') cmpPopularMesesPeriodo('cmp-p2-ano','cmp-p2-mes');
+}
+
+// ── Extrai todos os dados de um período (ano + mes) ───────────
+function cmpGetDadosPeriodo(ano, mes) {
+  const pv = v => typeof v==='number'?v:parseFloat(String(v||'0').replace(/\./g,'').replace(',','.'))||0;
+  const todos = geralGetTodos().filter(r =>
+    (!ano || String(r.ano)===ano) && (!mes || _gNorm(r.mes)===_gNorm(mes))
+  );
+  const fatRows = (fatData||[]).filter(r =>
+    (!ano || String(r['Ano']||'').trim()===ano) &&
+    (!mes || _gNorm(r['Mês'])===_gNorm(mes))
+  );
+  const aggRows = (aggData||[]).filter(r =>
+    (!ano || String(r['Ano']||r['ano']||'').trim()===ano) &&
+    (!mes || _gNorm(r['Mês'])===_gNorm(mes))
+  );
+
+  const volTotal = todos.reduce((s,r)=>s+r.valor,0);
+  const volCnt   = todos.filter(r=>r.tipo==='Contratos').reduce((s,r)=>s+r.valor,0);
+  const volSrv   = todos.filter(r=>r.tipo==='Serviços').reduce((s,r)=>s+r.valor,0);
+  const volPrd   = todos.filter(r=>r.tipo==='Produtos').reduce((s,r)=>s+r.valor,0);
+  const qtdTotal = todos.length;
+  const qtdCnt   = todos.filter(r=>r.tipo==='Contratos').length;
+  const qtdSrv   = todos.filter(r=>r.tipo==='Serviços').length;
+  const qtdPrd   = todos.filter(r=>r.tipo==='Produtos').length;
+  const ticketM  = qtdTotal ? volTotal / qtdTotal : 0;
+
+  const fatTotal = fatRows.reduce((s,r)=>s+pv(r['Faturamento']||r['Valor']||0),0);
+  const fatEVO   = fatRows.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase()==='evo'?pv(r['Faturamento']||r['Valor']||0):0),0);
+  const fatWH    = fatRows.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase().includes('well')?pv(r['Faturamento']||r['Valor']||0):0),0);
+  const fatTP    = fatRows.reduce((s,r)=>s+(String(r['Sistema']||'').toLowerCase().includes('total')?pv(r['Faturamento']||r['Valor']||0):0),0);
+
+  const vendMap = {};
+  todos.filter(r=>r.vendedor&&!RECEPCAO_EXCLUIR.test(r.vendedor)).forEach(r=>{
+    if(!vendMap[r.vendedor]) vendMap[r.vendedor]={fat:0,cnt:0,srv:0,prd:0};
+    vendMap[r.vendedor].fat+=r.valor;
+    if(r.tipo==='Contratos')vendMap[r.vendedor].cnt+=r.valor;
+    if(r.tipo==='Serviços') vendMap[r.vendedor].srv+=r.valor;
+    if(r.tipo==='Produtos') vendMap[r.vendedor].prd+=r.valor;
+  });
+
+  const planosMap = {};
+  todos.filter(r=>r.tipo==='Contratos').forEach(r=>{
+    const k=(r.plano||'').replace(/\s*\(online\)\s*/i,'').trim(); if(!k) return;
+    if(!planosMap[k]) planosMap[k]={qtd:0,fat:0};
+    planosMap[k].qtd++; planosMap[k].fat+=r.valor;
+  });
+
+  const ckMap = {};
+  aggRows.forEach(r=>{
+    const ag=String(r['Agregador']||r['Sistema']||'').trim(); if(!ag) return;
+    if(!ckMap[ag]) ckMap[ag]={ck:0,fat:0};
+    ckMap[ag].ck+=parseInt(r['Check-ins'])||0;
+    ckMap[ag].fat+=pv(r['Faturamento']||0);
+  });
+  const ckTotal = Object.values(ckMap).reduce((s,v)=>s+v.ck,0);
+
+  return {volTotal,volCnt,volSrv,volPrd,qtdTotal,qtdCnt,qtdSrv,qtdPrd,ticketM,
+    fatTotal,fatEVO,fatWH,fatTP,vendMap,planosMap,ckMap,ckTotal};
+}
+
+// ── Helpers visuais ──────────────────────────────────────────
+const _pv2 = (b,a) => {
+  // Variação = (P2 - P1) / P1 * 100
+  if(!a) return b>0 ? {pct:'+∞', pos:true, raw:Infinity} : {pct:'—', pos:true, raw:0};
+  const raw=(b-a)/a*100;
+  return {pct:(raw>=0?'+':'')+raw.toFixed(1)+'%', pos:raw>=0, raw};
+};
+
+function _cmpBadgeEl(v, big=false) {
+  const sz = big ? '14px' : '11px';
+  const pad = big ? '4px 10px' : '2px 7px';
+  return `<span style="font-size:${sz};font-weight:800;padding:${pad};border-radius:6px;white-space:nowrap;
+    background:${v.pos?'rgba(34,197,94,.15)':'rgba(239,68,68,.15)'};
+    color:${v.pos?'#16a34a':'#dc2626'}">${v.pos?'▲':'▼'} ${v.pct}</span>`;
+}
+
+function _cmpLinha(label, v1, v2, fmtFn, icon='') {
+  const fn=fmtFn||fmtBRL, vr=_pv2(v2,v1);
+  const m1=v1>=v2, m2=v2>=v1;
+  return `<tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:9px 14px;font-size:13px;font-weight:600">${icon} ${label}</td>
+    <td style="padding:9px 14px;text-align:right;font-family:var(--mono);font-weight:${m1?'800':'500'};color:${m1?'#1e6fe8':'var(--text-dark)'}">${fn(v1)}</td>
+    <td style="padding:9px 14px;text-align:right;font-family:var(--mono);font-weight:${m2?'800':'500'};color:${m2?'#7c3aed':'var(--text-dark)'}">${fn(v2)}</td>
+    <td style="padding:9px 14px;text-align:center">${_cmpBadgeEl(vr)}</td>
+  </tr>`;
+}
+
+function _cmpThead(l1,l2) {
+  return `<thead><tr style="background:var(--bg)">
+    <th style="padding:9px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.04em">Indicador</th>
+    <th style="padding:9px 14px;text-align:right;font-size:11px;font-weight:700;color:#1e6fe8;text-transform:uppercase">${l1}</th>
+    <th style="padding:9px 14px;text-align:right;font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase">${l2}</th>
+    <th style="padding:9px 14px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase">VARIAÇÃO P2×P1</th>
+  </tr></thead>`;
+}
+
+// ── Executa a comparação ──────────────────────────────────────
+function cmpExecutar() {
+  const ano1 = document.getElementById('cmp-p1-ano')?.value||'';
+  const mes1 = document.getElementById('cmp-p1-mes')?.value||'';
+  const ano2 = document.getElementById('cmp-p2-ano')?.value||'';
+  const mes2 = document.getElementById('cmp-p2-mes')?.value||'';
+
+  if(!ano1&&!mes1&&!ano2&&!mes2) { toast('Selecione pelo menos um período','⚠️'); return; }
+
+  const l1 = [ano1, mes1?mes1.charAt(0).toUpperCase()+mes1.slice(1):''].filter(Boolean).join('/') || 'Período 1';
+  const l2 = [ano2, mes2?mes2.charAt(0).toUpperCase()+mes2.slice(1):''].filter(Boolean).join('/') || 'Período 2';
+
+  const d1 = cmpGetDadosPeriodo(ano1,mes1);
+  const d2 = cmpGetDadosPeriodo(ano2,mes2);
+  const num = v => Number(v).toLocaleString('pt-BR');
+
+  // ── Banner ────────────────────────────────────────────────
+  const melhor = d1.volTotal>=d2.volTotal?l1:l2;
+  const difV   = _pv2(d2.volTotal,d1.volTotal);
+
+  // ── KPIs superiores ───────────────────────────────────────
+  const kpis = [
+    {icon:'🛒',label:'Volume Total',  v1:d1.volTotal, v2:d2.volTotal, cor:'#f59e0b'},
+    {icon:'📑',label:'Contratos',     v1:d1.volCnt,   v2:d2.volCnt,   cor:'#7c3aed'},
+    {icon:'🛎️',label:'Serviços',     v1:d1.volSrv,   v2:d2.volSrv,   cor:'#1e6fe8'},
+    {icon:'📦',label:'Produtos',      v1:d1.volPrd,   v2:d2.volPrd,   cor:'#22c55e'},
+    {icon:'💵',label:'Faturamento',   v1:d1.fatTotal, v2:d2.fatTotal, cor:'#16a34a'},
+    {icon:'🎟️',label:'Ticket Médio',v1:d1.ticketM,  v2:d2.ticketM,  cor:'#ec4899'},
+  ];
+
+  const kpiCards = kpis.map(k => {
+    const vr = _pv2(k.v2,k.v1);
+    return `<div class="kpi-card" style="border-top:3px solid ${k.cor}">
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;justify-content:center;margin-top:4px">
+        <span style="font-family:var(--mono);font-size:13px;color:#1e6fe8;font-weight:700">${fmtBRL(k.v1)}</span>
+        <span style="font-size:10px;color:var(--text-light)">→</span>
+        <span style="font-family:var(--mono);font-size:13px;color:#7c3aed;font-weight:700">${fmtBRL(k.v2)}</span>
+      </div>
+      <div style="margin-top:6px">${_cmpBadgeEl(vr,true)}</div>
+    </div>`;
+  }).join('');
+
+  // ── Tabela Volume Detalhado ────────────────────────────────
+  const secVolume = `
+  <div class="panel" style="margin-bottom:16px">
+    <div class="panel-header"><span class="panel-title">🛒 Volume de Vendas</span></div>
+    <div class="panel-body" style="padding:0"><table style="width:100%;border-collapse:collapse;font-size:13px">
+      ${_cmpThead(l1,l2)}<tbody>
+        ${_cmpLinha('Total Geral',     d1.volTotal, d2.volTotal, fmtBRL, '📊')}
+        ${_cmpLinha('Contratos (R$)',  d1.volCnt,   d2.volCnt,   fmtBRL, '📑')}
+        ${_cmpLinha('Serviços (R$)',   d1.volSrv,   d2.volSrv,   fmtBRL, '🛎️')}
+        ${_cmpLinha('Produtos (R$)',   d1.volPrd,   d2.volPrd,   fmtBRL, '📦')}
+        ${_cmpLinha('Qtd Contratos',   d1.qtdCnt,   d2.qtdCnt,   num,    '🔢')}
+        ${_cmpLinha('Qtd Serviços',    d1.qtdSrv,   d2.qtdSrv,   num,    '🔢')}
+        ${_cmpLinha('Qtd Produtos',    d1.qtdPrd,   d2.qtdPrd,   num,    '🔢')}
+        ${_cmpLinha('Ticket Médio',    d1.ticketM,  d2.ticketM,  fmtBRL, '🎟️')}
+      </tbody></table></div></div>`;
+
+  // ── Faturamento ───────────────────────────────────────────
+  const secFat = `
+  <div class="panel" style="margin-bottom:16px">
+    <div class="panel-header"><span class="panel-title">💳 Faturamento Real</span></div>
+    <div class="panel-body" style="padding:0"><table style="width:100%;border-collapse:collapse;font-size:13px">
+      ${_cmpThead(l1,l2)}<tbody>
+        ${_cmpLinha('Total',     d1.fatTotal, d2.fatTotal, fmtBRL, '💰')}
+        ${_cmpLinha('EVO',       d1.fatEVO,   d2.fatEVO,   fmtBRL, '🟣')}
+        ${_cmpLinha('WellHub',   d1.fatWH,    d2.fatWH,    fmtBRL, '🩷')}
+        ${_cmpLinha('TotalPass', d1.fatTP,    d2.fatTP,    fmtBRL, '🟢')}
+      </tbody></table></div></div>`;
+
+  // ── Vendedoras ────────────────────────────────────────────
+  const allVend = new Set([...Object.keys(d1.vendMap),...Object.keys(d2.vendMap)]);
+  const rankP1  = Object.entries(d1.vendMap).sort((a,b)=>b[1].fat-a[1].fat);
+  const rankP2  = Object.entries(d2.vendMap).sort((a,b)=>b[1].fat-a[1].fat);
+  const posP1   = Object.fromEntries(rankP1.map(([n],i)=>[n,i]));
+  const posP2   = Object.fromEntries(rankP2.map(([n],i)=>[n,i]));
+
+  const linhasVend = [...allVend]
+    .map(n=>({n, f1:d1.vendMap[n]?.fat||0, f2:d2.vendMap[n]?.fat||0,
+              p1:posP1[n]??99, p2:posP2[n]??99}))
+    .sort((a,b)=>Math.max(a.f1,a.f2)<Math.max(b.f1,b.f2)?1:-1);
+
+  const secVend = `
+  <div class="panel" style="margin-bottom:16px">
+    <div class="panel-header"><span class="panel-title">🏅 Comparação de Vendedoras</span></div>
+    <div class="panel-body" style="padding:0"><table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="background:var(--bg)">
+        <th style="padding:9px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase">Vendedora</th>
+        <th style="padding:9px 14px;text-align:right;font-size:11px;font-weight:700;color:#1e6fe8;text-transform:uppercase">${l1}</th>
+        <th style="padding:9px 14px;text-align:right;font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase">${l2}</th>
+        <th style="padding:9px 14px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase">VARIAÇÃO P2×P1</th>
+        <th style="padding:9px 14px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase">Tendência</th>
+      </tr></thead>
+      <tbody>${linhasVend.map(v=>{
+        const vr=_pv2(v.f2,v.f1);
+        const m1=v.f1>=v.f2, m2=v.f2>=v.f1;
+        const subiu=v.p2<v.p1&&v.f2>0, caiu=v.p2>v.p1&&v.f1>0;
+        const trend=v.f2===0&&v.f1>0?'⚠️ Ausente P2':v.f1===0&&v.f2>0?'🆕 Estreou P2':
+          subiu?'🟢 Subiu':caiu?'🔴 Caiu':'⚪ Estável';
+        const tc=subiu?'#16a34a':caiu?'#dc2626':'var(--text-light)';
+        return `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:9px 14px;font-weight:700">${v.n}</td>
+          <td style="padding:9px 14px;text-align:right">
+            <div style="font-family:var(--mono);font-weight:${m1?'800':'500'};color:${m1?'#1e6fe8':'var(--text-dark)'}">${fmtBRL(v.f1)}</div>
+            <div style="font-size:10px;color:var(--text-light)">${geralMedal(v.p1)} Rank</div>
+          </td>
+          <td style="padding:9px 14px;text-align:right">
+            <div style="font-family:var(--mono);font-weight:${m2?'800':'500'};color:${m2?'#7c3aed':'var(--text-dark)'}">${fmtBRL(v.f2)}</div>
+            <div style="font-size:10px;color:var(--text-light)">${geralMedal(v.p2)} Rank</div>
+          </td>
+          <td style="padding:9px 14px;text-align:center">${_cmpBadgeEl(vr)}</td>
+          <td style="padding:9px 14px;text-align:center;font-size:12px;font-weight:700;color:${tc}">${trend}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div></div>`;
+
+  // ── Planos ────────────────────────────────────────────────
+  const allPlanos = new Set([...Object.keys(d1.planosMap),...Object.keys(d2.planosMap)]);
+  const linhasPlanos = [...allPlanos]
+    .map(p=>({p, q1:d1.planosMap[p]?.qtd||0, f1:d1.planosMap[p]?.fat||0,
+              q2:d2.planosMap[p]?.qtd||0, f2:d2.planosMap[p]?.fat||0}))
+    .sort((a,b)=>Math.max(a.f1,a.f2)<Math.max(b.f1,b.f2)?1:-1);
+
+  const secPlanos = `
+  <div class="panel" style="margin-bottom:16px">
+    <div class="panel-header"><span class="panel-title">📦 Comparação de Planos</span></div>
+    <div class="panel-body" style="padding:0"><table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="background:var(--bg)">
+          <th rowspan="2" style="padding:9px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase">Plano</th>
+          <th colspan="2" style="padding:9px 14px;text-align:center;font-size:11px;font-weight:700;color:#1e6fe8;text-transform:uppercase;border-bottom:1px solid var(--border)">${l1}</th>
+          <th colspan="2" style="padding:9px 14px;text-align:center;font-size:11px;font-weight:700;color:#7c3aed;text-transform:uppercase;border-bottom:1px solid var(--border)">${l2}</th>
+          <th rowspan="2" style="padding:9px 14px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase">VAR. P2×P1</th>
+        </tr>
+        <tr style="background:var(--bg)">
+          <th style="padding:5px 14px;text-align:center;font-size:10px;color:var(--text-light)">Qtd</th>
+          <th style="padding:5px 14px;text-align:right;font-size:10px;color:var(--text-light)">Valor</th>
+          <th style="padding:5px 14px;text-align:center;font-size:10px;color:var(--text-light)">Qtd</th>
+          <th style="padding:5px 14px;text-align:right;font-size:10px;color:var(--text-light)">Valor</th>
+        </tr>
+      </thead>
+      <tbody>${linhasPlanos.map((p,i)=>{
+        const vrq=_pv2(p.q2,p.q1), m1=p.f1>=p.f2;
+        return `<tr style="border-bottom:1px solid var(--border);background:${i%2?'var(--bg)':'transparent'}">
+          <td style="padding:8px 14px;font-size:12px;font-weight:600">${p.p.length>36?p.p.slice(0,34)+'…':p.p}</td>
+          <td style="padding:8px 10px;text-align:center;font-weight:700;color:${m1?'#1e6fe8':'var(--text-mid)'}">${p.q1}</td>
+          <td style="padding:8px 14px;text-align:right;font-family:var(--mono);font-size:11px;color:${m1?'#1e6fe8':'var(--text-mid)'}">${fmtBRL(p.f1)}</td>
+          <td style="padding:8px 10px;text-align:center;font-weight:700;color:${!m1?'#7c3aed':'var(--text-mid)'}">${p.q2}</td>
+          <td style="padding:8px 14px;text-align:right;font-family:var(--mono);font-size:11px;color:${!m1?'#7c3aed':'var(--text-mid)'}">${fmtBRL(p.f2)}</td>
+          <td style="padding:8px 14px;text-align:center">${_cmpBadgeEl(vrq)}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div></div>`;
+
+  // ── Check-ins ─────────────────────────────────────────────
+  const allAgg = new Set([...Object.keys(d1.ckMap),...Object.keys(d2.ckMap)]);
+  const COR_A = {TotalPass:'#22c55e',Wellhub:'#ec4899',WellHub:'#ec4899',EVO:'#7c3aed'};
+  const linhasAgg = [...allAgg]
+    .map(ag=>({ag, ck1:d1.ckMap[ag]?.ck||0, f1:d1.ckMap[ag]?.fat||0,
+               ck2:d2.ckMap[ag]?.ck||0, f2:d2.ckMap[ag]?.fat||0}))
+    .sort((a,b)=>Math.max(a.ck1,a.ck2)<Math.max(b.ck1,b.ck2)?1:-1);
+
+  const secAgg = allAgg.size ? `
+  <div class="panel" style="margin-bottom:16px">
+    <div class="panel-header"><span class="panel-title">🏃 Check-ins por Agregador</span></div>
+    <div class="panel-body" style="padding:0"><table style="width:100%;border-collapse:collapse;font-size:13px">
+      ${_cmpThead(l1,l2).replace('Indicador','Agregador')}<tbody>
+        ${_cmpLinha('Total Check-ins',d1.ckTotal,d2.ckTotal,v=>Number(v).toLocaleString('pt-BR'),'📊')}
+        ${linhasAgg.map(a=>{
+          const vr=_pv2(a.ck2,a.ck1), cor=COR_A[a.ag]||'var(--text-mid)', m1=a.ck1>=a.ck2;
+          return `<tr style="border-bottom:1px solid var(--border)">
+            <td style="padding:9px 14px;font-weight:700;color:${cor}">🤝 ${a.ag}</td>
+            <td style="padding:9px 14px;text-align:right;font-family:var(--mono);font-weight:${m1?'800':'500'}">${a.ck1.toLocaleString('pt-BR')}</td>
+            <td style="padding:9px 14px;text-align:right;font-family:var(--mono);font-weight:${!m1?'800':'500'}">${a.ck2.toLocaleString('pt-BR')}</td>
+            <td style="padding:9px 14px;text-align:center">${_cmpBadgeEl(vr)}</td>
+          </tr>`;
+        }).join('')}
+      </tbody></table></div></div>` : '';
+
+  // ── Montar resultado ──────────────────────────────────────
+  document.getElementById('cmp-empty').style.display  = 'none';
+  document.getElementById('cmp-resultado').style.display = 'block';
+  document.getElementById('cmp-pdf-btn').style.display = 'inline-flex';
+  document.getElementById('cmp-sub').textContent = `${l1} × ${l2}`;
+
+  // Guardar label para o PDF
+  window._cmpL1=l1; window._cmpL2=l2;
+  window._cmpD1=d1; window._cmpD2=d2;
+
+  document.getElementById('cmp-resultado').innerHTML = `
+    <!-- Banner resumo -->
+    <div style="background:linear-gradient(135deg,rgba(30,111,232,.1),rgba(124,58,237,.08));
+      border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;justify-content:space-between;
+      align-items:center;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase;letter-spacing:.05em">
+          Melhor período em volume de vendas</div>
+        <div style="font-size:20px;font-weight:900;color:var(--accent);margin-top:4px">🏆 ${melhor}</div>
+        <div style="font-size:12px;color:var(--text-mid);margin-top:2px">${l1} × ${l2}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--text-light)">Variação P2×P1 (volume)</div>
+        <div style="font-size:28px;font-weight:900;color:${difV.pos?'#16a34a':'#dc2626'}">${difV.pct}</div>
+      </div>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="cards-grid" style="margin-bottom:20px">${kpiCards}</div>
+
+    ${secVolume}${secFat}${secVend}${secPlanos}${secAgg}`;
+}
+
+// ── PDF Executivo ─────────────────────────────────────────────
+function cmpGerarPDF() {
+  const l1=window._cmpL1||'Período 1', l2=window._cmpL2||'Período 2';
+  const d1=window._cmpD1, d2=window._cmpD2;
+  if(!d1||!d2){toast('Execute a comparação primeiro','⚠️'); return;}
+
+  const hoje = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const num  = v => Number(v).toLocaleString('pt-BR');
+  const pc   = (b,a) => { if(!a) return b>0?'+∞%':'—'; const r=(b-a)/a*100; return (r>=0?'+':'')+r.toFixed(1)+'%'; };
+  const cPos = (b,a) => !a?b>0:b>=a;
+
+  // Tabela genérica para PDF
+  const pdfTabela = (rows) => `
+    <table style="width:100%;border-collapse:collapse;font-size:11pt;margin-bottom:16px">
+      <thead>
+        <tr style="background:#1B3A6B;color:#fff">
+          <th style="padding:6px 10px;text-align:left;font-weight:700">Indicador</th>
+          <th style="padding:6px 10px;text-align:right;font-weight:700">${l1}</th>
+          <th style="padding:6px 10px;text-align:right;font-weight:700">${l2}</th>
+          <th style="padding:6px 10px;text-align:center;font-weight:700">VAR. P2×P1</th>
+        </tr>
+      </thead>
+      <tbody>${rows.map((r,i)=>{
+        const v=pc(r.v2,r.v1), pos=cPos(r.v2,r.v1), bg=i%2?'#F4F8FC':'#fff';
+        return `<tr style="background:${bg};border-bottom:1px solid #D6E4F0">
+          <td style="padding:7px 10px;font-weight:600">${r.icon||''} ${r.label}</td>
+          <td style="padding:7px 10px;text-align:right;font-family:monospace">${r.fmt?r.fmt(r.v1):fmtBRL(r.v1)}</td>
+          <td style="padding:7px 10px;text-align:right;font-family:monospace">${r.fmt?r.fmt(r.v2):fmtBRL(r.v2)}</td>
+          <td style="padding:7px 10px;text-align:center;font-weight:800;color:${pos?'#16a34a':'#dc2626'}">${v}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+
+  // Seção vendedoras para PDF
+  const allVend2 = new Set([...Object.keys(d1.vendMap),...Object.keys(d2.vendMap)]);
+  const rP1=Object.entries(d1.vendMap).sort((a,b)=>b[1].fat-a[1].fat);
+  const rP2=Object.entries(d2.vendMap).sort((a,b)=>b[1].fat-a[1].fat);
+  const pp1=Object.fromEntries(rP1.map(([n],i)=>[n,i]));
+  const pp2=Object.fromEntries(rP2.map(([n],i)=>[n,i]));
+  const vendsRows=[...allVend2].map(n=>({n,f1:d1.vendMap[n]?.fat||0,f2:d2.vendMap[n]?.fat||0,
+    p1:pp1[n]??99,p2:pp2[n]??99})).sort((a,b)=>Math.max(a.f1,a.f2)<Math.max(b.f1,b.f2)?1:-1);
+
+  const pdfVend = `
+    <table style="width:100%;border-collapse:collapse;font-size:10.5pt;margin-bottom:16px">
+      <thead><tr style="background:#1B3A6B;color:#fff">
+        <th style="padding:6px 10px;text-align:left">Vendedora</th>
+        <th style="padding:6px 10px;text-align:right">${l1}</th>
+        <th style="padding:6px 10px;text-align:center">Rank P1</th>
+        <th style="padding:6px 10px;text-align:right">${l2}</th>
+        <th style="padding:6px 10px;text-align:center">Rank P2</th>
+        <th style="padding:6px 10px;text-align:center">VAR. P2×P1</th>
+      </tr></thead>
+      <tbody>${vendsRows.map((v,i)=>{
+        const vr=pc(v.f2,v.f1),pos=cPos(v.f2,v.f1),bg=i%2?'#F4F8FC':'#fff';
+        return `<tr style="background:${bg};border-bottom:1px solid #D6E4F0">
+          <td style="padding:6px 10px;font-weight:700">${v.n}</td>
+          <td style="padding:6px 10px;text-align:right;font-family:monospace">${fmtBRL(v.f1)}</td>
+          <td style="padding:6px 10px;text-align:center">${geralMedal(v.p1)}</td>
+          <td style="padding:6px 10px;text-align:right;font-family:monospace">${fmtBRL(v.f2)}</td>
+          <td style="padding:6px 10px;text-align:center">${geralMedal(v.p2)}</td>
+          <td style="padding:6px 10px;text-align:center;font-weight:800;color:${pos?'#16a34a':'#dc2626'}">${vr}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+
+  // Planos PDF (top 10)
+  const planosArr=[...new Set([...Object.keys(d1.planosMap),...Object.keys(d2.planosMap)])]
+    .map(p=>({p,q1:d1.planosMap[p]?.qtd||0,f1:d1.planosMap[p]?.fat||0,
+              q2:d2.planosMap[p]?.qtd||0,f2:d2.planosMap[p]?.fat||0}))
+    .sort((a,b)=>Math.max(a.f1,a.f2)<Math.max(b.f1,b.f2)?1:-1).slice(0,10);
+
+  const pdfPlanos = `
+    <table style="width:100%;border-collapse:collapse;font-size:10.5pt;margin-bottom:16px">
+      <thead><tr style="background:#1B3A6B;color:#fff">
+        <th style="padding:6px 10px;text-align:left">Plano</th>
+        <th style="padding:6px 10px;text-align:center">Qtd P1</th>
+        <th style="padding:6px 10px;text-align:right">Valor P1</th>
+        <th style="padding:6px 10px;text-align:center">Qtd P2</th>
+        <th style="padding:6px 10px;text-align:right">Valor P2</th>
+        <th style="padding:6px 10px;text-align:center">VAR. Qtd</th>
+      </tr></thead>
+      <tbody>${planosArr.map((p,i)=>{
+        const vr=pc(p.q2,p.q1),pos=cPos(p.q2,p.q1),bg=i%2?'#F4F8FC':'#fff';
+        return `<tr style="background:${bg};border-bottom:1px solid #D6E4F0">
+          <td style="padding:6px 10px;font-size:10pt">${p.p.length>34?p.p.slice(0,32)+'…':p.p}</td>
+          <td style="padding:6px 10px;text-align:center;font-weight:700">${p.q1}</td>
+          <td style="padding:6px 10px;text-align:right;font-family:monospace">${fmtBRL(p.f1)}</td>
+          <td style="padding:6px 10px;text-align:center;font-weight:700">${p.q2}</td>
+          <td style="padding:6px 10px;text-align:right;font-family:monospace">${fmtBRL(p.f2)}</td>
+          <td style="padding:6px 10px;text-align:center;font-weight:800;color:${pos?'#16a34a':'#dc2626'}">${vr}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
+
+  // Gerar HTML do PDF
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8">
+<title>Relatório Comparativo SkyFit — ${l1} × ${l2}</title>
+<style>
+  @page { size: A4; margin: 1.5cm 1.2cm; }
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body { font-family: Arial, sans-serif; font-size: 11pt; color: #1B3A6B; background: #fff; }
+  h2 { font-size: 13pt; font-weight: 800; color: #1B3A6B; margin: 18px 0 10px; padding-bottom: 5px; border-bottom: 2px solid #1B3A6B; }
+  h3 { font-size: 11pt; font-weight: 700; color: #1B3A6B; margin: 14px 0 8px; }
+  .kpi-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .kpi-box { flex: 1; min-width: 110px; border: 1px solid #BDD7EE; border-radius: 8px; padding: 10px 12px; text-align: center; border-top: 3px solid #1B3A6B; }
+  .kpi-label { font-size: 9pt; color: #555; text-transform: uppercase; letter-spacing: .04em; }
+  .kpi-p1 { font-size: 11pt; font-weight: 700; color: #1B3A6B; margin-top: 4px; }
+  .kpi-p2 { font-size: 11pt; font-weight: 700; color: #7c3aed; }
+  .kpi-var { font-size: 10pt; font-weight: 800; margin-top: 4px; }
+  .pos { color: #16a34a; } .neg { color: #dc2626; }
+  .rodape { margin-top: 24px; padding-top: 10px; border-top: 2px solid #1B3A6B; display: flex; justify-content: space-between; font-size: 9pt; color: #666; }
+  @media print { .no-print { display: none !important; } body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+</style></head><body>
+
+<!-- Barra de ações -->
+<div class="no-print" style="position:fixed;top:0;left:0;right:0;background:#1B3A6B;color:#fff;
+  padding:10px 20px;display:flex;justify-content:space-between;align-items:center;z-index:999">
+  <span style="font-weight:700">📊 SkyFit — Relatório Comparativo</span>
+  <div style="display:flex;gap:10px">
+    <button onclick="window.print()" style="background:#fff;color:#1B3A6B;border:none;
+      padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:12px">
+      🖨️ Imprimir / Salvar PDF</button>
+    <button onclick="window.close()" style="background:transparent;color:#fff;
+      border:1px solid rgba(255,255,255,.4);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:12px">
+      ✕ Fechar</button>
+  </div>
+</div>
+<div class="no-print" style="height:52px"></div>
+
+<!-- Cabeçalho -->
+<div style="text-align:center;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #1B3A6B">
+  <div style="font-size:22pt;font-weight:900;color:#1B3A6B">🏋️ SkyFit — Unidade Guarujá</div>
+  <div style="font-size:15pt;font-weight:700;color:#444;margin-top:4px">Relatório Comparativo Executivo</div>
+  <div style="font-size:11pt;color:#555;margin-top:6px">
+    <strong style="color:#1e6fe8">${l1}</strong> × <strong style="color:#7c3aed">${l2}</strong>
+  </div>
+  <div style="font-size:9pt;color:#777;margin-top:4px">Gerado em ${hoje}</div>
+</div>
+
+<!-- KPIs lado a lado -->
+<h2>📊 Principais Indicadores</h2>
+<div class="kpi-row">
+  ${[
+    {l:'Volume de Vendas',v1:d1.volTotal,v2:d2.volTotal},
+    {l:'Faturamento Real',v1:d1.fatTotal,v2:d2.fatTotal},
+    {l:'Contratos',v1:d1.volCnt,v2:d2.volCnt},
+    {l:'Serviços',v1:d1.volSrv,v2:d2.volSrv},
+    {l:'Produtos',v1:d1.volPrd,v2:d2.volPrd},
+    {l:'Ticket Médio',v1:d1.ticketM,v2:d2.ticketM},
+  ].map(k=>{
+    const vr=pc(k.v2,k.v1), pos=cPos(k.v2,k.v1);
+    return `<div class="kpi-box">
+      <div class="kpi-label">${k.l}</div>
+      <div class="kpi-p1">${fmtBRL(k.v1)}</div>
+      <div style="font-size:8pt;color:#888;margin:2px 0">${l1}</div>
+      <div class="kpi-p2">${fmtBRL(k.v2)}</div>
+      <div style="font-size:8pt;color:#888;margin:2px 0">${l2}</div>
+      <div class="kpi-var ${pos?'pos':'neg'}">${vr}</div>
+    </div>`;
+  }).join('')}
+</div>
+
+<h2>💰 Volume Detalhado</h2>
+${pdfTabela([
+  {label:'Total Geral',    v1:d1.volTotal, v2:d2.volTotal, icon:'📊'},
+  {label:'Contratos (R$)', v1:d1.volCnt,   v2:d2.volCnt,   icon:'📑'},
+  {label:'Serviços (R$)',  v1:d1.volSrv,   v2:d2.volSrv,   icon:'🛎️'},
+  {label:'Produtos (R$)',  v1:d1.volPrd,   v2:d2.volPrd,   icon:'📦'},
+  {label:'Qtd Contratos',  v1:d1.qtdCnt,   v2:d2.qtdCnt,   icon:'🔢', fmt:num},
+  {label:'Qtd Serviços',   v1:d1.qtdSrv,   v2:d2.qtdSrv,   icon:'🔢', fmt:num},
+  {label:'Qtd Produtos',   v1:d1.qtdPrd,   v2:d2.qtdPrd,   icon:'🔢', fmt:num},
+])}
+
+<h2>💳 Faturamento Real</h2>
+${pdfTabela([
+  {label:'Total',     v1:d1.fatTotal, v2:d2.fatTotal, icon:'💰'},
+  {label:'EVO',       v1:d1.fatEVO,   v2:d2.fatEVO,   icon:'🟣'},
+  {label:'WellHub',   v1:d1.fatWH,    v2:d2.fatWH,    icon:'🩷'},
+  {label:'TotalPass', v1:d1.fatTP,    v2:d2.fatTP,    icon:'🟢'},
+])}
+
+<h2 style="page-break-before:always">🏅 Comparação de Vendedoras</h2>
+${pdfVend}
+
+<h2>📦 Top 10 Planos</h2>
+${pdfPlanos}
+
+${d1.ckTotal||d2.ckTotal?`
+<h2>🏃 Check-ins por Agregador</h2>
+${pdfTabela([
+  {label:'Total Check-ins',v1:d1.ckTotal,v2:d2.ckTotal,fmt:num},
+  ...[...new Set([...Object.keys(d1.ckMap),...Object.keys(d2.ckMap)])].map(ag=>({
+    label:ag, v1:d1.ckMap[ag]?.ck||0, v2:d2.ckMap[ag]?.ck||0, fmt:num, icon:'🤝'
+  }))
+])}` : ''}
+
+<!-- Rodapé -->
+<div class="rodape">
+  <span>SkyFit Gestão — Unidade Guarujá | Relatório Confidencial</span>
+  <span>Gerado em ${hoje}</span>
+</div>
+
+</body></html>`;
+
+  const janela = window.open('', '_blank', 'width=960,height=850');
+  janela.document.write(html);
+  janela.document.close();
+  toast('PDF executivo gerado — use Ctrl+P para salvar', '📄');
+}
+
+// Stub de compatibilidade (antiga cmpToggle usada em outros lugares, agora não usada)
+function cmpToggle(){}
 
 // ── Render principal ──────────────────────────────────────────
 function geralRender(){
@@ -8440,6 +9079,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="mob-vnd-item" onclick="mobVndGo('vnd-contratos')"><span class="mob-vnd-dot"></span>Contratos</div>
   <div class="mob-vnd-item" onclick="mobVndGo('vnd-servicos')"><span class="mob-vnd-dot"></span>Serviços</div>
   <div class="mob-vnd-item" onclick="mobVndGo('vnd-produtos')"><span class="mob-vnd-dot"></span>Produtos</div>
+  <div class="mob-vnd-item" onclick="mobVndGo('vnd-comparacao')"><span class="mob-vnd-dot"></span>Comparação</div>
 </div>
 <div id="mob-vnd-overlay" onclick="mobVndClose()"
   style="display:none;position:fixed;inset:0;z-index:899;background:rgba(0,0,0,.4)"></div>
