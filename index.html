@@ -102,7 +102,7 @@
   @keyframes kz-spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
   @keyframes kz-letter-glow { from{filter:drop-shadow(0 0 4px rgba(0,245,196,.3))} to{filter:drop-shadow(0 0 16px rgba(0,245,196,.9))} }
   .kz-brand { text-align:center; }
-  .kz-brand-main { font-family:'Courier New',monospace;font-size:28px;font-weight:900;letter-spacing:.3em;background:linear-gradient(90deg,#00f5c4,#0099ff,#00f5c4);background-size:200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:kz-text-flow 3s linear infinite; }
+  .kz-brand-main { font-family:'Courier New',monospace;font-size:28px;font-weight:900;letter-spacing:.3em;background:linear-gradient(90deg,#00f5c4,#0099ff,#00f5c4);background-size:200%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:kz-text-flow 3s linear infinite; }
   @keyframes kz-text-flow { 0%{background-position:0%} 100%{background-position:200%} }
   .kz-brand-sub { font-family:'Courier New',monospace;font-size:10px;letter-spacing:.3em;color:rgba(0,245,196,.55);margin-top:3px;text-transform:uppercase; }
   .kz-by { color:rgba(255,255,255,.3);font-style:italic; }
@@ -1008,6 +1008,7 @@
       <div class="nav-sub" onclick="switchTab('vnd-servicos',this)"><span class="nav-sub-dot">◉</span>Serviços</div>
       <div class="nav-sub" onclick="switchTab('vnd-produtos',this)"><span class="nav-sub-dot">◉</span>Produtos</div>
       <div class="nav-sub" onclick="switchTab('vnd-comparacao',this)"><span class="nav-sub-dot">◉</span>Comparação</div>
+      <div class="nav-sub" onclick="switchTab('vnd-cancelamentos',this)"><span class="nav-sub-dot">◉</span>Cancelamentos</div>
     </div>
 
     <!-- ══ FINANCEIRO ══ -->
@@ -1363,6 +1364,156 @@
       <!-- RESULTADO (preenchido via JS) -->
       <div id="cmp-resultado" style="display:none"></div>
     </div>
+
+    <!-- ════ ABA: CANCELAMENTOS ════ -->
+    <div class="tab-pane" id="tab-vnd-cancelamentos">
+      <div class="section-header">
+        <div>
+          <div class="section-title">📉 Análise de Cancelamentos</div>
+          <div class="section-sub" id="can-sub">Carregando dados…</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-secondary" onclick="canLoad(true)" id="can-reload-btn">🔄 Atualizar</button>
+          <button class="btn btn-primary" onclick="canGerarPDF()" id="can-pdf-btn" style="display:none">📄 Exportar PDF</button>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="panel" style="margin-bottom:16px" id="can-filtros-panel" style="display:none">
+        <div class="panel-body" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;padding:12px 16px">
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:4px">Ano</div>
+            <select id="can-f-ano" onchange="canAplicarFiltros()"
+              style="padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-family:var(--font);font-size:12px;cursor:pointer">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:4px">Mês</div>
+            <select id="can-f-mes" onchange="canAplicarFiltros()"
+              style="padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-family:var(--font);font-size:12px;cursor:pointer">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:4px">Motivo</div>
+            <select id="can-f-motivo" onchange="canAplicarFiltros()"
+              style="padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-family:var(--font);font-size:12px;cursor:pointer">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:4px">Consultor</div>
+            <select id="can-f-consultor" onchange="canAplicarFiltros()"
+              style="padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-family:var(--font);font-size:12px;cursor:pointer">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:4px">Professor</div>
+            <select id="can-f-professor" onchange="canAplicarFiltros()"
+              style="padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-family:var(--font);font-size:12px;cursor:pointer">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:4px">Plano</div>
+            <select id="can-f-plano" onchange="canAplicarFiltros()"
+              style="padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-family:var(--font);font-size:12px;cursor:pointer">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:4px">Origem</div>
+            <select id="can-f-origem" onchange="canAplicarFiltros()"
+              style="padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-family:var(--font);font-size:12px;cursor:pointer">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div>
+            <div style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase;margin-bottom:4px">Cancelado por</div>
+            <select id="can-f-canceladopor" onchange="canAplicarFiltros()"
+              style="padding:6px 10px;border-radius:7px;border:1px solid var(--border);background:var(--bg-card);color:var(--text-dark);font-family:var(--font);font-size:12px;cursor:pointer">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" onclick="canLimparFiltros()" style="padding:6px 12px;font-size:12px">↺ Limpar</button>
+        </div>
+      </div>
+
+      <!-- EMPTY STATE -->
+      <div id="can-empty" class="fin-placeholder-wrap">
+        <div class="fin-ph-icon">📉</div>
+        <div class="fin-ph-title">Cancelamentos</div>
+        <div class="fin-ph-desc">Os dados de cancelamentos serão carregados automaticamente.<br>Se não aparecerem, clique em <strong>Atualizar</strong>.</div>
+      </div>
+
+      <!-- CONTEÚDO -->
+      <div id="can-conteudo" style="display:none">
+
+        <!-- KPIs -->
+        <div class="cards-grid" id="can-kpis" style="margin-bottom:20px"></div>
+
+        <!-- Alertas -->
+        <div id="can-alertas" style="margin-bottom:20px"></div>
+
+        <!-- Evolução mensal -->
+        <div class="chart-grid" style="margin-bottom:16px">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">📅 Cancelamentos por Mês</span></div>
+            <div class="panel-body"><div class="chart-wrap" style="height:200px"><canvas id="can-chart-evolucao"></canvas></div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">💰 Valor Perdido por Mês</span></div>
+            <div class="panel-body"><div class="chart-wrap" style="height:200px"><canvas id="can-chart-valor"></canvas></div></div>
+          </div>
+        </div>
+
+        <!-- Motivos -->
+        <div class="chart-grid" style="margin-bottom:16px">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">❌ Motivos dos Cancelamentos</span></div>
+            <div class="panel-body" style="padding:0" id="can-motivos"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">📣 Origem dos Cancelamentos</span></div>
+            <div class="panel-body" style="padding:0" id="can-origens"></div>
+          </div>
+        </div>
+
+        <!-- Consultores e Cancelado Por -->
+        <div class="chart-grid" style="margin-bottom:16px">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">👩‍💼 Por Consultor</span></div>
+            <div class="panel-body" style="padding:0" id="can-consultores"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">👤 Cancelado por</span></div>
+            <div class="panel-body" style="padding:0" id="can-canceladopor"></div>
+          </div>
+        </div>
+
+        <!-- Planos e Professores -->
+        <div class="chart-grid" style="margin-bottom:16px">
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">📋 Por Plano/Contrato</span></div>
+            <div class="panel-body" style="padding:0" id="can-planos"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><span class="panel-title">👨‍🏫 Por Professor</span></div>
+            <div class="panel-body" style="padding:0" id="can-professores"></div>
+          </div>
+        </div>
+
+        <!-- Impacto financeiro -->
+        <div class="panel" style="margin-bottom:16px">
+          <div class="panel-header"><span class="panel-title">💰 Impacto Financeiro dos Cancelamentos</span></div>
+          <div class="panel-body" id="can-financeiro"></div>
+        </div>
+
+      </div><!-- /can-conteudo -->
+    </div>
+
 
     <!-- ════ ABA: FIN-FATURAMENTO ════ -->
     <div class="tab-pane" id="tab-fin-faturamento">
@@ -2350,6 +2501,17 @@
           </div>
         </div>
 
+        <!-- KPIs Cancelamentos na Geral -->
+        <div class="panel" style="margin-bottom:16px" id="ger-can-panel">
+          <div class="panel-header">
+            <span class="panel-title">📉 Cancelamentos no Período</span>
+            <a href="#" onclick="event.preventDefault();switchTab('vnd-cancelamentos',null)" style="font-size:11px;color:var(--accent);cursor:pointer;font-weight:600">Ver análise completa →</a>
+          </div>
+          <div class="panel-body">
+            <div class="cards-grid" id="ger-can-kpis"><div style="color:var(--text-light);font-size:12px">Acesse Vendas → Cancelamentos para carregar os dados.</div></div>
+          </div>
+        </div>
+
       </div><!-- /ger-conteudo -->
     </div>
 
@@ -2963,6 +3125,7 @@ const tabMeta = {
   'vnd-servicos':   { title:'Servicos Vendidos',       sub:'Diarias e servicos avulsos - VD_Servicos' },
   'vnd-produtos':   { title:'Produtos Vendidos',       sub:'Suplementos e acessorios - VD_Produtos' },
   'vnd-comparacao': { title:'Comparacao de Periodos',   sub:'Compare dois periodos — Vendas · Faturamento · Vendedoras · Planos · Check-ins' },
+  'vnd-cancelamentos': { title:'Analise de Cancelamentos', sub:'Evolucao, motivos, consultores, planos e impacto financeiro' },
   'fin-detalhes':       { title:'Vendas Detalhadas',       sub:'Raio-X por categoria, plano e colaborador' },
   'fin-faturamento':    { title:'Receita',                 sub:'Faturamento oficial — EVO · WellHub · TotalPass' },
   'fin-despesas':       { title:'Despesas',                sub:'Lançamentos reais via Google Sheets' },
@@ -2975,7 +3138,7 @@ const tabMeta = {
 };
 
 // Grupo financeiro aberto por padrão ao clicar em qualquer sub-aba financeira
-const VND_TABS   = ['vnd-geral','vnd-contratos','vnd-servicos','vnd-produtos','vnd-comparacao'];
+const VND_TABS   = ['vnd-geral','vnd-contratos','vnd-servicos','vnd-produtos','vnd-comparacao','vnd-cancelamentos'];
 const FIN_TABS   = ['fin-visao','fin-faturamento','fin-despesas','fin-lucro','fin-caixa','fin-pagamentos'];
 const AGR_TABS   = ['agregadores','wh-detalhado'];
 const CHAM_TABS  = ['cham-expirados','cham-inadimplencia','cham-oportunidades'];
@@ -3021,6 +3184,7 @@ function switchTab(tab, el) {
     if(tab==='vnd-servicos' &&!srvLoaded)    loadServicos(false);
     if(tab==='vnd-produtos' &&!prdLoaded)    loadProdutos(false);
     if(tab==='vnd-comparacao')               cmpInit();
+    if(tab==='vnd-cancelamentos')             canLoad(false);
 
   } else if (FIN_TABS.includes(tab)) {
     const g=document.getElementById('fin-group'), c=document.getElementById('fin-chevron');
@@ -5596,6 +5760,7 @@ function geralBuscaSetTipo(t){
       (id==='srv'&&t==='Serviços')||(id==='prd'&&t==='Produtos'));
   });
   geralBuscaRender();
+  canRenderKPIsGeral(geralAnoSel, geralMesSel);
 }
 
 // ── KPIs rápidos ──────────────────────────────────────────────
@@ -6297,6 +6462,40 @@ function cmpExecutar() {
   window._cmpL1=l1; window._cmpL2=l2;
   window._cmpD1=d1; window._cmpD2=d2;
 
+  // Seção Cancelamentos na Comparação
+  let secCan = '';
+  if(canLoaded){
+    const dc1 = canGetDadosComparacao(ano1, mes1);
+    const dc2 = canGetDadosComparacao(ano2, mes2);
+    const num  = v => Number(v).toLocaleString('pt-BR');
+    secCan = `
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-header"><span class="panel-title">📉 Comparação de Cancelamentos</span></div>
+      <div class="panel-body" style="padding:0"><table style="width:100%;border-collapse:collapse;font-size:13px">
+        ${_cmpThead(l1,l2).replace('Indicador','Indicador')}
+        <tbody>
+          ${_cmpLinha('Cancelamentos', dc1.total, dc2.total, num, '📉')}
+          ${_cmpLinha('Valor Perdido', dc1.perdido, dc2.perdido, fmtBRL, '💸')}
+          ${_cmpLinha('Multas', dc1.multas, dc2.multas, fmtBRL, '🔒')}
+          ${dc1.mediaPerm||dc2.mediaPerm ? _cmpLinha('Méd. Permanência', dc1.mediaPerm, dc2.mediaPerm, v=>Number(v).toFixed(1)+' m', '📅') : ''}
+        </tbody>
+      </table>
+      ${dc1.topMotivos.length||dc2.topMotivos.length?`
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px 14px;border-top:1px solid var(--border)">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#1e6fe8;text-transform:uppercase;margin-bottom:6px">Top motivos — ${l1}</div>
+          ${dc1.topMotivos.map(([m,q])=>'<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)">'+m+' <strong>('+q+')</strong></div>').join('')||'<div style="color:var(--text-light);font-size:12px">Sem dados</div>'}
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:700;color:#7c3aed;text-transform:uppercase;margin-bottom:6px">Top motivos — ${l2}</div>
+          ${dc2.topMotivos.map(([m,q])=>'<div style="font-size:12px;padding:3px 0;border-bottom:1px solid var(--border)">'+m+' <strong>('+q+')</strong></div>').join('')||'<div style="color:var(--text-light);font-size:12px">Sem dados</div>'}
+        </div>
+      </div>` : ''}
+      </div></div>`;
+  } else {
+    secCan = '<div class="panel" style="margin-bottom:16px"><div class="panel-body"><p style="color:var(--text-light);font-size:13px">Dados de cancelamentos não carregados. Acesse <strong>Vendas → Cancelamentos</strong> para carregar.</p></div></div>';
+  }
+
   document.getElementById('cmp-resultado').innerHTML = `
     <!-- Banner resumo -->
     <div style="background:linear-gradient(135deg,rgba(30,111,232,.1),rgba(124,58,237,.08));
@@ -6317,7 +6516,7 @@ function cmpExecutar() {
     <!-- KPI cards -->
     <div class="cards-grid" style="margin-bottom:20px">${kpiCards}</div>
 
-    ${secVolume}${secFat}${secVend}${secPlanos}${secAgg}`;
+    ${secVolume}${secFat}${secVend}${secPlanos}${secAgg}${secCan}`;
 }
 
 // ── PDF Executivo ─────────────────────────────────────────────
@@ -6517,6 +6716,28 @@ ${pdfTabela([
   }))
 ])}` : ''}
 
+${(()=>{
+  if(!canLoaded) return '';
+  const dc1=canGetDadosComparacao(ano1,mes1), dc2=canGetDadosComparacao(ano2,mes2);
+  const numL=v=>Number(v).toLocaleString('pt-BR');
+  return `
+<h2 style="page-break-before:always">📉 Cancelamentos</h2>
+${pdfTabela([
+  {label:'Total Cancelamentos',v1:dc1.total,v2:dc2.total,fmt:numL,icon:'📉'},
+  {label:'Valor Perdido',v1:dc1.perdido,v2:dc2.perdido,icon:'💸'},
+  {label:'Multas',v1:dc1.multas,v2:dc2.multas,icon:'🔒'},
+  ...(dc1.mediaPerm||dc2.mediaPerm?[{label:'Méd. Permanência',v1:dc1.mediaPerm,v2:dc2.mediaPerm,fmt:v=>Number(v).toFixed(1)+' m',icon:'📅'}]:[]),
+])}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px">
+  <div><strong style="color:#1e6fe8">Top motivos — ${l1}</strong><br>
+    ${dc1.topMotivos.map(([m,q])=>m+' ('+q+')').join('<br>')||'Sem dados'}
+  </div>
+  <div><strong style="color:#7c3aed">Top motivos — ${l2}</strong><br>
+    ${dc2.topMotivos.map(([m,q])=>m+' ('+q+')').join('<br>')||'Sem dados'}
+  </div>
+</div>`;
+})()}
+
 <!-- Rodapé -->
 <div class="rodape">
   <span>SkyFit Gestão — Unidade Guarujá | Relatório Confidencial</span>
@@ -6530,6 +6751,755 @@ ${pdfTabela([
   janela.document.close();
   toast('PDF executivo gerado — use Ctrl+P para salvar', '📄');
 }
+
+
+// ══════════════════════════════════════════════════════════════
+//  CANCELAMENTOS — Aba vnd-cancelamentos
+//  Fonte: aba "Cancelamentos" do Google Sheets via Apps Script
+// ══════════════════════════════════════════════════════════════
+
+const APPS_SCRIPT_CAN_URL = APPS_SCRIPT_URL + '?sheet=Cancelamentos';
+
+let canData   = [];      // dados brutos
+let canLoaded = false;
+let canChartEvol = null;
+let canChartVal  = null;
+
+// ── Utilitários ────────────────────────────────────────────────
+const canPV = v => typeof v === 'number' ? v :
+  parseFloat(String(v || '0').replace(/[^\d,.-]/g, '').replace(',', '.')) || 0;
+
+function canNormMes(v) { return _gNorm(String(v || '')); }
+
+function canParseData(v) {
+  if (!v) return null;
+  const s = String(v).trim();
+  if (!s) return null;
+
+  // YYYY-MM-DD ou YYYY-MM-DDTHH:MM:SS (Apps Script envia neste formato)
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]);
+
+  // DD/MM/YYYY ou DD-MM-YYYY
+  const br = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (br) {
+    const y = br[3].length === 2 ? '20' + br[3] : br[3];
+    return new Date(+y, +br[2] - 1, +br[1]);
+  }
+
+  // Último recurso: Date() nativo
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+
+function canDataToMesAno(d) {
+  if (!d) return { mes: '', ano: '' };
+  const nomes = ['janeiro','fevereiro','março','abril','maio','junho',
+                 'julho','agosto','setembro','outubro','novembro','dezembro'];
+  return { mes: nomes[d.getMonth()], ano: String(d.getFullYear()) };
+}
+
+// ── Carregar dados ─────────────────────────────────────────────
+async function canLoad(force = false) {
+  if (canLoaded && !force) { canRender(); return; }
+  const sub = document.getElementById('can-sub');
+  if (sub) sub.textContent = 'Conectando…';
+  try {
+    const resp = await fetch(APPS_SCRIPT_CAN_URL + '&_t=' + Date.now(), { cache: 'no-store' });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const json = await resp.json();
+    const rows = json.rows || [];
+    if (!rows.length) throw new Error('Aba Cancelamentos sem dados');
+
+    // Normalizar campos
+    // Log de diagnóstico dos headers recebidos
+    if (rows.length > 0) {
+      console.log('[CAN] Headers recebidos:', Object.keys(rows[0]));
+      console.log('[CAN] Primeira linha:', JSON.stringify(rows[0]).slice(0, 300));
+    }
+
+    // Normaliza chave para busca case-insensitive e sem acento
+    const canKey = (r, ...keys) => {
+      const rKeys = Object.keys(r);
+      const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+      for (const k of keys) {
+        if (r[k] !== undefined) return r[k];
+        const kn = norm(k);
+        const found = rKeys.find(rk => norm(rk) === kn);
+        if (found !== undefined) return r[found];
+      }
+      return '';
+    };
+
+    canData = rows.map(r => {
+      const dt = canParseData(
+        canKey(r,'Cancelamento','Data de cancelamento','DataCancelamento','Data cancelamento','Data')
+      );
+      const ma = canDataToMesAno(dt);
+      return {
+        id:          String(canKey(r,'Id','ID','id') || '').trim(),
+        nome:        String(canKey(r,'Nome','nome') || '').trim(),
+        sobrenome:   String(canKey(r,'Sobrenome','sobrenome') || '').trim(),
+        contrato:    String(canKey(r,'Contrato','Plano','Produto','contrato','plano') || '').trim(),
+        dataCan:     dt,
+        mes:         ma.mes,
+        ano:         ma.ano,
+        canceladoPor:String(canKey(r,'Cancelado por','CanceladoPor','cancelado_por','Cancelado Por') || '').trim(),
+        motivo:      String(canKey(r,'Motivo','motivo','Motivo do cancelamento') || '').trim(),
+        multa:       canPV(canKey(r,'Multa','multa')),
+        mesesPerm:   canPV(canKey(r,'Meses de permanencia','Meses de permanência','Permanencia','Permanência','Meses')),
+        valorTotal:  canPV(canKey(r,'Valor total do contrato','Valor total','ValorTotal')),
+        valorPerdido:canPV(canKey(r,'Valor perdido','ValorPerdido','Valor Perdido')),
+        professor:   String(canKey(r,'Professor','professor') || '').trim(),
+        consultor:   String(canKey(r,'Consultor','consultor') || '').trim(),
+        origem:      String(canKey(r,'Origem','origem') || '').trim(),
+      };
+    });
+    // Avisar sobre registros sem data válida
+    const semData = canData.filter(r => !r.dataCan).length;
+    if (semData > 0) console.warn('[CAN]', semData, 'registros sem data de cancelamento válida — esses não aparecerão nos filtros de período');
+    // Manter todos os registros (sem data aparecem em "todos os períodos")
+
+    canLoaded = true;
+    if (sub) sub.textContent = canData.length + ' cancelamentos carregados';
+    canPopularFiltros();
+    canRender();
+    // Atualizar KPIs de cancelamento na Aba Geral sempre que carregar
+    canRenderKPIsGeral(
+      typeof geralAnoSel !== 'undefined' ? geralAnoSel : '',
+      typeof geralMesSel !== 'undefined' ? geralMesSel : ''
+    );
+    toast(canData.length + ' cancelamentos carregados', '📉');
+  } catch (e) {
+    console.error('[CAN]', e);
+    const sub = document.getElementById('can-sub');
+    if (sub) sub.textContent = 'Erro: ' + e.message;
+    toast('Erro ao carregar Cancelamentos: ' + e.message, '⚠️');
+  }
+}
+
+// ── Filtros ────────────────────────────────────────────────────
+function canPopularFiltros() {
+  const uniq = (arr) => [...new Set(arr.filter(Boolean).map(s => s.trim()))].sort();
+
+  const anos     = uniq(canData.map(r => r.ano));
+  const meses    = MESES_FULL_CNT.filter(m => canData.some(r => r.mes === m));
+  const motivos  = uniq(canData.map(r => r.motivo));
+  const consult  = uniq(canData.map(r => r.consultor));
+  const profs    = uniq(canData.map(r => r.professor));
+  const planos   = uniq(canData.map(r => r.contrato));
+  const origens  = uniq(canData.map(r => r.origem));
+  const canPors  = uniq(canData.map(r => r.canceladoPor));
+
+  const populate = (id, items, labelFn) => {
+    const sel = document.getElementById(id); if (!sel) return;
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">Todos</option>' +
+      items.map(i => `<option value="${i}" ${i === cur ? 'selected' : ''}>${labelFn ? labelFn(i) : i}</option>`).join('');
+  };
+
+  populate('can-f-ano', anos);
+
+  // Meses disponíveis: filtrar pelo ano selecionado se houver
+  const anoSel = document.getElementById('can-f-ano')?.value || '';
+  const dadosFiltAno = anoSel ? canData.filter(r => r.ano === anoSel) : canData;
+  const mesesDoAno = MESES_FULL_CNT.filter(m => dadosFiltAno.some(r => r.mes === m));
+  populate('can-f-mes', mesesDoAno, m => m.charAt(0).toUpperCase() + m.slice(1));
+  populate('can-f-motivo',       motivos);
+  populate('can-f-consultor',    consult);
+  populate('can-f-professor',    profs);
+  populate('can-f-plano',        planos);
+  populate('can-f-origem',       origens);
+  populate('can-f-canceladopor', canPors);
+
+  document.getElementById('can-filtros-panel').style.display = 'block';
+}
+
+function canGetFiltrados() {
+  const ano   = document.getElementById('can-f-ano')?.value        || '';
+  const mes   = document.getElementById('can-f-mes')?.value        || '';
+  const mot   = document.getElementById('can-f-motivo')?.value     || '';
+  const con   = document.getElementById('can-f-consultor')?.value  || '';
+  const prof  = document.getElementById('can-f-professor')?.value  || '';
+  const plan  = document.getElementById('can-f-plano')?.value      || '';
+  const orig  = document.getElementById('can-f-origem')?.value     || '';
+  const cpor  = document.getElementById('can-f-canceladopor')?.value || '';
+
+  return canData.filter(r => {
+    // Se há filtro de período e o registro não tem data, excluir
+    if ((ano || mes) && !r.dataCan) return false;
+    return (!ano  || r.ano          === ano)  &&
+           (!mes  || r.mes          === mes)  &&
+           (!mot  || r.motivo       === mot)  &&
+           (!con  || r.consultor    === con)  &&
+           (!prof || r.professor    === prof) &&
+           (!plan || r.contrato     === plan) &&
+           (!orig || r.origem       === orig) &&
+           (!cpor || r.canceladoPor === cpor);
+  });
+}
+
+function canAplicarFiltros() {
+  // Sempre atualizar meses disponíveis com base no ano selecionado
+  const anoAtual = document.getElementById('can-f-ano')?.value || '';
+  const dadosAno = anoAtual ? canData.filter(r => r.ano === anoAtual) : canData;
+  const mesesAno = MESES_FULL_CNT.filter(m => dadosAno.some(r => r.mes === m));
+  const selMes   = document.getElementById('can-f-mes');
+  if (selMes) {
+    const mesCur = selMes.value;
+    selMes.innerHTML = '<option value="">Todos</option>' +
+      mesesAno.map(m => `<option value="${m}" ${m===mesCur?'selected':''}>${m.charAt(0).toUpperCase()+m.slice(1)}</option>`).join('');
+    if (mesCur && !mesesAno.includes(mesCur)) selMes.value = '';
+  }
+  canRender();
+}
+
+function canLimparFiltros() {
+  ['can-f-ano','can-f-mes','can-f-motivo','can-f-consultor',
+   'can-f-professor','can-f-plano','can-f-origem','can-f-canceladopor']
+    .forEach(id => { const s = document.getElementById(id); if (s) s.value = ''; });
+  canRender();
+}
+
+// ── Filtro por Geral (usado pela Aba Geral) ────────────────────
+function canGetFiltradosPorPeriodo(ano, mes) {
+  return canData.filter(r => {
+    if ((ano || mes) && !r.dataCan) return false;
+    return (!ano || r.ano === ano) && (!mes || r.mes === mes);
+  });
+}
+
+// ── Render principal ────────────────────────────────────────────
+function canRender() {
+  const dados = canGetFiltrados();
+  const empty = document.getElementById('can-empty');
+  const cont  = document.getElementById('can-conteudo');
+  if (!canLoaded) { if (empty) empty.style.display = 'flex'; if (cont) cont.style.display = 'none'; return; }
+  if (empty) empty.style.display = 'none';
+  if (cont)  cont.style.display  = 'block';
+  document.getElementById('can-pdf-btn').style.display = 'inline-flex';
+
+  const sub = document.getElementById('can-sub');
+  if (sub) sub.textContent = dados.length + ' cancelamento' + (dados.length !== 1 ? 's' : '') + ' no período';
+
+  canRenderKPIs(dados);
+  canRenderAlertas(dados);
+  canRenderGraficos(dados);
+  canRenderMotivos(dados);
+  canRenderOrigens(dados);
+  canRenderConsultores(dados);
+  canRenderCanceladoPor(dados);
+  canRenderPlanos(dados);
+  canRenderProfessores(dados);
+  canRenderFinanceiro(dados);
+}
+
+// ── KPIs ────────────────────────────────────────────────────────
+function canRenderKPIs(dados) {
+  const wrap = document.getElementById('can-kpis'); if (!wrap) return;
+  if (!dados.length) { wrap.innerHTML = '<p style="color:var(--text-light);padding:8px">Nenhum dado no período</p>'; return; }
+
+  const total    = dados.length;
+  const perdido  = dados.reduce((s, r) => s + r.valorPerdido, 0);
+  const multas   = dados.reduce((s, r) => s + r.multa, 0);
+  const valTotal = dados.reduce((s, r) => s + r.valorTotal, 0);
+  const mediaPerm= dados.filter(r => r.mesesPerm > 0).length
+    ? dados.filter(r => r.mesesPerm > 0).reduce((s, r) => s + r.mesesPerm, 0) /
+      dados.filter(r => r.mesesPerm > 0).length : 0;
+  const mediaPerd= total ? perdido / total : 0;
+
+  const KPIS = [
+    { icon: '📉', label: 'Total Cancelamentos', val: total.toLocaleString('pt-BR'), cor: '#dc2626', cls: '' },
+    { icon: '💸', label: 'Valor Perdido', val: fmtBRL(perdido), cor: '#dc2626', cls: '' },
+    { icon: '📊', label: 'Média por Cancelamento', val: fmtBRL(mediaPerd), cor: '#f59e0b', cls: 'amber' },
+    { icon: '🔒', label: 'Total de Multas', val: fmtBRL(multas), cor: '#1e6fe8', cls: '' },
+    { icon: '📅', label: 'Méd. Permanência', val: mediaPerm ? mediaPerm.toFixed(1) + ' meses' : '—', cor: '#7c3aed', cls: '' },
+    { icon: '💰', label: 'Valor Médio Contrato', val: total ? fmtBRL(valTotal / total) : '—', cor: '#22c55e', cls: 'green' },
+  ];
+
+  wrap.innerHTML = KPIS.map(k => `
+    <div class="kpi-card ${k.cls}" style="border-top:3px solid ${k.cor}">
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value" style="color:${k.cor}">${k.val}</div>
+    </div>`).join('');
+}
+
+// ── Alertas ────────────────────────────────────────────────────
+function canRenderAlertas(dados) {
+  const wrap = document.getElementById('can-alertas'); if (!wrap || !dados.length) { if(wrap) wrap.innerHTML=''; return; }
+
+  const porMotivo = dados.reduce((a, r) => {
+    if (!r.motivo) return a;
+    if (!a[r.motivo]) a[r.motivo] = { qtd: 0, val: 0 };
+    a[r.motivo].qtd++; a[r.motivo].val += r.valorPerdido; return a;
+  }, {});
+  const porPlano = dados.reduce((a, r) => {
+    if (!r.contrato) return a;
+    if (!a[r.contrato]) a[r.contrato] = { qtd: 0, val: 0 };
+    a[r.contrato].qtd++; a[r.contrato].val += r.valorPerdido; return a;
+  }, {});
+  const porConsultor = dados.reduce((a, r) => {
+    if (!r.consultor) return a;
+    if (!a[r.consultor]) a[r.consultor] = { qtd: 0, val: 0 };
+    a[r.consultor].qtd++; a[r.consultor].val += r.valorPerdido; return a;
+  }, {});
+
+  const maxMot   = Object.entries(porMotivo).sort((a,b)  => b[1].qtd - a[1].qtd)[0];
+  const maxPerd  = Object.entries(porMotivo).sort((a,b)  => b[1].val - a[1].val)[0];
+  const maxPlano = Object.entries(porPlano).sort((a,b)   => b[1].val - a[1].val)[0];
+  const maxCons  = Object.entries(porConsultor).sort((a,b)=> b[1].qtd - a[1].qtd)[0];
+
+  const alerts = [
+    maxMot   ? `🔴 Motivo mais frequente: <strong>${maxMot[0]}</strong> — ${maxMot[1].qtd} cancelamentos`                 : null,
+    maxPerd  ? `💰 Maior perda financeira: <strong>${maxPerd[0]}</strong> — ${fmtBRL(maxPerd[1].val)}`                    : null,
+    maxPlano ? `🔴 Plano com maior perda: <strong>${maxPlano[0]}</strong> — ${fmtBRL(maxPlano[1].val)}`                   : null,
+    maxCons  ? `⚠️ Consultor com mais cancelamentos: <strong>${maxCons[0]}</strong> — ${maxCons[1].qtd} cancelamentos`    : null,
+  ].filter(Boolean);
+
+  if (!alerts.length) { wrap.innerHTML = ''; return; }
+
+  wrap.innerHTML = `<div class="panel" style="border-left:4px solid #dc2626;margin-bottom:16px">
+    <div class="panel-header"><span class="panel-title">⚠️ Destaques Automáticos</span></div>
+    <div class="panel-body">
+      ${alerts.map(a => `<div style="padding:5px 0;font-size:13px;border-bottom:1px solid var(--border)">${a}</div>`).join('')}
+    </div>
+  </div>`;
+}
+
+// ── Gráficos ────────────────────────────────────────────────────
+function canRenderGraficos(dados) {
+  // Agrupar por mês
+  const porMes = {};
+  dados.forEach(r => {
+    const k = r.ano + '-' + r.mes;
+    if (!porMes[k]) porMes[k] = { label: r.mes ? r.mes.charAt(0).toUpperCase() + r.mes.slice(1, 3) + '/' + r.ano.slice(2) : '?', qtd: 0, val: 0 };
+    porMes[k].qtd++;
+    porMes[k].val += r.valorPerdido;
+  });
+
+  const sorted = Object.entries(porMes).sort((a, b) => {
+    const [ay, am] = [a[0].split('-')[0], MESES_FULL_CNT.indexOf(a[0].split('-')[1])];
+    const [by, bm] = [b[0].split('-')[0], MESES_FULL_CNT.indexOf(b[0].split('-')[1])];
+    return ay !== by ? ay.localeCompare(by) : am - bm;
+  });
+  const labels = sorted.map(([, v]) => v.label);
+  const qtds   = sorted.map(([, v]) => v.qtd);
+  const vals   = sorted.map(([, v]) => v.val);
+
+  // Gráfico evolução
+  if (canChartEvol) { canChartEvol.destroy(); canChartEvol = null; }
+  const c1 = document.getElementById('can-chart-evolucao');
+  if (c1 && labels.length) {
+    canChartEvol = new Chart(c1, {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'Cancelamentos', data: qtds,
+        backgroundColor: 'rgba(220,38,38,.7)', borderColor: '#dc2626', borderWidth: 1.5, borderRadius: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { grid: { display: false } }, y: { ticks: { stepSize: 1 } } } }
+    });
+  }
+
+  // Gráfico valor perdido
+  if (canChartVal) { canChartVal.destroy(); canChartVal = null; }
+  const c2 = document.getElementById('can-chart-valor');
+  if (c2 && labels.length && vals.some(v => v > 0)) {
+    canChartVal = new Chart(c2, {
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'Valor Perdido', data: vals,
+        backgroundColor: 'rgba(245,158,11,.7)', borderColor: '#f59e0b', borderWidth: 1.5, borderRadius: 4 }] },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { x: { grid: { display: false } },
+          y: { ticks: { callback: v => 'R$' + Math.round(v / 1000) + 'k' } } } }
+    });
+  }
+}
+
+// ── Helper: tabela de grupo ────────────────────────────────────
+function canTabela(dados, groupKey, extraCols, valueKey, maxRows) {
+  const map = {};
+  dados.forEach(r => {
+    const k = r[groupKey] || '(sem dado)';
+    if (!map[k]) map[k] = { qtd: 0, perdido: 0, multa: 0, valTotal: 0, perm: [], _extra: {} };
+    map[k].qtd++;
+    map[k].perdido  += r.valorPerdido;
+    map[k].multa    += r.multa;
+    map[k].valTotal += r.valorTotal;
+    if (r.mesesPerm > 0) map[k].perm.push(r.mesesPerm);
+    if (extraCols) extraCols.forEach(ec => { map[k]._extra[ec] = r[ec]; });
+  });
+  const sorted = Object.entries(map)
+    .sort((a, b) => b[1][valueKey || 'qtd'] - a[1][valueKey || 'qtd'])
+    .slice(0, maxRows || 50);
+  return sorted;
+}
+
+function canTbRow(nome, qtd, perdido, mediaPermMeses, extra) {
+  return `<tr style="border-bottom:1px solid var(--border)">
+    <td style="padding:8px 14px;font-weight:600;font-size:12px">${nome}</td>
+    <td style="padding:8px 10px;text-align:center;font-weight:700">${qtd}</td>
+    <td style="padding:8px 14px;text-align:right;font-family:var(--mono);font-size:11px;color:#dc2626">${fmtBRL(perdido)}</td>
+    ${mediaPermMeses !== undefined ? `<td style="padding:8px 10px;text-align:center;font-size:12px;color:var(--text-mid)">${mediaPermMeses ? mediaPermMeses.toFixed(1) + 'm' : '—'}</td>` : ''}
+    ${extra || ''}
+  </tr>`;
+}
+
+function canTableWrap(thead, rows, empty) {
+  if (!rows) return `<p style="color:var(--text-light);padding:14px">${empty || 'Sem dados'}</p>`;
+  return `<div class="table-wrapper"><table style="width:100%;border-collapse:collapse;font-size:13px">
+    <thead style="background:var(--bg)">${thead}</thead>
+    <tbody>${rows}</tbody>
+  </table></div>`;
+}
+
+// ── Motivos ────────────────────────────────────────────────────
+function canRenderMotivos(dados) {
+  const wrap = document.getElementById('can-motivos'); if (!wrap) return;
+  const sorted = canTabela(dados, 'motivo', null, 'qtd');
+  const total  = dados.length || 1;
+  if (!sorted.length) { wrap.innerHTML = '<p style="color:var(--text-light);padding:14px">Sem dados</p>'; return; }
+  const maxQ = sorted[0][1].qtd;
+  const rows = sorted.map(([nome, d]) => {
+    const pct = (d.qtd / total * 100).toFixed(1);
+    const bar = (d.qtd / maxQ * 100).toFixed(0);
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 14px;font-weight:600;font-size:12px">
+        <div>${nome}</div>
+        <div style="height:3px;background:var(--border);border-radius:99px;margin-top:4px;overflow:hidden">
+          <div style="width:${bar}%;height:100%;background:#dc2626;border-radius:99px"></div>
+        </div>
+      </td>
+      <td style="padding:8px 10px;text-align:center;font-weight:700">${d.qtd}</td>
+      <td style="padding:8px 8px;text-align:center;font-size:11px;color:var(--text-light)">${pct}%</td>
+      <td style="padding:8px 14px;text-align:right;font-family:var(--mono);font-size:11px;color:#dc2626">${fmtBRL(d.perdido)}</td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML = canTableWrap(
+    '<tr><th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase">Motivo</th><th style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light)">Qtd</th><th style="padding:8px 8px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light)">%</th><th style="padding:8px 14px;text-align:right;font-size:11px;font-weight:700;color:var(--text-light)">Valor Perdido</th></tr>',
+    rows);
+}
+
+// ── Origens ────────────────────────────────────────────────────
+function canRenderOrigens(dados) {
+  const wrap = document.getElementById('can-origens'); if (!wrap) return;
+  const sorted = canTabela(dados, 'origem', null, 'qtd');
+  const total  = dados.length || 1;
+  if (!sorted.length) { wrap.innerHTML = '<p style="color:var(--text-light);padding:14px">Sem dados</p>'; return; }
+  const rows = sorted.map(([nome, d]) => {
+    const pct = (d.qtd / total * 100).toFixed(1);
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 14px;font-weight:600;font-size:12px">${nome}</td>
+      <td style="padding:8px 10px;text-align:center;font-weight:700">${d.qtd}</td>
+      <td style="padding:8px 8px;text-align:center;font-size:11px;color:var(--text-light)">${pct}%</td>
+      <td style="padding:8px 14px;text-align:right;font-family:var(--mono);font-size:11px;color:#dc2626">${fmtBRL(d.perdido)}</td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML = canTableWrap(
+    '<tr><th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase">Origem</th><th style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light)">Qtd</th><th style="padding:8px 8px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light)">%</th><th style="padding:8px 14px;text-align:right;font-size:11px;font-weight:700;color:var(--text-light)">Valor Perdido</th></tr>',
+    rows);
+}
+
+// ── Consultores ────────────────────────────────────────────────
+function canRenderConsultores(dados) {
+  const wrap = document.getElementById('can-consultores'); if (!wrap) return;
+  const sorted = canTabela(dados, 'consultor', null, 'qtd');
+  if (!sorted.length) { wrap.innerHTML = '<p style="color:var(--text-light);padding:14px">Sem dados</p>'; return; }
+  const rows = sorted.map(([nome, d]) => {
+    const mp = d.perm.length ? d.perm.reduce((s,v)=>s+v,0)/d.perm.length : 0;
+    return canTbRow(nome, d.qtd, d.perdido, mp);
+  }).join('');
+  wrap.innerHTML = canTableWrap(
+    '<tr><th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase">Consultor</th><th style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light)">Qtd</th><th style="padding:8px 14px;text-align:right;font-size:11px;font-weight:700;color:var(--text-light)">Valor Perdido</th><th style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light)">Méd. Perm.</th></tr>',
+    rows);
+}
+
+// ── Cancelado Por ──────────────────────────────────────────────
+function canRenderCanceladoPor(dados) {
+  const wrap = document.getElementById('can-canceladopor'); if (!wrap) return;
+  const sorted = canTabela(dados, 'canceladoPor', null, 'qtd');
+  if (!sorted.length) { wrap.innerHTML = '<p style="color:var(--text-light);padding:14px">Sem dados</p>'; return; }
+  const rows = sorted.map(([nome, d]) =>
+    `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 14px;font-weight:600;font-size:12px">${nome}</td>
+      <td style="padding:8px 10px;text-align:center;font-weight:700">${d.qtd}</td>
+      <td style="padding:8px 14px;text-align:right;font-family:var(--mono);font-size:11px;color:#dc2626">${fmtBRL(d.perdido)}</td>
+    </tr>`
+  ).join('');
+  wrap.innerHTML = canTableWrap(
+    '<tr><th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase">Cancelado por</th><th style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light)">Qtd</th><th style="padding:8px 14px;text-align:right;font-size:11px;font-weight:700;color:var(--text-light)">Valor Perdido</th></tr>',
+    rows);
+}
+
+// ── Planos ─────────────────────────────────────────────────────
+function canRenderPlanos(dados) {
+  const wrap = document.getElementById('can-planos'); if (!wrap) return;
+  const sorted = canTabela(dados, 'contrato', null, 'qtd');
+  if (!sorted.length) { wrap.innerHTML = '<p style="color:var(--text-light);padding:14px">Sem dados</p>'; return; }
+  const rows = sorted.map(([nome, d]) => {
+    const mp = d.perm.length ? d.perm.reduce((s,v)=>s+v,0)/d.perm.length : 0;
+    return `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:8px 14px;font-weight:600;font-size:12px">${nome.length>30?nome.slice(0,28)+'…':nome}</td>
+      <td style="padding:8px 10px;text-align:center;font-weight:700">${d.qtd}</td>
+      <td style="padding:8px 14px;text-align:right;font-family:var(--mono);font-size:11px">${fmtBRL(d.valTotal)}</td>
+      <td style="padding:8px 14px;text-align:right;font-family:var(--mono);font-size:11px;color:#dc2626">${fmtBRL(d.perdido)}</td>
+      <td style="padding:8px 10px;text-align:center;font-size:11px;color:var(--text-mid)">${mp?mp.toFixed(1)+'m':'—'}</td>
+    </tr>`;
+  }).join('');
+  wrap.innerHTML = canTableWrap(
+    '<tr><th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase">Plano/Contrato</th><th style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light)">Qtd</th><th style="padding:8px 14px;text-align:right;font-size:11px;font-weight:700;color:var(--text-light)">Val. Contrato</th><th style="padding:8px 14px;text-align:right;font-size:11px;font-weight:700;color:var(--text-light)">Perdido</th><th style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light)">Perm.</th></tr>',
+    rows);
+}
+
+// ── Professores ────────────────────────────────────────────────
+function canRenderProfessores(dados) {
+  const wrap = document.getElementById('can-professores'); if (!wrap) return;
+  const sorted = canTabela(dados, 'professor', null, 'qtd');
+  if (!sorted.length) { wrap.innerHTML = '<p style="color:var(--text-light);padding:14px">Sem dados</p>'; return; }
+  const rows = sorted.map(([nome, d]) => {
+    const mp = d.perm.length ? d.perm.reduce((s,v)=>s+v,0)/d.perm.length : 0;
+    return canTbRow(nome, d.qtd, d.perdido, mp);
+  }).join('');
+  wrap.innerHTML = canTableWrap(
+    '<tr><th style="padding:8px 14px;text-align:left;font-size:11px;font-weight:700;color:var(--text-light);text-transform:uppercase">Professor</th><th style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light)">Qtd</th><th style="padding:8px 14px;text-align:right;font-size:11px;font-weight:700;color:var(--text-light)">Valor Perdido</th><th style="padding:8px 10px;text-align:center;font-size:11px;font-weight:700;color:var(--text-light)">Méd. Perm.</th></tr>',
+    rows);
+}
+
+// ── Impacto Financeiro ─────────────────────────────────────────
+function canRenderFinanceiro(dados) {
+  const wrap = document.getElementById('can-financeiro'); if (!wrap) return;
+  if (!dados.length) { wrap.innerHTML = '<p style="color:var(--text-light)">Sem dados</p>'; return; }
+
+  const total   = dados.length;
+  const valTot  = dados.reduce((s, r) => s + r.valorTotal, 0);
+  const perdido = dados.reduce((s, r) => s + r.valorPerdido, 0);
+  const multas  = dados.reduce((s, r) => s + r.multa, 0);
+  const pctPerd = valTot ? (perdido / valTot * 100).toFixed(1) : '—';
+  const barPerd = valTot ? Math.min(100, perdido / valTot * 100).toFixed(0) : 0;
+
+  wrap.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:16px">
+      <div style="background:var(--bg);border-radius:10px;padding:14px;border:1px solid var(--border)">
+        <div style="font-size:10px;font-weight:700;color:var(--text-light);text-transform:uppercase">Valor Total dos Contratos</div>
+        <div style="font-size:20px;font-weight:900;color:var(--text-dark);margin-top:6px">${fmtBRL(valTot)}</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:2px">${total} contratos cancelados</div>
+      </div>
+      <div style="background:rgba(220,38,38,.06);border-radius:10px;padding:14px;border:1px solid rgba(220,38,38,.2)">
+        <div style="font-size:10px;font-weight:700;color:#dc2626;text-transform:uppercase">Valor Perdido</div>
+        <div style="font-size:20px;font-weight:900;color:#dc2626;margin-top:6px">${fmtBRL(perdido)}</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:2px">${pctPerd}% do contratado</div>
+      </div>
+      <div style="background:rgba(30,111,232,.06);border-radius:10px;padding:14px;border:1px solid rgba(30,111,232,.2)">
+        <div style="font-size:10px;font-weight:700;color:#1e6fe8;text-transform:uppercase">Total de Multas Aplicadas</div>
+        <div style="font-size:20px;font-weight:900;color:#1e6fe8;margin-top:6px">${fmtBRL(multas)}</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:2px">Cobertura parcial da perda</div>
+      </div>
+    </div>
+    ${valTot > 0 ? `
+    <div style="margin-top:4px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-light);margin-bottom:4px">
+        <span>Valor Perdido vs. Total Contratado</span><span>${pctPerd}%</span>
+      </div>
+      <div style="background:var(--border);border-radius:99px;height:12px;overflow:hidden">
+        <div style="width:${barPerd}%;height:100%;background:linear-gradient(90deg,#dc2626,#f97316);border-radius:99px"></div>
+      </div>
+    </div>` : ''}`;
+}
+
+// ── KPIs para Aba Geral ─────────────────────────────────────────
+function canRenderKPIsGeral(ano, mes) {
+  const wrap = document.getElementById('ger-can-kpis'); if (!wrap) return;
+  if (!canLoaded) {
+    wrap.innerHTML = '<div style="color:var(--text-light);font-size:12px;padding:8px">⏳ Aguardando dados de cancelamentos…</div>';
+    return;
+  }
+
+  const dados = canGetFiltradosPorPeriodo(ano, mes);
+  if (!dados.length) { wrap.innerHTML = '<div style="color:var(--text-light);font-size:12px;padding:8px">Sem cancelamentos no período.</div>'; return; }
+
+  const total   = dados.length;
+  const perdido = dados.reduce((s, r) => s + r.valorPerdido, 0);
+  const multas  = dados.reduce((s, r) => s + r.multa, 0);
+  const mediaPerm = dados.filter(r => r.mesesPerm > 0).length
+    ? dados.filter(r => r.mesesPerm > 0).reduce((s,r) => s + r.mesesPerm, 0) /
+      dados.filter(r => r.mesesPerm > 0).length : 0;
+
+  const KPIS = [
+    { icon: '📉', label: 'Cancelamentos',  val: total.toLocaleString('pt-BR'), cor: '#dc2626' },
+    { icon: '💸', label: 'Valor Perdido',  val: fmtBRL(perdido),             cor: '#dc2626' },
+    { icon: '🔒', label: 'Multas',          val: fmtBRL(multas),              cor: '#1e6fe8' },
+    { icon: '📅', label: 'Méd. Permanência',val: mediaPerm ? mediaPerm.toFixed(1) + ' m' : '—', cor: '#7c3aed' },
+  ];
+
+  wrap.innerHTML = KPIS.map(k => `
+    <div class="kpi-card" style="border-top:3px solid ${k.cor}">
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value" style="color:${k.cor};font-size:22px">${k.val}</div>
+    </div>`).join('');
+}
+
+// ── Cancelamentos na Comparação ────────────────────────────────
+function canGetDadosComparacao(ano, mes) {
+  const dados = canGetFiltradosPorPeriodo(ano, mes);
+  const total   = dados.length;
+  const perdido = dados.reduce((s, r) => s + r.valorPerdido, 0);
+  const multas  = dados.reduce((s, r) => s + r.multa, 0);
+  const mediaPerm = dados.filter(r => r.mesesPerm > 0).length
+    ? dados.filter(r => r.mesesPerm > 0).reduce((s,r) => s + r.mesesPerm, 0) /
+      dados.filter(r => r.mesesPerm > 0).length : 0;
+
+  // Top motivos
+  const porMotivo = dados.reduce((a, r) => {
+    if (!r.motivo) return a;
+    if (!a[r.motivo]) a[r.motivo] = 0;
+    a[r.motivo]++; return a;
+  }, {});
+  const topMotivos = Object.entries(porMotivo).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+  return { total, perdido, multas, mediaPerm, topMotivos };
+}
+
+// ── PDF Cancelamentos ──────────────────────────────────────────
+function canGerarPDF() {
+  const dados = canGetFiltrados();
+  if (!dados.length) { toast('Sem dados para exportar', '⚠️'); return; }
+
+  const hoje = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const ano   = document.getElementById('can-f-ano')?.value || 'Todos';
+  const mes   = document.getElementById('can-f-mes')?.value || '';
+  const periodo = [mes ? mes.charAt(0).toUpperCase() + mes.slice(1) : '', ano].filter(Boolean).join('/') || 'Todos os períodos';
+
+  const total    = dados.length;
+  const perdido  = dados.reduce((s, r) => s + r.valorPerdido, 0);
+  const multas   = dados.reduce((s, r) => s + r.multa, 0);
+  const valTot   = dados.reduce((s, r) => s + r.valorTotal, 0);
+  const mediaPerd= total ? perdido / total : 0;
+  const mediaPerm= dados.filter(r=>r.mesesPerm>0).length
+    ? dados.filter(r=>r.mesesPerm>0).reduce((s,r)=>s+r.mesesPerm,0)/dados.filter(r=>r.mesesPerm>0).length : 0;
+  const pctPerd  = valTot ? (perdido / valTot * 100).toFixed(1) : '—';
+
+  const blkRow = (label, val, pos) =>
+    `<tr style="border-bottom:1px solid #D6E4F0">
+      <td style="padding:6px 10px;font-weight:600">${label}</td>
+      <td style="padding:6px 10px;text-align:right;font-family:monospace;color:${pos?'#1B3A6B':'#dc2626'}">${val}</td>
+    </tr>`;
+
+  const pdfTabGrupo = (items, cols) =>
+    `<table style="width:100%;border-collapse:collapse;font-size:10.5pt;margin-bottom:14px">
+      <thead><tr style="background:#1B3A6B;color:#fff">${cols.map(c=>`<th style="padding:6px 10px;text-align:${c.align||'left'}">${c.h}</th>`).join('')}</tr></thead>
+      <tbody>${items.map((it,i)=>`<tr style="background:${i%2?'#F4F8FC':'#fff'};border-bottom:1px solid #D6E4F0">
+        ${cols.map(c=>`<td style="padding:6px 10px;text-align:${c.align||'left'};font-family:${c.mono?'monospace':'inherit'}">${c.v(it)}</td>`).join('')}
+      </tr>`).join('')}</tbody>
+    </table>`;
+
+  const mkGrupo = (key, label) => {
+    const map = {};
+    dados.forEach(r => {
+      const k = r[key] || '(sem dado)';
+      if (!map[k]) map[k] = { qtd: 0, perdido: 0 };
+      map[k].qtd++; map[k].perdido += r.valorPerdido;
+    });
+    return Object.entries(map).sort((a,b)=>b[1].qtd-a[1].qtd).slice(0,10)
+      .map(([n,d]) => ({ nome: n, qtd: d.qtd, perdido: d.perdido }));
+  };
+
+  const tabelaCols = [
+    { h: label => label, align: 'left',  v: it => it.nome.length>30?it.nome.slice(0,28)+'…':it.nome },
+    { h: 'Qtd',           align: 'center', v: it => it.qtd },
+    { h: 'Valor Perdido', align: 'right', mono: true, v: it => fmtBRL(it.perdido) },
+  ];
+
+  const motArr  = mkGrupo('motivo',      'Motivo');
+  const conArr  = mkGrupo('consultor',   'Consultor');
+  const planArr = mkGrupo('contrato',    'Plano');
+  const profArr = mkGrupo('professor',   'Professor');
+  const origArr = mkGrupo('origem',      'Origem');
+  const cpArr   = mkGrupo('canceladoPor','Cancelado Por');
+
+  const html = `<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8">
+<title>Relatório de Cancelamentos SkyFit — ${periodo}</title>
+<style>
+  @page { size:A4; margin:1.5cm 1.2cm; }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:Arial,sans-serif;font-size:11pt;color:#1B3A6B;background:#fff;}
+  h2{font-size:13pt;font-weight:800;color:#1B3A6B;margin:18px 0 10px;padding-bottom:5px;border-bottom:2px solid #1B3A6B;page-break-before:auto;}
+  h3{font-size:11pt;font-weight:700;color:#555;margin:14px 0 8px;}
+  .kpi-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;}
+  .kpi-box{flex:1;min-width:110px;border:1px solid #BDD7EE;border-radius:8px;padding:10px 12px;text-align:center;border-top:3px solid #dc2626;}
+  .kpi-box.blue{border-top-color:#1B3A6B;} .kpi-box.purple{border-top-color:#7c3aed;}
+  .kpi-label{font-size:8.5pt;color:#555;text-transform:uppercase;letter-spacing:.03em;}
+  .kpi-val{font-size:13pt;font-weight:900;color:#dc2626;margin-top:5px;}
+  .kpi-box.blue .kpi-val{color:#1B3A6B;} .kpi-box.purple .kpi-val{color:#7c3aed;}
+  .rodape{margin-top:24px;padding-top:10px;border-top:2px solid #1B3A6B;display:flex;justify-content:space-between;font-size:9pt;color:#666;}
+  @media print{.no-print{display:none!important;}body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}
+</style></head><body>
+<div class="no-print" style="position:fixed;top:0;left:0;right:0;background:#dc2626;color:#fff;padding:10px 20px;display:flex;justify-content:space-between;align-items:center;z-index:999">
+  <span style="font-weight:700">📉 SkyFit — Relatório de Cancelamentos</span>
+  <div style="display:flex;gap:10px">
+    <button onclick="window.print()" style="background:#fff;color:#dc2626;border:none;padding:8px 18px;border-radius:6px;font-weight:700;cursor:pointer;font-size:12px">🖨️ Imprimir / Salvar PDF</button>
+    <button onclick="window.close()" style="background:transparent;color:#fff;border:1px solid rgba(255,255,255,.4);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:12px">✕ Fechar</button>
+  </div>
+</div>
+<div class="no-print" style="height:52px"></div>
+
+<div style="text-align:center;margin-bottom:20px;padding-bottom:14px;border-bottom:3px solid #dc2626">
+  <div style="font-size:22pt;font-weight:900;color:#1B3A6B">🏋️ SkyFit — Unidade Guarujá</div>
+  <div style="font-size:15pt;font-weight:700;color:#444;margin-top:4px">Relatório de Cancelamentos</div>
+  <div style="font-size:11pt;color:#555;margin-top:6px">Período: <strong>${periodo}</strong></div>
+  <div style="font-size:9pt;color:#777;margin-top:4px">Gerado em ${hoje}</div>
+</div>
+
+<h2>📊 Indicadores Principais</h2>
+<div class="kpi-row">
+  <div class="kpi-box"><div class="kpi-label">Total Cancelamentos</div><div class="kpi-val">${total}</div></div>
+  <div class="kpi-box"><div class="kpi-label">Valor Perdido</div><div class="kpi-val">${fmtBRL(perdido)}</div></div>
+  <div class="kpi-box purple"><div class="kpi-label">Média por Cancelamento</div><div class="kpi-val">${fmtBRL(mediaPerd)}</div></div>
+  <div class="kpi-box blue"><div class="kpi-label">Total Multas</div><div class="kpi-val" style="color:#1B3A6B">${fmtBRL(multas)}</div></div>
+  <div class="kpi-box purple"><div class="kpi-label">Méd. Permanência</div><div class="kpi-val">${mediaPerm?mediaPerm.toFixed(1)+' m':'—'}</div></div>
+  <div class="kpi-box blue"><div class="kpi-label">% do Contrato Perdido</div><div class="kpi-val" style="color:#1B3A6B">${pctPerd}%</div></div>
+</div>
+
+<table style="width:100%;border-collapse:collapse;font-size:10.5pt;margin-bottom:14px">
+  <tbody>
+    ${blkRow('Valor Total dos Contratos',fmtBRL(valTot),true)}
+    ${blkRow('Valor Perdido',fmtBRL(perdido),false)}
+    ${blkRow('Multas Aplicadas',fmtBRL(multas),true)}
+  </tbody>
+</table>
+
+<h2 style="page-break-before:always">❌ Motivos dos Cancelamentos</h2>
+${motArr.length?pdfTabGrupo(motArr,[{h:'Motivo',v:it=>it.nome},{h:'Qtd',align:'center',v:it=>it.qtd},{h:'Valor Perdido',align:'right',mono:true,v:it=>fmtBRL(it.perdido)}]):'<p>Sem dados de motivo</p>'}
+
+<h2>👩‍💼 Por Consultor</h2>
+${conArr.length?pdfTabGrupo(conArr,[{h:'Consultor',v:it=>it.nome},{h:'Qtd',align:'center',v:it=>it.qtd},{h:'Valor Perdido',align:'right',mono:true,v:it=>fmtBRL(it.perdido)}]):'<p>Sem dados</p>'}
+
+<h2>📋 Por Plano/Contrato</h2>
+${planArr.length?pdfTabGrupo(planArr,[{h:'Plano',v:it=>it.nome.length>30?it.nome.slice(0,28)+'…':it.nome},{h:'Qtd',align:'center',v:it=>it.qtd},{h:'Valor Perdido',align:'right',mono:true,v:it=>fmtBRL(it.perdido)}]):'<p>Sem dados</p>'}
+
+<h2>👨‍🏫 Por Professor</h2>
+${profArr.length?pdfTabGrupo(profArr,[{h:'Professor',v:it=>it.nome},{h:'Qtd',align:'center',v:it=>it.qtd},{h:'Valor Perdido',align:'right',mono:true,v:it=>fmtBRL(it.perdido)}]):'<p>Sem dados</p>'}
+
+<h2>📣 Por Origem</h2>
+${origArr.length?pdfTabGrupo(origArr,[{h:'Origem',v:it=>it.nome},{h:'Qtd',align:'center',v:it=>it.qtd},{h:'Valor Perdido',align:'right',mono:true,v:it=>fmtBRL(it.perdido)}]):'<p>Sem dados</p>'}
+
+<h2>👤 Cancelado por</h2>
+${cpArr.length?pdfTabGrupo(cpArr,[{h:'Cancelado por',v:it=>it.nome},{h:'Qtd',align:'center',v:it=>it.qtd},{h:'Valor Perdido',align:'right',mono:true,v:it=>fmtBRL(it.perdido)}]):'<p>Sem dados</p>'}
+
+<div class="rodape">
+  <span>SkyFit Gestão — Unidade Guarujá | Relatório Confidencial</span>
+  <span>Gerado em ${hoje}</span>
+</div>
+</body></html>`;
+
+  const janela = window.open('', '_blank', 'width=960,height=850');
+  janela.document.write(html);
+  janela.document.close();
+  toast('PDF de Cancelamentos gerado — use Ctrl+P para salvar', '📄');
+}
+
 
 // Stub de compatibilidade (antiga cmpToggle usada em outros lugares, agora não usada)
 function cmpToggle(){}
@@ -6556,6 +7526,7 @@ function geralRender(){
   geralRenderFat(fatF);
   geralRenderCheckins(aggF);
   geralBuscaRender();
+  canRenderKPIsGeral(geralAnoSel, geralMesSel);
 }
 
 // Stubs mantidos para compatibilidade com PDF
@@ -9059,6 +10030,7 @@ document.addEventListener('DOMContentLoaded', function() {
     loadContratos(false);
     loadServicos(false);
     loadProdutos(false);
+    canLoad(false);
     // Timeout de segurança: some a loading após 5s mesmo com erro
     setTimeout(() => {
       ['_kaizFatOk','_kaizAggOk','_kaizFinOk','_kaizPagOk','_kaizCntOk','_kaizSrvOk','_kaizPrdOk']
@@ -9080,6 +10052,7 @@ document.addEventListener('DOMContentLoaded', function() {
   <div class="mob-vnd-item" onclick="mobVndGo('vnd-servicos')"><span class="mob-vnd-dot"></span>Serviços</div>
   <div class="mob-vnd-item" onclick="mobVndGo('vnd-produtos')"><span class="mob-vnd-dot"></span>Produtos</div>
   <div class="mob-vnd-item" onclick="mobVndGo('vnd-comparacao')"><span class="mob-vnd-dot"></span>Comparação</div>
+  <div class="mob-vnd-item" onclick="mobVndGo('vnd-cancelamentos')"><span class="mob-vnd-dot"></span>Cancelamentos</div>
 </div>
 <div id="mob-vnd-overlay" onclick="mobVndClose()"
   style="display:none;position:fixed;inset:0;z-index:899;background:rgba(0,0,0,.4)"></div>
