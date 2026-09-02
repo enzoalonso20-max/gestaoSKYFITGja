@@ -1043,6 +1043,9 @@
     <div class="nav-item" onclick="switchTab('evo',this)">
       <span class="nav-icon">⚙️</span>Importar EVO
     </div>
+    <div class="nav-item" onclick="switchTab('evo-can',this)">
+      <span class="nav-icon">🗑️</span>Cancelamentos EVO
+    </div>
 
     <!-- ══ CHAMADOS ══ -->
     <div class="nav-label" style="margin-top:8px">Chamados</div>
@@ -2426,6 +2429,84 @@
 
     </div>
 
+    <!-- ════ ABA: IMPORTAR CANCELAMENTOS EVO ════ -->
+    <div class="tab-pane" id="tab-evo-can">
+      <div class="section-header">
+        <div>
+          <div class="section-title">🗑️ Importar e Tratar Cancelamentos EVO</div>
+          <div class="section-sub" id="evo-can-sub">Faça upload do arquivo Excel de cancelamentos exportado do EVO</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn btn-primary" onclick="document.getElementById('evo-can-file-input').click()">
+            📂 Selecionar Excel
+          </button>
+          <button class="btn btn-secondary" id="evo-can-btn-baixar" style="display:none" onclick="evoCanBaixar()">
+            ⬇️ Baixar Tratado (.xlsx)
+          </button>
+        </div>
+      </div>
+
+      <input type="file" id="evo-can-file-input" accept=".xlsx,.xls" style="display:none" onchange="evoCanCarregar(this)">
+
+      <!-- Regras aplicadas -->
+      <div class="panel" style="margin-bottom:16px">
+        <div class="panel-header"><span class="panel-title">✅ Regras Aplicadas Automaticamente</span></div>
+        <div class="panel-body">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px">
+            <div style="background:var(--bg);border-radius:8px;padding:10px 14px;border:1px solid var(--border);font-size:12px">
+              🗑️ <strong>Colunas removidas:</strong> A (Id Unidade), B (Nome Unidade), J (Observações), O (Transferido), P (Contrato especial)
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:10px 14px;border:1px solid var(--border);font-size:12px">
+              📅 <strong>Coluna Cancelamento</strong> — formatada como DD/MM/YYYY
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:10px 14px;border:1px solid var(--border);font-size:12px">
+              🔄 <strong>Nomes de planos</strong> — substituídos conforme mapeamento da aba Importar EVO
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:10px 14px;border:1px solid var(--border);font-size:12px">
+              👨‍🏫 <strong>Professor vazio</strong> — normal, mantido em branco
+            </div>
+            <div style="background:var(--bg);border-radius:8px;padding:10px 14px;border:1px solid var(--border);font-size:12px">
+              📊 <strong>Ordenação</strong> — data de cancelamento crescente (dia 1 → fim do mês)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drop zone -->
+      <div id="evo-can-dropzone"
+        style="border:2px dashed var(--border);border-radius:16px;padding:48px 24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:20px"
+        onclick="document.getElementById('evo-can-file-input').click()"
+        ondragover="evoCanDragOver(event)" ondragleave="evoCanDragLeave(event)" ondrop="evoCanDrop(event)">
+        <div style="font-size:48px;margin-bottom:12px">🗑️</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text-dark);margin-bottom:6px">
+          Arraste o Excel de Cancelamentos aqui ou clique para selecionar
+        </div>
+        <div style="font-size:13px;color:var(--text-light)">Formatos aceitos: .xlsx, .xls</div>
+        <div id="evo-can-nome-arquivo" style="margin-top:12px;font-size:13px;font-weight:600;color:var(--accent);display:none"></div>
+      </div>
+
+      <!-- Resultado -->
+      <div id="evo-can-resultado" style="display:none">
+        <div class="panel" style="margin-bottom:16px">
+          <div class="panel-header">
+            <span class="panel-title">📊 Resultado do Processamento</span>
+            <span class="badge badge-green" id="evo-can-badge"></span>
+          </div>
+          <div class="panel-body">
+            <div class="cards-grid" style="margin-bottom:16px" id="evo-can-kpis"></div>
+            <div class="table-wrapper" style="max-height:400px;overflow-y:auto">
+              <table style="width:100%;border-collapse:collapse;font-size:11px">
+                <thead id="evo-can-preview-head"></thead>
+                <tbody id="evo-can-preview-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
     <!-- ════ ABA: CLIENTES ════ -->
     <!-- ════ CHAMADOS ════ -->
     <div class="tab-pane" id="tab-cham-expirados">
@@ -3260,7 +3341,7 @@ const VND_TABS   = ['vnd-geral','vnd-contratos','vnd-servicos','vnd-produtos','v
 const FIN_TABS   = ['fin-visao','fin-faturamento','fin-despesas','fin-lucro','fin-caixa','fin-pagamentos'];
 const AGR_TABS   = ['agregadores','wh-detalhado'];
 const CHAM_TABS  = ['cham-expirados','cham-inadimplencia','cham-oportunidades'];
-const EST_TABS   = ['estoque','evo'];
+const EST_TABS   = ['estoque','evo','evo-can'];
 
 function switchTab(tab, el) {
   // Limpa seleção
@@ -3320,6 +3401,7 @@ function switchTab(tab, el) {
 
   } else if (EST_TABS.includes(tab)) {
     if(tab==='evo') evoInit();
+    if(tab==='evo-can') evoInit(); // garante SheetJS e mapeamento carregados
 
   } else if (CHAM_TABS.includes(tab)) {
     const g=document.getElementById('cham-group'), c=document.getElementById('cham-chevron');
@@ -6890,7 +6972,17 @@ const canPV = v => typeof v === 'number' ? v :
 function canNormMes(v) { return _gNorm(String(v || '')); }
 
 function canParseData(v) {
-  if (!v) return null;
+  if (v === null || v === undefined || v === '') return null;
+
+  // Já é um objeto Date
+  if (v instanceof Date) return isNaN(v) ? null : v;
+
+  // Número serial do Excel/Sheets (ex: 46674)
+  if (typeof v === 'number') {
+    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    return isNaN(d) ? null : d;
+  }
+
   const s = String(v).trim();
   if (!s) return null;
 
@@ -6933,7 +7025,11 @@ async function canLoad(force = false) {
     // Log de diagnóstico dos headers recebidos
     if (rows.length > 0) {
       console.log('[CAN] Headers recebidos:', Object.keys(rows[0]));
-      console.log('[CAN] Primeira linha:', JSON.stringify(rows[0]).slice(0, 300));
+      console.log('[CAN] Primeira linha:', JSON.stringify(rows[0]).slice(0, 400));
+      // Verificar campo de data especificamente
+      const firstRow = rows[0];
+      const dateKey = Object.keys(firstRow).find(k => k.toLowerCase().includes('cancelamento') || k.toLowerCase().includes('data'));
+      console.log('[CAN] Campo de data encontrado:', dateKey, '→', firstRow[dateKey]);
     }
 
     // Normaliza chave para busca case-insensitive e sem acento
@@ -6950,9 +7046,27 @@ async function canLoad(force = false) {
     };
 
     canData = rows.map(r => {
-      const dt = canParseData(
-        canKey(r,'Cancelamento','Data de cancelamento','DataCancelamento','Data cancelamento','Data')
-      );
+      // Buscar data em QUALQUER chave que contenha 'cancelamento' ou 'data'
+      const canFindDate = (r) => {
+        const keys = Object.keys(r);
+        const normK = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+        // Prioridade 1: chaves com 'cancelamento'
+        const kCan = keys.find(k => normK(k).includes('cancelamento'));
+        if (kCan && r[kCan] !== null && r[kCan] !== '') return r[kCan];
+        // Prioridade 2: chaves com 'data'
+        const kData = keys.find(k => normK(k).includes('data'));
+        if (kData && r[kData] !== null && r[kData] !== '') return r[kData];
+        // Prioridade 3: qualquer valor que pareça uma data (string com /)
+        const kAny = keys.find(k => {
+          const v = r[k];
+          if (!v) return false;
+          const s = String(v);
+          return s.match(/^\d{4}-\d{2}-\d{2}/) || s.match(/^\d{1,2}\/\d{1,2}\/\d{4}/);
+        });
+        if (kAny) return r[kAny];
+        return null;
+      };
+      const dt = canParseData(canFindDate(r));
       const ma = canDataToMesAno(dt);
       return {
         id:          String(canKey(r,'Id','ID','id') || '').trim(),
@@ -6973,10 +7087,26 @@ async function canLoad(force = false) {
         origem:      String(canKey(r,'Origem','origem') || '').trim(),
       };
     });
-    // Avisar sobre registros sem data válida
+    // Diagnóstico de datas
     const semData = canData.filter(r => !r.dataCan).length;
-    if (semData > 0) console.warn('[CAN]', semData, 'registros sem data de cancelamento válida — esses não aparecerão nos filtros de período');
-    // Manter todos os registros (sem data aparecem em "todos os períodos")
+    const comData = canData.filter(r => r.dataCan).length;
+    console.log('[CAN] Registros COM dataCan:', comData, '| SEM dataCan:', semData);
+
+    // Se nenhuma data foi parseada, mostrar diagnóstico na tela
+    if (comData === 0 && rows.length > 0) {
+      const primeiraLinha = rows[0];
+      const campos = Object.keys(primeiraLinha);
+      const valorEx = campos.map(c => c + ': ' + JSON.stringify(primeiraLinha[c])).join(' | ');
+      const sub2 = document.getElementById('can-sub');
+      if (sub2) sub2.innerHTML = '⚠️ <strong>Campos recebidos:</strong> ' + valorEx.slice(0, 300) + '<br>Nenhuma data válida encontrada. Verifique os campos acima.';
+      console.warn('[CAN] Nenhuma data válida. Campos:', campos);
+      console.warn('[CAN] Primeira linha:', primeiraLinha);
+    } else {
+      const anosEncontrados = [...new Set(canData.filter(r=>r.ano).map(r=>r.ano))];
+      const mesesEncontrados = [...new Set(canData.filter(r=>r.mes).map(r=>r.mes))];
+      console.log('[CAN] Anos:', anosEncontrados, '| Meses:', mesesEncontrados);
+    }
+    if (semData > 0 && comData > 0) console.warn('[CAN]', semData, 'registros sem data válida');
 
     canLoaded = true;
     if (sub) sub.textContent = canData.length + ' cancelamentos carregados';
@@ -9221,7 +9351,21 @@ const EVO_MAP_DEFAULT = [
   ['PLANO RECORRENTE ESPECIAL DE FÉRIAS - EXCLUSIVO UNIDADE',       'PLANO RECORRENTE PROMOCIONAL 49,90 FÉRIAS 2026'],
   ['PLANO TRIMESTRAL INDIVIDUAL DIA DOS PAIS - EXCLUSIVO UNIDADE',  'PLANO TRIMESTRAL 389,7'],
   ['PLANO PRIME RECORRENTE TODAS AS UNIDADES 139,90 2026 (Online)', 'PLANO RECORRENTE 139,90 (Online)'],
-  ['PLANO ESPECIAL TRIMESTRAL - EXCLUSIVO UNIDADE',                 'PLANO TRIMESTRAL 389,7'],
+  ['PLANO ESPECIAL TRIMESTRAL - EXCLUSIVO UNIDADE',                            'PLANO TRIMESTRAL 389,7'],
+  ['PLANO ESPECIAL INAUGURAÇÃO RECORRENTE 2 LOTE EXCLUSIVO UNIDADE  (online)', 'PLANO RECORRENTE PROMOCIONAL 69,90 (online)'],
+  ['PLANO ESPECIAL INAUGURAÇÃO RECORRENTE 2 LOTE EXCLUSIVO UNIDADE',           'PLANO RECORRENTE PROMOCIONAL 69,90 (online)'],
+  ['PLANO RECORRENTE ESPECIAL MÊS DAS MÃES - EXCLUSIVO UNIDADE',               'PLANO RECORRENTE PROMOCIONAL 49,90 MÃES'],
+  ['PLANO ESPECIAL INAUGURAÇÃO RECORRENTE EXCLUSIVO UNIDADE (online)',          'PLANO RECORRENTE PROMOCIONAL 49,90 (online)'],
+  ['PLANO ESPECIAL INAUGURAÇÃO RECORRENTE EXCLUSIVO UNIDADE',                   'PLANO RECORRENTE PROMOCIONAL 49,90'],
+  // Variantes com espaço duplo antes de (online)
+  ['PLANO ESPECIAL INAUGURAÇÃO RECORRENTE 2 LOTE EXCLUSIVO UNIDADE  (online)',  'PLANO RECORRENTE PROMOCIONAL 69,90 (online)'],
+  ['PLANO ESPECIAL INAUGURAÇÃO RECORRENTE EXCLUSIVO UNIDADE  (online)',         'PLANO RECORRENTE PROMOCIONAL 49,90 (online)'],
+  // Planos 2025
+  ['PLANO PRIME RECORRENTE TODAS AS UNIDADES 129,90 2025',                      'PLANO RECORRENTE 129,90'],
+  ['PLANO PRIME RECORRENTE TODAS AS UNIDADES 129,90 2025 (online)',             'PLANO RECORRENTE 129,90 (online)'],
+  ['PLANO ANUAL EXCLUSIVO UNIDADE 109,90 2025',                                 'PLANO ANUAL 109,90'],
+  // Férias com travessão (–) diferente do hífen (-)
+  ['PLANO RECORRENTE PROMOCIONAL DE FÉRIAS – EXCLUSIVO UNIDADE',               'PLANO RECORRENTE PROMOCIONAL 49,90 FÉRIAS 2026'],
 ];
 
 const EVO_STORAGE_KEY = 'evo_mapeamento_v2';
@@ -9593,6 +9737,255 @@ function evoInit() {
   evoCarregarMapeamento();
 }
 
+
+
+// ══════════════════════════════════════════════════════════════
+//  IMPORTAR CANCELAMENTOS EVO
+//  Estrutura validada com Cancelamentos_agosto_2026.xlsx:
+//  A=Id Unidade, B=Nome Unidade, C=Id, D=Nome, E=Sobrenome,
+//  F=Contrato, G=Cancelamento, H=Cancelado por, I=Motivo,
+//  J=Observações, K=Multa, L=Meses permanência,
+//  M=Valor total contrato, N=Valor perdido,
+//  O=Transferido, P=Contrato especial, Q=Professor,
+//  R=Consultor, S=Origem
+//  Colunas a remover: A(0), B(1), J(9), O(14), P(15)
+// ══════════════════════════════════════════════════════════════
+
+let evoCanDadosTratados = null;
+
+// ── Drag & Drop ────────────────────────────────────────────────
+function evoCanDragOver(e) {
+  e.preventDefault();
+  const z = document.getElementById('evo-can-dropzone');
+  if (z) { z.style.borderColor = 'var(--accent)'; z.style.background = 'rgba(30,111,232,.06)'; }
+}
+function evoCanDragLeave(e) {
+  const z = document.getElementById('evo-can-dropzone');
+  if (z) { z.style.borderColor = ''; z.style.background = ''; }
+}
+function evoCanDrop(e) {
+  e.preventDefault(); evoCanDragLeave(e);
+  const f = e.dataTransfer.files[0];
+  if (f) evoCanProcessar(f);
+}
+function evoCanCarregar(input) {
+  const f = input.files[0];
+  if (f) evoCanProcessar(f);
+  input.value = '';
+}
+
+// ── Processamento principal ────────────────────────────────────
+async function evoCanProcessar(file) {
+  const sub = document.getElementById('evo-can-sub');
+  if (sub) sub.textContent = 'Processando ' + file.name + '…';
+  document.getElementById('evo-can-btn-baixar').style.display = 'none';
+  document.getElementById('evo-can-resultado').style.display  = 'none';
+
+  // Carregar SheetJS se necessário
+  if (!window.XLSX) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+      s.onload = res; s.onerror = () => rej(new Error('Falha ao carregar SheetJS'));
+      document.head.appendChild(s);
+    });
+  }
+
+  const buf = await file.arrayBuffer();
+  const wb  = XLSX.read(buf, {type:'array', cellDates:true});
+  const ws  = wb.Sheets[wb.SheetNames[0]];
+  const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:null, raw:true});
+
+  if (!raw.length) { toast('Arquivo vazio', '⚠️'); return; }
+
+  const headers = raw[0].map(h => h === null ? '' : String(h).trim());
+  console.log('[EVO-CAN] Headers:', headers);
+  console.log('[EVO-CAN] Primeira linha de dados:', raw[1]);
+
+  // ── Índices das colunas pelo nome (robusto) ────────────────
+  const normH = s => String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  const findIdx = (...nomes) => {
+    for (const n of nomes) {
+      const idx = headers.findIndex(h => normH(h) === normH(n));
+      if (idx >= 0) return idx;
+    }
+    return -1;
+  };
+
+  // Índices fixos validados — com fallback por nome
+  const iContrato  = findIdx('Contrato');
+  const iCancel    = findIdx('Cancelamento');
+  const iColsRemov = new Set([
+    findIdx('Id Unidade'),          // A
+    findIdx('Nome Unidade'),        // B
+    findIdx('Observações','Observacoes'), // J
+    findIdx('Transferido'),         // O
+    findIdx('Contrato especial'),   // P
+  ].filter(i => i >= 0));
+
+  console.log('[EVO-CAN] Colunas a remover:', [...iColsRemov]);
+  console.log('[EVO-CAN] Contrato:', iContrato, '| Cancelamento:', iCancel);
+
+  // ── Processar linhas ───────────────────────────────────────
+  const processadas = [];
+  let nRenomeados = 0;
+
+  for (let i = 1; i < raw.length; i++) {
+    const row = [...(raw[i] || [])];
+    while (row.length < headers.length) row.push(null);
+
+    // Ignorar linha totalmente vazia
+    if (row.every(v => v === null || String(v).trim() === '')) continue;
+
+    // ── Renomear contrato ────────────────────────────────────
+    if (iContrato >= 0) {
+      const nome = String(row[iContrato] || '').trim();
+      // Usa o mesmo mapeamento da aba de vendas (evoMapeamento)
+      const mapa = typeof evoMapeamento !== 'undefined' ? evoMapeamento : [];
+      const mapeado = mapa.find(m => m.evo.trim().toLowerCase() === nome.toLowerCase());
+      if (mapeado) { row[iContrato] = mapeado.sheets; nRenomeados++; }
+    }
+
+    processadas.push(row);
+  }
+
+  // ── Ordenar por data de cancelamento crescente ─────────────
+  if (iCancel >= 0) {
+    const toTs = v => {
+      if (v instanceof Date) return v.getTime();
+      if (typeof v === 'number') return (v - 25569) * 86400000;
+      if (typeof v === 'string' && v) {
+        const p = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+        if (p) return new Date(+p[3], +p[2]-1, +p[1]).getTime();
+        return new Date(v).getTime() || 0;
+      }
+      return 0;
+    };
+    processadas.sort((a, b) => toTs(a[iCancel]) - toTs(b[iCancel]));
+    console.log('[EVO-CAN] Primeira data:', processadas[0]?.[iCancel], '| Última:', processadas[processadas.length-1]?.[iCancel]);
+  }
+
+  // ── Montar output sem colunas removidas ────────────────────
+  const headersOut = headers.filter((_, i) => !iColsRemov.has(i));
+  const iCancelOut = headersOut.findIndex(h => normH(h) === normH('Cancelamento'));
+
+  const rowsOut = processadas.map(row =>
+    row.filter((_, i) => !iColsRemov.has(i)).map((v, ci) => {
+      // Formatar data de cancelamento como DD/MM/YYYY
+      if (ci === iCancelOut && v instanceof Date) {
+        const d = v.getDate().toString().padStart(2,'0');
+        const m = (v.getMonth()+1).toString().padStart(2,'0');
+        const y = v.getFullYear();
+        return `${d}/${m}/${y}`;
+      }
+      return v;
+    })
+  );
+
+  // ── Criar workbook formatado ───────────────────────────────
+  const wsFinal = XLSX.utils.aoa_to_sheet([headersOut, ...rowsOut]);
+
+  // Largura automática
+  wsFinal['!cols'] = headersOut.map((h, i) => {
+    const maxLen = Math.max(
+      String(h).length,
+      ...rowsOut.slice(0, 100).map(r => String(r[i] === null ? '' : r[i]).length)
+    );
+    return {wch: Math.min(maxLen + 2, 45)};
+  });
+
+  // Congelar cabeçalho
+  wsFinal['!sheetViews'] = [{state:'frozen', ySplit:1}];
+
+  // Estilo cabeçalho: fundo vermelho escuro, texto branco, negrito
+  const nCols = headersOut.length;
+  for (let c = 0; c < nCols; c++) {
+    const ref = XLSX.utils.encode_cell({r:0, c});
+    if (!wsFinal[ref]) wsFinal[ref] = {t:'s', v: headersOut[c]};
+    wsFinal[ref].s = {
+      fill: {fgColor:{rgb:'8B1A1A'}, patternType:'solid'},
+      font: {bold:true, color:{rgb:'FFFFFF'}, name:'Arial', sz:10},
+      alignment: {horizontal:'center', vertical:'center'},
+      border: {bottom:{style:'thin',color:{rgb:'E8BABA'}}, right:{style:'thin',color:{rgb:'E8BABA'}}}
+    };
+  }
+
+  // Estilo linhas: alternado branco / vermelho bem claro
+  for (let r = 1; r <= rowsOut.length; r++) {
+    const bg = r % 2 === 0 ? 'F9DEDE' : 'FFFFFF';
+    for (let c = 0; c < nCols; c++) {
+      const ref = XLSX.utils.encode_cell({r, c});
+      if (!wsFinal[ref]) continue;
+      wsFinal[ref].s = {
+        fill: {fgColor:{rgb:bg}, patternType:'solid'},
+        font: {name:'Arial', sz:10, color:{rgb:'5C0000'}},
+        alignment: {vertical:'center'},
+        border: {bottom:{style:'thin',color:{rgb:'E8BABA'}}, right:{style:'thin',color:{rgb:'E8BABA'}}}
+      };
+    }
+  }
+
+  const wbFinal = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wbFinal, wsFinal, 'Cancelamentos');
+  evoCanDadosTratados = {wb: wbFinal, nome: file.name};
+
+  // ── Atualizar UI ───────────────────────────────────────────
+  const nomeEl = document.getElementById('evo-can-nome-arquivo');
+  if (nomeEl) { nomeEl.textContent = '✅ ' + file.name; nomeEl.style.display = 'block'; }
+
+  document.getElementById('evo-can-btn-baixar').style.display = 'inline-flex';
+  document.getElementById('evo-can-resultado').style.display  = 'block';
+
+  if (sub) sub.textContent = `${processadas.length} cancelamentos tratados · pronto para download`;
+
+  const badge = document.getElementById('evo-can-badge');
+  if (badge) badge.textContent = processadas.length + ' cancelamentos';
+
+  // KPIs
+  const semProf = processadas.filter(r => !r[findIdx('Professor')] || String(r[findIdx('Professor')]).trim() === '').length;
+  const kpiW = document.getElementById('evo-can-kpis');
+  if (kpiW) {
+    kpiW.innerHTML = [
+      {icon:'📋', label:'Total cancelamentos', val:processadas.length,  cor:'#dc2626'},
+      {icon:'🔄', label:'Planos renomeados',   val:nRenomeados,          cor:'#1e6fe8'},
+      {icon:'✂️', label:'Colunas removidas',   val:iColsRemov.size,      cor:'#f59e0b'},
+      {icon:'👨‍🏫',label:'Sem professor',        val:semProf + ' (normal)',cor:'#6b7280'},
+    ].map(k => `<div class="kpi-card" style="border-top:3px solid ${k.cor}">
+      <div class="kpi-icon">${k.icon}</div>
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value" style="color:${k.cor};font-size:${typeof k.val==='string'?'16':'24'}px">${k.val}</div>
+    </div>`).join('');
+  }
+
+  // Preview
+  const thead = document.getElementById('evo-can-preview-head');
+  const tbody = document.getElementById('evo-can-preview-body');
+  if (thead) thead.innerHTML = '<tr style="background:var(--bg)">' +
+    headersOut.map(h => `<th style="padding:6px 10px;font-size:10px;font-weight:700;color:var(--text-light);
+      text-transform:uppercase;white-space:nowrap;border-bottom:1px solid var(--border)">${h}</th>`).join('') + '</tr>';
+  if (tbody) {
+    tbody.innerHTML = rowsOut.slice(0, 50).map((r, i) =>
+      `<tr style="border-bottom:1px solid var(--border);background:${i%2?'var(--bg)':'transparent'}">` +
+      r.map(c => `<td style="padding:5px 10px;font-size:11px;white-space:nowrap">${String(c===null?'':c).slice(0,45)}</td>`).join('') +
+      '</tr>'
+    ).join('');
+    if (rowsOut.length > 50) {
+      tbody.innerHTML += `<tr><td colspan="${headersOut.length}"
+        style="padding:10px;text-align:center;color:var(--text-light);font-size:12px">
+        … mais ${rowsOut.length - 50} linhas incluídas no download</td></tr>`;
+    }
+  }
+
+  toast(`${processadas.length} cancelamentos tratados`, '✅');
+}
+
+// ── Download ───────────────────────────────────────────────────
+function evoCanBaixar() {
+  if (!evoCanDadosTratados) { toast('Processe um arquivo primeiro', '⚠️'); return; }
+  const nomeBase = evoCanDadosTratados.nome.replace(/\.(xlsx|xls)$/i, '');
+  XLSX.writeFile(evoCanDadosTratados.wb, nomeBase + '_Tratado.xlsx', {bookSST:true, cellStyles:true});
+  toast('Download iniciado!', '⬇️');
+}
 
 document.addEventListener('DOMContentLoaded', function() {
   if (localStorage.getItem('skyfit_dark') === '1') {
